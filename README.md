@@ -1,8 +1,8 @@
-# forms-manager
+# grants-ui-config-api
 
 Core delivery platform Node.js Backend Template.
 
-- [forms-manager](#forms-manager)
+- [grants-ui-config-api](#grants-ui-config-api)
   - [Requirements](#requirements)
     - [Node.js](#nodejs)
   - [Local development](#local-development)
@@ -35,7 +35,7 @@ Core delivery platform Node.js Backend Template.
 Please install the Node.js version in [.nvmrc](.nvmrc) using [Node Version Manager `nvm`](https://github.com/creationix/nvm) via:
 
 ```bash
-cd forms-manager
+cd grants-ui-config-api
 nvm use
 ```
 
@@ -119,7 +119,7 @@ For local development, you have two options:
 Migrations run automatically when using Docker:
 
 ```bash
-docker compose up --build forms-manager
+docker compose up --build grants-ui-config-api
 ```
 
 This mimics the production environment and runs migrations via the same shell script.
@@ -166,8 +166,8 @@ npx migrate-mongo create <migration-name> -f migrate-mongo-config.js
 A [Postman](https://www.postman.com/) collection and environment are available for making calls to the Teams and
 Repositories API. Simply import the collection and environment into Postman.
 
-- [CDP Node Backend Template Postman Collection](postman/forms-manager.postman_collection.json)
-- [CDP Node Backend Template Postman Environment](postman/forms-manager.postman_environment.json)
+- [CDP Node Backend Template Postman Collection](postman/grants-ui-config-api.postman_collection.json)
+- [CDP Node Backend Template Postman Environment](postman/grants-ui-config-api.postman_environment.json)
 
 ## Docker
 
@@ -176,13 +176,13 @@ Repositories API. Simply import the collection and environment into Postman.
 Build:
 
 ```bash
-docker build --target development --no-cache --tag forms-manager:development .
+docker build --target development --no-cache --tag grants-ui-config-api:development .
 ```
 
 Run:
 
 ```bash
-docker run -e GITHUB_API_TOKEN -p 3008:3008 forms-manager:development
+docker run -e GITHUB_API_TOKEN -p 3008:3008 grants-ui-config-api:development
 ```
 
 ### Production image
@@ -190,13 +190,13 @@ docker run -e GITHUB_API_TOKEN -p 3008:3008 forms-manager:development
 Build:
 
 ```bash
-docker build --no-cache --tag forms-manager .
+docker build --no-cache --tag grants-ui-config-api .
 ```
 
 Run:
 
 ```bash
-docker run -e GITHUB_API_TOKEN -p 3001:3001 forms-manager
+docker run -e GITHUB_API_TOKEN -p 3001:3001 grants-ui-config-api
 ```
 
 ## Integration testing
@@ -228,8 +228,8 @@ To run the integration tests manually in Postman:
 1. Set up the integration test environment as described above
 2. Import the test collection and environment into Postman:
 
-- Collection: `test/integration/postman/forms-manager-ci-mock.postman_collection.json`
-- Environment: `test/integration/postman/forms-manager-ci-mock.postman_environment.json`
+- Collection: `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`
+- Environment: `test/integration/postman/grants-ui-config-api-ci-mock.postman_environment.json`
 
 3. Ensure the environment variable `root` is set to `http://localhost:3001`
 4. Run the collection or individual requests through the Postman GUI
@@ -241,8 +241,8 @@ To extend the integration test suite with new test cases:
 
 1. **Open the collection in Postman**:
 
-- Import the collection if you haven't already: `test/integration/postman/forms-manager-ci-mock.postman_collection.json`
-- Import the environment: `test/integration/postman/forms-manager-ci-mock.postman_environment.json`
+- Import the collection if you haven't already: `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`
+- Import the environment: `test/integration/postman/grants-ui-config-api-ci-mock.postman_environment.json`
 
 2. **Create a new request**:
 
@@ -291,7 +291,7 @@ To extend the integration test suite with new test cases:
 8. **Export and commit**:
 
 - Export the updated collection: File → Export → Collection
-- Save it to `test/integration/postman/forms-manager-ci-mock.postman_collection.json`, overwriting the existing file
+- Save it to `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`, overwriting the existing file
 - Commit the updated collection file to the repository
 
 9. **Update documentation** if needed:

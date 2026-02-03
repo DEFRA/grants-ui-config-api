@@ -5,18 +5,12 @@ on:
     branches:
       - main
 
-    paths:
-      - '.browserslistrc'
-      - 'babel.config.*'
-      - 'Dockerfile'
-      - 'src/**'
-      - '!**/*.test.*'
-
-  workflow_dispatch:
-
-concurrency:
-  group: publish
-
+      paths:
+        - '.browserslistrc'
+        - 'babel.config.*'
+        - 'Dockerfile'
+        - 'src/**'
+        - '!**/*.test.*'
 permissions:
   id-token: write
   contents: write
@@ -30,12 +24,30 @@ jobs:
   build:
     if: github.run_number != 1
     name: CDP-build-workflow
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
+        uses: actions/checkout@v4
         uses: actions/checkout@v5
+
+     - name: Test code and Create Test Coverage Reports
+       uses: actions/setup-node@v4
+       with:
+         node-version-file: .nvmrc
+         cache: npm
+     - run: |
+         npm ci
+         npm run build:frontend
+         npm test
 
       - name: Build and Publish
         uses: DEFRA/cdp-build-action/build@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+     - name: SonarCloud Scan
+       uses: SonarSource/sonarqube-scan-action@v5.3.1 #  (or check latest version on https://github.com/marketplace/actions/official-sonarqube-scan)
+       continue-on-error: true
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
