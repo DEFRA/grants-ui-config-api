@@ -40,7 +40,7 @@
     "migrate:status": "migrate-mongo status -f migrate-mongo-config.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.934.0",
+    "@aws-sdk/client-s3": "^3.981.0",
     "@aws-sdk/client-sns": "^3.934.0",
     "@defra/forms-model": "^3.0.608",
     "@defra/hapi-tracing": "^1.29.0",
