@@ -61,8 +61,8 @@ jobs:
 
         mkdir -p ./newman-reports
         docker compose -f docker-compose.integration-test.yml run --rm --entrypoint="" \
-          newman sh -c "npm install -g newman-reporter-htmlextra && newman run /etc/newman/forms-manager-ci-mock.postman_collection.json \
-          -e /etc/newman/forms-manager-ci-mock.postman_environment.json \
+          newman sh -c "npm install -g newman-reporter-htmlextra && newman run /etc/newman/grants-ui-config-api-ci-mock.postman_collection.json \
+          -e /etc/newman/grants-ui-config-api-ci-mock.postman_environment.json \
           -r cli,json,htmlextra \
           --reporter-json-export /etc/newman/reports/newman-summary.json \
           --reporter-htmlextra-export /etc/newman/reports/newman-report.html \

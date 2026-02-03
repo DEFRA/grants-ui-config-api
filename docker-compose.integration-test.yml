@@ -24,7 +24,7 @@ services:
 
   mongo_test:
     image: mongo:6.0
-    container_name: forms-manager-mongo-test
+    container_name: grants-ui-config-api-mongo-test
     command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
     ports:
       - '27018:27017'
@@ -37,7 +37,7 @@ services:
       start_period: 10s
       retries: 30
     environment:
-      MONGO_INITDB_DATABASE: forms-manager-test
+      MONGO_INITDB_DATABASE: grants-ui-config-api-test
     networks:
       - forms_test_net
 
@@ -55,7 +55,7 @@ services:
         - Name: "newman-test-client"
       API_RESOURCES_INLINE: |
         - Name: "newman-test-client"
-          DisplayName: "Forms Manager API Test Resource"
+          DisplayName: "Grants UI Config API Test Resource"
           Scopes: ["newman-test-client"]
           UserClaims: ["oid", "groups", "email", "name", "preferred_username", "email_verified"]
       SERVER_OPTIONS_INLINE: |
@@ -86,11 +86,11 @@ services:
     build:
       context: .
       target: production
-    container_name: forms-manager-app-test
+    container_name: grants-ui-config-api-app-test
     ports:
       - '3001:3001'
     environment:
-      MONGO_URI: mongodb://mongo_test:27017/forms-manager-test?replicaSet=rs0&directConnection=true
+      MONGO_URI: mongodb://mongo_test:27017/grants-ui-config-api-test?replicaSet=rs0&directConnection=true
       PORT: 3001
       NODE_ENV: production
       OIDC_JWKS_URI: 'http://oidc:80/.well-known/openid-configuration/jwks'
@@ -117,7 +117,7 @@ services:
 
   newman:
     image: postman/newman:latest
-    container_name: forms-manager-newman-test
+    container_name: grants-ui-config-api-newman-test
     environment:
       NEWMAN_TOKEN_URL: 'http://oidc:80/connect/token'
       NEWMAN_USERNAME: 'newman-service-account'

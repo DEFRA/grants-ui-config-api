@@ -32,7 +32,7 @@ describe('entitlements service', () => {
               redact: []
             }
           }
-          if (key === 'serviceName') return 'forms-manager'
+          if (key === 'serviceName') return 'grants-ui-config-api'
           if (key === 'serviceVersion') return '1.0.0'
           return 'mock-value'
         })
