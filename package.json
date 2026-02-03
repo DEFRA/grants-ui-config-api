@@ -61,10 +61,10 @@
     "proxy-agent": "^6.5.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.28.3",
-    "@babel/core": "^7.28.5",
-    "@babel/plugin-syntax-import-attributes": "^7.27.1",
-    "@babel/preset-env": "^7.28.5",
+    "@babel/cli": "^7.28.6",
+    "@babel/core": "^7.29.0",
+    "@babel/plugin-syntax-import-attributes": "^7.28.6",
+    "@babel/preset-env": "^7.29.0",
     "@types/convict": "^6.1.6",
     "@types/eslint": "^9.6.1",
     "@types/jest": "^29.5.14",
