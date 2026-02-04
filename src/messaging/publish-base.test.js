@@ -10,7 +10,7 @@ jest.mock('~/src/config/index.js', () => {
   const testConfig = {
     awsRegion: 'eu-west-2',
     snsEndpoint: 'http://localhost',
-    snsTopicArn: 'arn:aws:sns:eu-west-2:000000000000:forms_manager_events',
+    snsTopicArn: 'arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events',
     publishAuditEvents: true
   }
   return {
@@ -57,7 +57,7 @@ describe('publish-base', () => {
 
       await publishEvent(message)
       expect(snsMock).toHaveReceivedCommandWith(PublishCommand, {
-        TopicArn: 'arn:aws:sns:eu-west-2:000000000000:forms_manager_events',
+        TopicArn: 'arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events',
         Message: JSON.stringify(message)
       })
     })

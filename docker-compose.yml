@@ -21,7 +21,7 @@ services:
       start_interval: 1s
       retries: 30
     environment:
-      MONGO_INITDB_DATABASE: forms-manager
+      MONGO_INITDB_DATABASE: grants-ui-config-api
 
   mongo-express:
     image: mongo-express

@@ -29,7 +29,7 @@ export const config = convict({
   serviceName: {
     doc: 'Api Service Name',
     format: String,
-    default: 'forms-manager'
+    default: 'grants-ui-config-api'
   },
   serviceVersion: /** @satisfies {SchemaObj<string | null>} */ ({
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
@@ -95,7 +95,7 @@ export const config = convict({
     databaseName: {
       doc: 'Database name for mongodb',
       format: String,
-      default: 'forms-manager',
+      default: 'grants-ui-config-api',
       env: 'MONGO_DATABASE'
     }
   },
