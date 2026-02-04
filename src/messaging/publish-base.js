@@ -5,32 +5,31 @@ import { config } from '~/src/config/index.js'
 import { getSNSClient } from '~/src/messaging/sns.js'
 
 const snsTopicArn = config.get('snsTopicArn')
-
 const client = getSNSClient()
 
 /**
- * Publish event onto topic
+ * Publish event onto SNS topic when audit SNS is enabled. No-op otherwise.
  * @param {AuditMessage} message
  */
 export async function publishEvent(message) {
   const shouldPublish = config.get('publishAuditEvents')
 
-  if (shouldPublish) {
-    const command = new PublishCommand({
-      TopicArn: snsTopicArn,
-      Message: JSON.stringify(message)
-    })
-
-    const result = await client.send(command)
-
-    logger.info(
-      `Published ${message.type} event for formId ${message.entityId}. MessageId: ${result.MessageId}`
-    )
-
-    return result
+  if (!shouldPublish) {
+    return undefined
   }
 
-  return undefined
+  const command = new PublishCommand({
+    TopicArn: snsTopicArn,
+    Message: JSON.stringify(message)
+  })
+
+  const result = await client.send(command)
+
+  logger.info(
+    `Published ${message.type} event for formId ${message.entityId}. MessageId: ${result.MessageId}`
+  )
+
+  return result
 }
 
 /**

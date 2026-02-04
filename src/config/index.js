@@ -169,21 +169,21 @@ export const config = convict({
     env: 'AWS_REGION'
   },
   snsEndpoint: {
-    doc: 'The SNS endpoint, if required (e.g. a local development dev service)',
+    doc: 'The SNS endpoint (e.g. for LocalStack). Only used when audit SNS is enabled.',
     format: String,
     default: '',
     env: 'SNS_ENDPOINT'
   },
   snsTopicArn: {
-    doc: 'SNS topic ARN',
+    doc: 'SNS topic ARN for publishing audit events. Only used when audit SNS is enabled.',
     format: String,
     default: '',
     env: 'SNS_TOPIC_ARN'
   },
   publishAuditEvents: {
-    doc: 'Publish audit events for forms-audit-api',
+    doc: 'Enable publishing form audit events to SNS. Disabled by default.',
     format: Boolean,
-    default: !isProduction,
+    default: false,
     env: 'FEATURE_FLAG_PUBLISH_AUDIT_EVENTS'
   },
   s3Endpoint: {

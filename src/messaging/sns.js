@@ -12,6 +12,6 @@ const snsEndpoint = config.get('snsEndpoint')
 export function getSNSClient() {
   return new SNSClient({
     region: awsRegion,
-    endpoint: snsEndpoint
+    ...(snsEndpoint && { endpoint: snsEndpoint })
   })
 }
