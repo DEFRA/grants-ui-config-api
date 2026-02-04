@@ -1,8 +1,11 @@
 # grants-ui-config-api
 
-Core delivery platform Node.js Backend Template.
+## About this fork
+
+This repository is a fork of [DEFRA/forms-manager](https://github.com/DEFRA/forms-manager). It is maintained as a separate copy due to the service requirements of the Core Delivery Platform (CDP).
 
 - [grants-ui-config-api](#grants-ui-config-api)
+  - [About this fork](#about-this-fork)
   - [Requirements](#requirements)
     - [Node.js](#nodejs)
   - [Local development](#local-development)
