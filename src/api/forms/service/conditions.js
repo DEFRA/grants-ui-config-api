@@ -1,10 +1,9 @@
-import { FormDefinitionRequestType, getErrorMessage } from '@defra/forms-model'
+import { getErrorMessage } from '@defra/forms-model'
 
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { logger } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
-import { publishFormUpdatedEvent } from '~/src/messaging/publish.js'
 import { client } from '~/src/mongo.js'
 
 /**
@@ -31,19 +30,9 @@ export async function addConditionToDraftFormDefinition(
         session
       )
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        condition,
-        FormDefinitionRequestType.CREATE_CONDITION
-      )
 
       return returnedCondition
     })
@@ -90,19 +79,9 @@ export async function updateConditionOnDraftFormDefinition(
         session
       )
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        condition,
-        FormDefinitionRequestType.UPDATE_CONDITION
-      )
 
       return returnedCondition
     })
@@ -142,19 +121,9 @@ export async function removeConditionOnDraftFormDefinition(
       // Update the condition on the form definition
       await formDefinition.deleteCondition(formId, conditionId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { conditionId },
-        FormDefinitionRequestType.DELETE_CONDITION
-      )
     })
 
     logger.info(`Removed condition ${conditionId} for form ID ${formId}`)

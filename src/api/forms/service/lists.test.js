@@ -1,7 +1,3 @@
-import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
@@ -21,7 +17,6 @@ import {
 } from '~/src/api/forms/service/lists.js'
 import * as versioningService from '~/src/api/forms/service/versioning.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
-import * as publishBase from '~/src/messaging/publish-base.js'
 import { saveToS3 } from '~/src/messaging/s3.js'
 import { prepareDb } from '~/src/mongo.js'
 
@@ -31,7 +26,6 @@ jest.mock('~/src/api/forms/repositories/form-metadata-repository.js')
 jest.mock('~/src/api/forms/templates.js')
 jest.mock('~/src/mongo.js')
 jest.mock('~/src/api/forms/service/versioning.js')
-jest.mock('~/src/messaging/publish-base.js')
 jest.mock('~/src/messaging/s3.js')
 
 jest.useFakeTimers().setSystemTime(new Date('2020-01-01'))
@@ -143,7 +137,6 @@ describe('lists', () => {
       const addListsMock = jest
         .mocked(formDefinition.addList)
         .mockResolvedValueOnce(expectedList)
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       const result = await addListToDraftFormDefinition(
         id,
@@ -155,16 +148,6 @@ describe('lists', () => {
       expect(listToInsert).toEqual(expectedList)
       expect(result).toEqual(expectedList)
       expectMetadataUpdate()
-
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-      expect(auditMessage).toMatchObject({
-        type: AuditEventMessageType.FORM_UPDATED
-      })
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.CREATE_LIST,
-        payload: undefined,
-        s3Meta
-      })
     })
     it('should fail with a conflict if there is a duplicate list', async () => {
       jest
@@ -194,7 +177,6 @@ describe('lists', () => {
       const updateListMock = jest
         .mocked(formDefinition.updateList)
         .mockResolvedValueOnce(listToUpdate)
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       const result = await updateListOnDraftFormDefinition(
         id,
@@ -209,16 +191,6 @@ describe('lists', () => {
       expect(expectedListToUpdate).toEqual(listToUpdate)
       expect(result).toEqual(listToUpdate)
       expectMetadataUpdate()
-
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-      expect(auditMessage).toMatchObject({
-        type: AuditEventMessageType.FORM_UPDATED
-      })
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.UPDATE_LIST,
-        payload: undefined,
-        s3Meta
-      })
     })
     it('should throw a conflict if updated list name or title exists in other list', async () => {
       jest
@@ -239,8 +211,6 @@ describe('lists', () => {
     const listId = '47cfaf57-6cda-44aa-9268-f37c674823d2'
 
     it('should remove a list on the form definition', async () => {
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
-
       await removeListOnDraftFormDefinition(id, listId, defaultAuthor)
       const [expectedFormId, expectedListId] = jest.mocked(
         formDefinition.deleteList
@@ -248,15 +218,6 @@ describe('lists', () => {
       expect(expectedFormId).toBe(id)
       expect(expectedListId).toBe(listId)
       expectMetadataUpdate()
-
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-      expect(auditMessage).toMatchObject({
-        type: AuditEventMessageType.FORM_UPDATED
-      })
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.DELETE_LIST,
-        payload: { listId: expectedListId }
-      })
     })
     it('should surface errors', async () => {
       const boomInternal = Boom.internal('Something went wrong')

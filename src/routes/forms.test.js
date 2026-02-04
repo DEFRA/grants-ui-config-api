@@ -44,7 +44,6 @@ jest.mock('~/src/api/forms/service/component.js')
 jest.mock('~/src/api/forms/service/migration.js')
 jest.mock('~/src/api/forms/service/conditions.js')
 jest.mock('~/src/api/forms/service/versioning.js')
-jest.mock('~/src/messaging/publish.js')
 
 describe('Forms route', () => {
   /** @type {Server} */

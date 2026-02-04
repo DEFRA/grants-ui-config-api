@@ -26,13 +26,6 @@ import {
   removeFormVersions
 } from '~/src/api/forms/service/versioning.js'
 import * as formTemplates from '~/src/api/forms/templates.js'
-import { getFormMetadataAuditMessages } from '~/src/messaging/mappers/form-events-bulk.js'
-import {
-  bulkPublishEvents,
-  publishFormCreatedEvent,
-  publishFormDraftDeletedEvent,
-  publishFormTitleUpdatedEvent
-} from '~/src/messaging/publish.js'
 import { client } from '~/src/mongo.js'
 
 /**
@@ -104,8 +97,6 @@ export async function handleTitleUpdate(
   await formDefinition.updateName(formId, formUpdate.title, session, schema)
 
   await createFormVersion(formId, session)
-
-  await publishFormTitleUpdatedEvent({ ...form, ...updatedForm }, form)
 }
 
 /**
@@ -177,8 +168,6 @@ export async function createForm(metadataInput, author) {
 
       // Create the first version of the form
       await createFormVersion(metadata.id, session)
-
-      await publishFormCreatedEvent(metadata)
     })
   } finally {
     await session.endSession()
@@ -246,11 +235,6 @@ export async function updateFormMetadata(formId, formUpdate, author) {
       } else {
         await handleMetadataVersioning(formId, formUpdate, session)
       }
-
-      const auditMessages = getFormMetadataAuditMessages(form, updatedForm)
-      if (auditMessages.length) {
-        await bulkPublishEvents(auditMessages)
-      }
     })
 
     logger.info(`Updated form metadata for form ID ${formId}`)
@@ -279,7 +263,7 @@ export async function updateFormMetadata(formId, formUpdate, author) {
  * @param {FormMetadataAuthor} author
  */
 export async function removeForm(formId, author) {
-  logger.info(`Removing form with ID ${formId}`)
+  logger.info({ formId, author }, `Removing form with ID ${formId}`)
 
   const form = await getForm(formId)
 
@@ -294,7 +278,6 @@ export async function removeForm(formId, author) {
       await formMetadata.remove(formId, session)
       await formDefinition.remove(formId, session)
       await removeFormVersions(formId, session)
-      await publishFormDraftDeletedEvent(form, author)
     })
   } finally {
     await session.endSession()

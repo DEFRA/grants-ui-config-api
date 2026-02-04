@@ -1,7 +1,4 @@
-import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
+import { FormDefinitionRequestType } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
@@ -12,7 +9,6 @@ import { mockFormVersionDocument } from '~/src/api/forms/service/__stubs__/versi
 import { assignSectionsToForm } from '~/src/api/forms/service/sections.js'
 import * as versioningService from '~/src/api/forms/service/versioning.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
-import * as publishBase from '~/src/messaging/publish-base.js'
 import { prepareDb } from '~/src/mongo.js'
 
 jest.mock('~/src/helpers/get-author.js')
@@ -21,7 +17,6 @@ jest.mock('~/src/api/forms/repositories/form-metadata-repository.js')
 jest.mock('~/src/api/forms/templates.js')
 jest.mock('~/src/mongo.js')
 jest.mock('~/src/api/forms/service/versioning.js')
-jest.mock('~/src/messaging/publish-base.js')
 
 jest.useFakeTimers().setSystemTime(new Date('2020-01-01'))
 
@@ -93,7 +88,6 @@ describe('sections', () => {
       const assignSectionsMock = jest
         .mocked(formDefinition.assignSections)
         .mockResolvedValueOnce(expectedSections)
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       const result = await assignSectionsToForm(
         id,
@@ -118,16 +112,6 @@ describe('sections', () => {
         id,
         expect.anything()
       )
-
-      // Verify audit event was published
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-      expect(auditMessage).toMatchObject({
-        type: AuditEventMessageType.FORM_UPDATED
-      })
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.ASSIGN_SECTIONS,
-        payload: { sections: sectionAssignments }
-      })
     })
 
     it('should assign empty sections array', async () => {
@@ -137,7 +121,6 @@ describe('sections', () => {
       jest
         .mocked(formDefinition.assignSections)
         .mockResolvedValueOnce(emptySections)
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       const result = await assignSectionsToForm(
         id,
@@ -148,12 +131,6 @@ describe('sections', () => {
 
       expect(result).toEqual(emptySections)
       expectMetadataUpdate()
-
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.UNASSIGN_SECTIONS,
-        payload: { sections: emptyAssignments }
-      })
     })
 
     it('should surface errors from repository', async () => {
@@ -230,7 +207,6 @@ describe('sections', () => {
       const assignSectionsMock = jest
         .mocked(formDefinition.assignSections)
         .mockResolvedValueOnce(expectedSections)
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       await assignSectionsToForm(
         id,
@@ -240,12 +216,6 @@ describe('sections', () => {
       )
 
       expect(assignSectionsMock).toHaveBeenCalled()
-
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.CREATE_SECTION,
-        payload: { sections: sectionAssignments }
-      })
     })
 
     it('should use DELETE_SECTION request type when removing a section', async () => {
@@ -256,7 +226,6 @@ describe('sections', () => {
       jest
         .mocked(formDefinition.assignSections)
         .mockResolvedValueOnce(remainingSections)
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       await assignSectionsToForm(
         id,
@@ -265,11 +234,7 @@ describe('sections', () => {
         FormDefinitionRequestType.DELETE_SECTION
       )
 
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.DELETE_SECTION,
-        payload: { sections: [sectionAssignments[0]] }
-      })
+      expect(formDefinition.assignSections).toHaveBeenCalled()
     })
   })
 })

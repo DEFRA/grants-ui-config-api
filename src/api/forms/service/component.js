@@ -1,8 +1,4 @@
-import {
-  FormDefinitionRequestType,
-  FormStatus,
-  getErrorMessage
-} from '@defra/forms-model'
+import { FormStatus, getErrorMessage } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
@@ -12,7 +8,6 @@ import { getFormDefinition } from '~/src/api/forms/service/definition.js'
 import { getFormDefinitionPage } from '~/src/api/forms/service/page.js'
 import { logger } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
-import { publishFormUpdatedEvent } from '~/src/messaging/publish.js'
 import { client } from '~/src/mongo.js'
 
 /**
@@ -82,19 +77,9 @@ export async function createComponentOnDraftDefinition(
         prepend ? 0 : undefined
       )
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        component,
-        FormDefinitionRequestType.CREATE_COMPONENT
-      )
     })
   } catch (err) {
     logger.error(
@@ -145,19 +130,9 @@ export async function updateComponentOnDraftDefinition(
             session
           )
 
-        const metadataDocument = await formMetadata.updateAudit(
-          formId,
-          author,
-          session
-        )
+        await formMetadata.updateAudit(formId, author, session)
 
         await createFormVersion(formId, session)
-
-        await publishFormUpdatedEvent(
-          metadataDocument,
-          formDefinitionPageComponent,
-          FormDefinitionRequestType.UPDATE_COMPONENT
-        )
 
         return formDefinitionPageComponent
       }
@@ -203,19 +178,9 @@ export async function deleteComponentOnDraftDefinition(
     await session.withTransaction(async () => {
       await formDefinition.deleteComponent(formId, pageId, componentId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { pageId, componentId },
-        FormDefinitionRequestType.DELETE_COMPONENT
-      )
     })
   } catch (err) {
     logger.error(

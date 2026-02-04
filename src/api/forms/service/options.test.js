@@ -1,7 +1,3 @@
-import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
 import { pino } from 'pino'
 
 import {
@@ -15,7 +11,6 @@ import { mockFormVersionDocument } from '~/src/api/forms/service/__stubs__/versi
 import { updateOptionOnDraftDefinition } from '~/src/api/forms/service/options.js'
 import * as versioningService from '~/src/api/forms/service/versioning.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
-import * as publishBase from '~/src/messaging/publish-base.js'
 import { prepareDb } from '~/src/mongo.js'
 
 jest.mock('~/src/helpers/get-author.js')
@@ -24,7 +19,6 @@ jest.mock('~/src/api/forms/repositories/form-metadata-repository.js')
 jest.mock('~/src/api/forms/templates.js')
 jest.mock('~/src/mongo.js')
 jest.mock('~/src/api/forms/service/versioning.js')
-jest.mock('~/src/messaging/publish-base.js')
 jest.mock('~/src/messaging/s3.js')
 
 jest.useFakeTimers().setSystemTime(new Date('2020-01-01'))
@@ -75,7 +69,6 @@ describe('options', () => {
       const updateOptionMock = jest
         .mocked(formDefinition.updateOption)
         .mockResolvedValueOnce(formDefinitionWithList)
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       const result = await updateOptionOnDraftDefinition(
         id,
@@ -88,15 +81,6 @@ describe('options', () => {
       expect(optionName).toBe('showReferenceNumber')
       expect(result).toEqual({ option: { showReferenceNumber: 'true' } })
       expectMetadataUpdate()
-
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-      expect(auditMessage).toMatchObject({
-        type: AuditEventMessageType.FORM_UPDATED
-      })
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.UPDATE_OPTION,
-        payload: { option: { showReferenceNumber: 'true' } }
-      })
     })
   })
 })

@@ -4,7 +4,6 @@ import * as formDefinition from '~/src/api/forms/repositories/form-definition-re
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { logger } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
-import { publishFormUpdatedEvent } from '~/src/messaging/publish.js'
 import { client } from '~/src/mongo.js'
 
 /**
@@ -22,7 +21,10 @@ export async function assignSectionsToForm(
   author,
   requestType
 ) {
-  logger.info(`Assigning sections to form ID ${formId}`)
+  logger.info(
+    { formId, requestType },
+    `Assigning sections to form ID ${formId}`
+  )
 
   const session = client.startSession()
 
@@ -34,19 +36,9 @@ export async function assignSectionsToForm(
         session
       )
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { sections: sectionAssignments },
-        requestType
-      )
 
       return updatedSections
     })

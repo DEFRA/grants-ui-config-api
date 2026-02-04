@@ -1,8 +1,4 @@
 import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
-import {
   buildDefinition,
   buildQuestionPage,
   buildSummaryPage
@@ -24,14 +20,12 @@ import {
 import * as versioningService from '~/src/api/forms/service/versioning.js'
 import { empty as emptyFormWithSummary } from '~/src/api/forms/templates.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
-import * as publishBase from '~/src/messaging/publish-base.js'
 import { prepareDb } from '~/src/mongo.js'
 
 jest.mock('~/src/helpers/get-author.js')
 jest.mock('~/src/api/forms/repositories/form-definition-repository.js')
 jest.mock('~/src/api/forms/repositories/form-metadata-repository.js')
 jest.mock('~/src/mongo.js')
-jest.mock('~/src/messaging/publish-base.js')
 jest.mock('~/src/api/forms/service/versioning.js')
 
 jest.useFakeTimers().setSystemTime(new Date('2020-01-01'))
@@ -118,8 +112,6 @@ describe('Page service', () => {
             pages: [...definition.pages, formDefinitionPageCustomisedTitle]
           })
         )
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
-
       const page = await createPageOnDraftDefinition(
         id,
         formDefinitionPageCustomisedTitle,
@@ -127,7 +119,6 @@ describe('Page service', () => {
       )
       const dbOperationArgs = dbMetadataSpy.mock.calls[0]
       const [formId1, page1] = dbDefinitionSpy.mock.calls[0]
-      const [auditMessage] = publishEventSpy.mock.calls[0]
 
       expect(formId1).toBe(id)
       expect(page1).toMatchObject({
@@ -139,13 +130,6 @@ describe('Page service', () => {
       expect(page).toMatchObject({
         ...formDefinitionPageCustomisedTitle,
         id: expect.any(String)
-      })
-      expect(auditMessage).toMatchObject({
-        type: AuditEventMessageType.FORM_UPDATED
-      })
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.CREATE_PAGE,
-        payload: page
       })
     })
 
@@ -259,8 +243,6 @@ describe('Page service', () => {
             pages: [expectedPage, summaryPage]
           })
         )
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
-
       const page = await patchFieldsOnDraftDefinitionPage(
         '123',
         pageId,
@@ -269,15 +251,6 @@ describe('Page service', () => {
       )
 
       expect(page).toEqual(expectedPage)
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-
-      expect(auditMessage).toMatchObject({
-        type: AuditEventMessageType.FORM_UPDATED
-      })
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.UPDATE_PAGE_FIELDS,
-        payload: { pageId, pageFieldsToUpdate: pageFields }
-      })
       spy.mockRestore()
     })
 
@@ -415,7 +388,6 @@ describe('Page service', () => {
     it('should delete the page', async () => {
       const dbDefinitionSpy = jest.spyOn(formDefinition, 'deletePage')
       const dbMetadataSpy = jest.spyOn(formMetadata, 'updateAudit')
-      const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       await deletePageOnDraftDefinition(id, pageId, author)
 
@@ -425,15 +397,6 @@ describe('Page service', () => {
       expect([calledFormId, calledPageId]).toEqual([id, pageId])
       const [metaFormId, metaUpdateOperations] = dbMetadataSpy.mock.calls[0]
       expect(metaFormId).toBe(id)
-      const [auditMessage] = publishEventSpy.mock.calls[0]
-
-      expect(auditMessage).toMatchObject({
-        type: AuditEventMessageType.FORM_UPDATED
-      })
-      expect(auditMessage.data).toMatchObject({
-        requestType: FormDefinitionRequestType.DELETE_PAGE,
-        payload: { pageId }
-      })
       expect(metaUpdateOperations).toEqual(author)
     })
 

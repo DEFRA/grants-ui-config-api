@@ -1,5 +1,4 @@
 import {
-  FormDefinitionRequestType,
   FormStatus,
   formDefinitionSchema,
   getErrorMessage
@@ -10,7 +9,6 @@ import * as formDefinition from '~/src/api/forms/repositories/form-definition-re
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { logger } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
-import { publishFormUpdatedEvent } from '~/src/messaging/publish.js'
 import { saveToS3 } from '~/src/messaging/s3.js'
 import { client } from '~/src/mongo.js'
 
@@ -52,23 +50,12 @@ export async function addListToDraftFormDefinition(formId, list, author) {
 
       await duplicateListGuard(formId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
       const filename = `${formId}_list_${returnedList.id}.json`
-      const s3Meta = await saveToS3(filename, returnedList)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        undefined,
-        FormDefinitionRequestType.CREATE_LIST,
-        s3Meta
-      )
+      await saveToS3(filename, returnedList)
 
       return returnedList
     })
@@ -117,23 +104,12 @@ export async function updateListOnDraftFormDefinition(
 
       await duplicateListGuard(formId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
       const filename = `${formId}_list_${returnedList.id}.json`
-      const s3Meta = await saveToS3(filename, returnedList)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        undefined,
-        FormDefinitionRequestType.UPDATE_LIST,
-        s3Meta
-      )
+      await saveToS3(filename, returnedList)
 
       return returnedList
     })
@@ -169,19 +145,9 @@ export async function removeListOnDraftFormDefinition(formId, listId, author) {
       // Update the list on the form definition
       await formDefinition.deleteList(formId, listId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
-
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { listId },
-        FormDefinitionRequestType.DELETE_LIST
-      )
     })
 
     logger.info(`Removed list ${listId} for form ID ${formId}`)
