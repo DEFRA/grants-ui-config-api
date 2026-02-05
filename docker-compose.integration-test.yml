@@ -100,8 +100,6 @@ services:
       FORM_DEF_BUCKET_NAME: form-definition-storage
       S3_FORCE_PATH_STYLE: true
       S3_ENDPOINT: http://localstack:4566
-      SNS_ENDPOINT: http://localstack:4566
-      SNS_TOPIC_ARN: arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
     depends_on:

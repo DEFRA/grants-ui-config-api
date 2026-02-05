@@ -1,8 +1,11 @@
 # grants-ui-config-api
 
-Core delivery platform Node.js Backend Template.
+## About this fork
+
+This repository is a fork of [DEFRA/forms-manager](https://github.com/DEFRA/forms-manager). It is maintained as a separate copy due to the service requirements of the Core Delivery Platform (CDP).
 
 - [grants-ui-config-api](#grants-ui-config-api)
+  - [About this fork](#about-this-fork)
   - [Requirements](#requirements)
     - [Node.js](#nodejs)
   - [Local development](#local-development)
@@ -63,11 +66,11 @@ ROLE_EDITOR_GROUP_ID=""
 HTTP_PROXY=
 HTTPS_PROXY=
 NO_PROXY=
-SNS_TOPIC_ARN=
-SNS_ENDPOINT=
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 ```
+
+Event-based audit publishing to SNS is disabled by default. To enable, set `FEATURE_FLAG_PUBLISH_AUDIT_EVENTS=true`, `SNS_TOPIC_ARN`, and optionally `SNS_ENDPOINT` (e.g. for LocalStack).
 
 For proxy options, see https://www.npmjs.com/package/proxy-from-env which is used by https://github.com/TooTallNate/proxy-agents/tree/main/packages/proxy-agent. It's currently supports Hapi Wreck only, e.g. in the JWKS lookup.
 
