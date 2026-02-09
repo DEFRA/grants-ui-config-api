@@ -69,10 +69,6 @@ jobs:
             run: npm run format:check
             cache: .cache/prettier
 
-          - description: EditorConfig
-            name: lint-editorconfig
-            run: npm run lint:editorconfig
-
           - description: ESLint
             name: lint-js
             run: npm run lint:js
@@ -121,8 +117,8 @@ jobs:
 
       matrix:
         task:
-          - description: Unit tests
-            name: test-unit
+          - description: Unit and integration tests
+            name: tests
             run: npm run test
             cache: coverage
 

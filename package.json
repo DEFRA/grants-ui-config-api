@@ -22,6 +22,7 @@
     "lint:js": "eslint . --max-warnings 0",
     "lint:types": "tsc --noEmit",
     "test": "jest --color --coverage --verbose",
+    "test:unit": "jest --color --coverage --verbose --testPathIgnorePatterns=integration",
     "test:watch": "jest --color --watch",
     "test:integration": "jest --color --verbose --testPathPattern=integration",
     "server:watch": "NODE_ENV=development tsx watch --clear-screen=false --enable-source-maps --exclude \"**/*.test.*\"",
