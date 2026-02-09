@@ -1,9 +1,4 @@
-import {
-  Engine,
-  FormDefinitionRequestType,
-  FormStatus,
-  getErrorMessage
-} from '@defra/forms-model'
+import { Engine, FormDefinitionRequestType, FormStatus, getErrorMessage } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 
 import { makeFormLiveErrorMessages } from '~/src/api/forms/constants.js'
@@ -12,11 +7,7 @@ import { deleteDraft } from '~/src/api/forms/repositories/form-definition-reposi
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { getValidationSchema } from '~/src/api/forms/service/helpers/definition.js'
 import { getForm } from '~/src/api/forms/service/index.js'
-import {
-  logger,
-  mapForm,
-  partialAuditFields
-} from '~/src/api/forms/service/shared.js'
+import { logger, mapForm, partialAuditFields } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
 import {
   publishDraftCreatedFromLiveEvent,
@@ -45,11 +36,7 @@ export async function listForms(options) {
  * @param {FormStatus} state - the form state
  * @param {ClientSession | undefined} [session]
  */
-export async function getFormDefinition(
-  formId,
-  state = FormStatus.Draft,
-  session = undefined
-) {
+export async function getFormDefinition(formId, state = FormStatus.Draft, session) {
   return formDefinition.get(formId, state, session)
 }
 
@@ -82,11 +69,7 @@ export async function updateDraftFormDefinition(formId, definition, author) {
         logger.info(`Updating form definition (draft) for form ID ${formId}`)
 
         await formDefinition.update(formId, definition, session, schema)
-        const updatedMetadata = await formMetadata.updateAudit(
-          formId,
-          author,
-          session
-        )
+        const updatedMetadata = await formMetadata.updateAudit(formId, author, session)
 
         await createFormVersion(formId, session)
 
@@ -143,11 +126,7 @@ export async function deleteDraftFormDefinition(formId, author) {
         }
         delete updatedMeta.draft
 
-        await formMetadata.update(
-          formId,
-          { $set: updatedMeta, $unset: { draft: '' } },
-          session
-        )
+        await formMetadata.update(formId, { $set: updatedMeta, $unset: { draft: '' } }, session)
 
         // Publish audit message
         await publishFormDraftDeletedEvent(updatedMeta, author)
@@ -190,16 +169,11 @@ function validateFormForPublishing(formId, form, draftFormDefinition) {
   }
 
   if (!form.privacyNoticeUrl) {
-    logger.info(
-      `[missingPrivacyNotice] Form ${formId} missing privacy notice URL - validation failed, cannot publish`
-    )
+    logger.info(`[missingPrivacyNotice] Form ${formId} missing privacy notice URL - validation failed, cannot publish`)
     throw Boom.badRequest(makeFormLiveErrorMessages.missingPrivacyNotice)
   }
 
-  if (
-    draftFormDefinition.engine !== Engine.V2 &&
-    !draftFormDefinition.startPage
-  ) {
+  if (draftFormDefinition.engine !== Engine.V2 && !draftFormDefinition.startPage) {
     throw Boom.badRequest(makeFormLiveErrorMessages.missingStartPage)
   }
 
@@ -219,10 +193,7 @@ export async function createLiveFromDraft(formId, author) {
   try {
     // Get the form metadata and draft definition
     const form = await getForm(formId)
-    const draftFormDefinition = await formDefinition.get(
-      formId,
-      FormStatus.Draft
-    )
+    const draftFormDefinition = await formDefinition.get(formId, FormStatus.Draft)
 
     // Validate form can be published
     validateFormForPublishing(formId, form, draftFormDefinition)
@@ -274,10 +245,7 @@ export async function createLiveFromDraft(formId, author) {
     logger.info(`Removed form metadata (draft) for form ID ${formId}`)
     logger.info(`Made draft live for form ID ${formId}`)
   } catch (err) {
-    logger.error(
-      err,
-      `[makeDraftLive] Make draft live for form ID ${formId} failed - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[makeDraftLive] Make draft live for form ID ${formId} failed - ${getErrorMessage(err)}`)
 
     throw err
   }
@@ -351,9 +319,7 @@ export async function createDraftFromLive(formId, author) {
  * @param {FormMetadataAuthor} author
  */
 export async function reorderDraftFormDefinitionPages(formId, order, author) {
-  logger.info(
-    `Reordering pages on Form Definition (draft) for form ID ${formId}`
-  )
+  logger.info(`Reordering pages on Form Definition (draft) for form ID ${formId}`)
 
   const form = await getFormDefinition(formId)
 
@@ -365,32 +331,18 @@ export async function reorderDraftFormDefinitionPages(formId, order, author) {
 
   try {
     const newForm = await session.withTransaction(async () => {
-      const reorderedForm = await formDefinition.reorderPages(
-        formId,
-        order,
-        session
-      )
+      const reorderedForm = await formDefinition.reorderPages(formId, order, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { pageOrder: order },
-        FormDefinitionRequestType.REORDER_PAGES
-      )
+      await publishFormUpdatedEvent(metadataDocument, { pageOrder: order }, FormDefinitionRequestType.REORDER_PAGES)
 
       return reorderedForm
     })
 
-    logger.info(
-      `Reordered pages on Form Definition (draft) for form ID ${formId}`
-    )
+    logger.info(`Reordered pages on Form Definition (draft) for form ID ${formId}`)
 
     return newForm
   } catch (err) {
@@ -412,15 +364,8 @@ export async function reorderDraftFormDefinitionPages(formId, order, author) {
  * @param {string[]} order
  * @param {FormMetadataAuthor} author
  */
-export async function reorderDraftFormDefinitionComponents(
-  formId,
-  pageId,
-  order,
-  author
-) {
-  logger.info(
-    `Reordering components on Form Definition (draft) for form ID ${formId} pageID ${pageId}`
-  )
+export async function reorderDraftFormDefinitionComponents(formId, pageId, order, author) {
+  logger.info(`Reordering components on Form Definition (draft) for form ID ${formId} pageID ${pageId}`)
 
   const form = await getFormDefinition(formId)
 
@@ -432,18 +377,9 @@ export async function reorderDraftFormDefinitionComponents(
 
   try {
     const newForm = await session.withTransaction(async () => {
-      const reorderedForm = await formDefinition.reorderComponents(
-        formId,
-        pageId,
-        order,
-        session
-      )
+      const reorderedForm = await formDefinition.reorderComponents(formId, pageId, order, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
@@ -456,9 +392,7 @@ export async function reorderDraftFormDefinitionComponents(
       return reorderedForm
     })
 
-    logger.info(
-      `Reordered components on Form Definition (draft) for form ID ${formId} pageID ${pageId}`
-    )
+    logger.info(`Reordered components on Form Definition (draft) for form ID ${formId} pageID ${pageId}`)
 
     return newForm
   } catch (err) {

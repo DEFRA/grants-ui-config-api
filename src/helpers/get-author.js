@@ -2,29 +2,20 @@ import Boom from '@hapi/boom'
 
 /**
  * Get the author from the auth credentials
- * @param {UserCredentials & OidcStandardClaims} [user]
+ * @param {import('@hapi/hapi').UserCredentials} [user]
  * @returns {FormMetadataAuthor}
  */
 export function getAuthor(user) {
-  if (!user?.oid || !user.name) {
-    throw Boom.unauthorized(
-      'Failed to get the author. User is undefined or has a malformed/missing oid/name.'
-    )
+  if (!user?.id || !user.displayName) {
+    throw Boom.unauthorized('Failed to get the author. User is undefined or has a malformed/missing id/displayName.')
   }
 
-  const displayName =
-    user.given_name && user.family_name
-      ? `${user.given_name} ${user.family_name}`
-      : user.name
-
   return {
-    id: user.oid,
-    displayName
+    id: user.id,
+    displayName: user.displayName
   }
 }
 
 /**
  * @import { FormMetadataAuthor } from '@defra/forms-model'
- * @import { UserCredentials } from '@hapi/hapi'
- * @import { OidcStandardClaims } from 'oidc-client-ts'
  */

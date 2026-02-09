@@ -1,8 +1,4 @@
-import {
-  ComponentType,
-  ControllerPath,
-  ControllerType
-} from '@defra/forms-model'
+import { ComponentType, ControllerPath, ControllerType } from '@defra/forms-model'
 
 import { empty } from '~/src/api/forms/templates.js'
 

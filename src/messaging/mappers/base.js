@@ -1,7 +1,4 @@
-import {
-  AuditEventMessageSchemaVersion,
-  AuditEventMessageSource
-} from '@defra/forms-model'
+import { AuditEventMessageSchemaVersion, AuditEventMessageSource } from '@defra/forms-model'
 
 /**
  * Helper to create the base message

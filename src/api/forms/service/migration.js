@@ -9,17 +9,11 @@ import {
 
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
-import {
-  migrateToV2,
-  summaryHelper
-} from '~/src/api/forms/service/migration-helpers.js'
+import { migrateToV2, summaryHelper } from '~/src/api/forms/service/migration-helpers.js'
 import { addIdToSummary } from '~/src/api/forms/service/page.js'
 import { logger } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
-import {
-  publishFormMigratedEvent,
-  publishFormUpdatedEvent
-} from '~/src/messaging/publish.js'
+import { publishFormMigratedEvent, publishFormUpdatedEvent } from '~/src/messaging/publish.js'
 import { client } from '~/src/mongo.js'
 
 /**
@@ -49,19 +43,11 @@ export async function repositionSummaryPipeline(formId, definition, author) {
 
   try {
     await session.withTransaction(async () => {
-      await formDefinition.deletePages(
-        formId,
-        (page) => isSummaryPage(page),
-        session
-      )
+      await formDefinition.deletePages(formId, (page) => isSummaryPage(page), session)
 
       await formDefinition.addPage(formId, summaryWithId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       // TODO: Does this need an enum?
       await publishFormUpdatedEvent(
@@ -106,12 +92,7 @@ export async function migrateDefinitionToV2(formId, author) {
     await session.withTransaction(async () => {
       updatedDraftDefinition = migrateToV2(formDraftDefinition)
 
-      await formDefinition.update(
-        formId,
-        updatedDraftDefinition,
-        session,
-        formDefinitionV2Schema
-      )
+      await formDefinition.update(formId, updatedDraftDefinition, session, formDefinitionV2Schema)
 
       await formMetadata.updateAudit(formId, author, session)
 

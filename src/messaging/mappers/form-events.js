@@ -5,10 +5,7 @@ import {
   AuditEventMessageType
 } from '@defra/forms-model'
 
-import {
-  createFormMessageDataBase,
-  createV1MessageBase
-} from '~/src/messaging/mappers/base.js'
+import { createFormMessageDataBase, createV1MessageBase } from '~/src/messaging/mappers/base.js'
 
 /**
  * @param {FormMetadata} metadata

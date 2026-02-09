@@ -110,10 +110,7 @@ export const migrateDefinitionParamSchema = Joi.object()
   })
   .required()
 
-export const sortIdsSchema = Joi.array()
-  .items(Joi.string().uuid().required())
-  .min(1)
-  .required()
+export const sortIdsSchema = Joi.array().items(Joi.string().uuid().required()).min(1).required()
 
 export const sectionAssignmentItemSchema = sectionsSchemaV2.concat(
   Joi.object({

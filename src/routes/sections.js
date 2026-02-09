@@ -3,10 +3,7 @@ import { Scopes } from '@defra/forms-model'
 import { assignSectionsToForm } from '~/src/api/forms/service/sections.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
 import { failAction } from '~/src/helpers/payload-fail-action.js'
-import {
-  formByIdSchema,
-  sectionAssignmentPayloadSchema
-} from '~/src/models/forms.js'
+import { formByIdSchema, sectionAssignmentPayloadSchema } from '~/src/models/forms.js'
 
 /**
  * @type {ServerRoute[]}
@@ -23,12 +20,7 @@ export default [
       const { id } = params
       const author = getAuthor(auth.credentials.user)
 
-      const sections = await assignSectionsToForm(
-        id,
-        payload.sections,
-        author,
-        payload.requestType
-      )
+      const sections = await assignSectionsToForm(id, payload.sections, author, payload.requestType)
 
       return {
         id,

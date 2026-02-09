@@ -5,11 +5,7 @@ import {
   AuditEventMessageType,
   FormDefinitionRequestType
 } from '@defra/forms-model'
-import {
-  buildMetaData,
-  buildQuestionPage,
-  buildTextFieldComponent
-} from '@defra/forms-model/stubs'
+import { buildMetaData, buildQuestionPage, buildTextFieldComponent } from '@defra/forms-model/stubs'
 
 import author from '~/src/api/forms/service/__stubs__/author.js'
 import {

@@ -5,8 +5,7 @@ const DRAFT = 'draft'
 // Cannot import values from '@defra/forms-model' due to restrictions
 const ControllerTypeSummary = 'SummaryPageController'
 const v1ControllerTypeSummary = './pages/summary.js'
-const ControllerTypeSummaryWithConfirmationEmail =
-  'SummaryPageWithConfirmationEmailController'
+const ControllerTypeSummaryWithConfirmationEmail = 'SummaryPageWithConfirmationEmailController'
 const DEFINITION_COLLECTION_NAME = 'form-definition'
 const BATCH_SIZE = 10
 
@@ -29,14 +28,9 @@ async function getFormIdsToMigrate(definitionCollection, draftOrLive) {
         }
 
   const projection =
-    draftOrLive === DRAFT
-      ? { projection: { draft: { name: 1 } } }
-      : { projection: { live: { name: 1 } } }
+    draftOrLive === DRAFT ? { projection: { draft: { name: 1 } } } : { projection: { live: { name: 1 } } }
 
-  return await definitionCollection
-    .find(query, projection)
-    .limit(BATCH_SIZE)
-    .toArray()
+  return await definitionCollection.find(query, projection).limit(BATCH_SIZE).toArray()
 }
 
 /**
@@ -55,10 +49,7 @@ async function updateDefinitions(client, definitionCollection, draftOrLive) {
     let formIdsToMigrate = []
 
     try {
-      formIdsToMigrate = await getFormIdsToMigrate(
-        definitionCollection,
-        draftOrLive
-      )
+      formIdsToMigrate = await getFormIdsToMigrate(definitionCollection, draftOrLive)
 
       total = formIdsToMigrate.length
 
@@ -71,9 +62,7 @@ async function updateDefinitions(client, definitionCollection, draftOrLive) {
           total
         }
       } else {
-        console.log(
-          `Found ${formIdsToMigrate.length} ${draftOrLive.toUpperCase()} forms for migration`
-        )
+        console.log(`Found ${formIdsToMigrate.length} ${draftOrLive.toUpperCase()} forms for migration`)
       }
 
       for (const form of formIdsToMigrate) {
@@ -81,40 +70,31 @@ async function updateDefinitions(client, definitionCollection, draftOrLive) {
           draftOrLive === DRAFT
             ? {
                 $set: {
-                  'draft.pages.$[elem].controller':
-                    ControllerTypeSummaryWithConfirmationEmail
+                  'draft.pages.$[elem].controller': ControllerTypeSummaryWithConfirmationEmail
                 }
               }
             : {
                 $set: {
-                  'live.pages.$[elem].controller':
-                    ControllerTypeSummaryWithConfirmationEmail
+                  'live.pages.$[elem].controller': ControllerTypeSummaryWithConfirmationEmail
                 }
               }
 
-        await definitionCollection.findOneAndUpdate(
-          { _id: form._id },
-          setExpr,
-          {
-            arrayFilters: [
-              {
-                'elem.controller': {
-                  $in: [ControllerTypeSummary, v1ControllerTypeSummary]
-                }
+        await definitionCollection.findOneAndUpdate({ _id: form._id }, setExpr, {
+          arrayFilters: [
+            {
+              'elem.controller': {
+                $in: [ControllerTypeSummary, v1ControllerTypeSummary]
               }
-            ]
-          }
-        )
+            }
+          ]
+        })
         updated++
         console.log(
           `Migrated ${draftOrLive.toUpperCase()} form ${form.draft?.name ?? form.live?.name} to use SummaryWithConfirmationEmail controller`
         )
       }
     } catch (error) {
-      console.error(
-        `Migration failed for ${draftOrLive}:`,
-        error instanceof Error ? error.message : String(error)
-      )
+      console.error(`Migration failed for ${draftOrLive}:`, error instanceof Error ? error.message : String(error))
       errors = formIdsToMigrate.length - updated
     } finally {
       await session.endSession()
@@ -143,11 +123,7 @@ async function migrateDraftOrLive(client, definitionCollection, draftOrLive) {
   }
 
   do {
-    const res = await updateDefinitions(
-      client,
-      definitionCollection,
-      draftOrLive
-    )
+    const res = await updateDefinitions(client, definitionCollection, draftOrLive)
 
     stats.updated += res.updated
     stats.skipped += res.skipped
@@ -157,9 +133,7 @@ async function migrateDraftOrLive(client, definitionCollection, draftOrLive) {
     if (res.total === 0) {
       console.log(`\n=== Migration Summary (${draftOrLive.toUpperCase()}) ===`)
       console.log(`Total forms processed: ${stats.total}`)
-      console.log(
-        `Successfully migrated to new SummaryWithConfirmationEmail controller: ${stats.updated}`
-      )
+      console.log(`Successfully migrated to new SummaryWithConfirmationEmail controller: ${stats.updated}`)
       console.log(`Skipped (already migrated): ${stats.skipped}`)
       console.log(`Errors: ${stats.errors}`)
 
@@ -193,7 +167,5 @@ export async function up(db, client) {
  * @returns {Promise<void>}
  */
 export function down() {
-  return Promise.reject(
-    new Error('Migration rollback is not supported for data safety reasons')
-  )
+  return Promise.reject(new Error('Migration rollback is not supported for data safety reasons'))
 }

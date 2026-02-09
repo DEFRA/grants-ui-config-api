@@ -1,12 +1,5 @@
-import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
-import {
-  buildDefinition,
-  buildQuestionPage,
-  buildSummaryPage
-} from '@defra/forms-model/stubs'
+import { AuditEventMessageType, FormDefinitionRequestType } from '@defra/forms-model'
+import { buildDefinition, buildQuestionPage, buildSummaryPage } from '@defra/forms-model/stubs'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
@@ -52,15 +45,9 @@ describe('Page service', () => {
   beforeEach(() => {
     definition = emptyFormWithSummary()
     jest.mocked(formMetadata.get).mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(formMetadata.updateAudit)
-      .mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(versioningService.createFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
-    jest
-      .mocked(versioningService.getLatestFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
+    jest.mocked(versioningService.createFormVersion).mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(versioningService.getLatestFormVersion).mockResolvedValue(mockFormVersionDocument)
   })
 
   describe('getFormDefinitionPage', () => {
@@ -74,9 +61,7 @@ describe('Page service', () => {
         pages: [questionPage, summaryPage]
       })
 
-      const spy = jest
-        .spyOn(definitionService, 'getFormDefinition')
-        .mockResolvedValueOnce(definition2)
+      const spy = jest.spyOn(definitionService, 'getFormDefinition').mockResolvedValueOnce(definition2)
 
       const foundPage = await getFormDefinitionPage('123', questionPageId)
 
@@ -90,12 +75,8 @@ describe('Page service', () => {
 
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition2)
 
-      await expect(
-        getFormDefinitionPage('123', 'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d')
-      ).rejects.toThrow(
-        Boom.notFound(
-          "Page not found with id 'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d'"
-        )
+      await expect(getFormDefinitionPage('123', 'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d')).rejects.toThrow(
+        Boom.notFound("Page not found with id 'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d'")
       )
     })
   })
@@ -110,21 +91,15 @@ describe('Page service', () => {
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition)
 
       const dbMetadataSpy = jest.spyOn(formMetadata, 'updateAudit')
-      const dbDefinitionSpy = jest
-        .spyOn(formDefinition, 'addPage')
-        .mockResolvedValue(
-          buildDefinition({
-            ...definition,
-            pages: [...definition.pages, formDefinitionPageCustomisedTitle]
-          })
-        )
+      const dbDefinitionSpy = jest.spyOn(formDefinition, 'addPage').mockResolvedValue(
+        buildDefinition({
+          ...definition,
+          pages: [...definition.pages, formDefinitionPageCustomisedTitle]
+        })
+      )
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const page = await createPageOnDraftDefinition(
-        id,
-        formDefinitionPageCustomisedTitle,
-        author
-      )
+      const page = await createPageOnDraftDefinition(id, formDefinitionPageCustomisedTitle, author)
       const dbOperationArgs = dbMetadataSpy.mock.calls[0]
       const [formId1, page1] = dbDefinitionSpy.mock.calls[0]
       const [auditMessage] = publishEventSpy.mock.calls[0]
@@ -158,18 +133,12 @@ describe('Page service', () => {
         pages: []
       })
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(definitionWithoutSummary)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(definitionWithoutSummary)
 
       const dbMetadataSpy = jest.spyOn(formMetadata, 'updateAudit')
       const dbDefinitionSpy = jest.spyOn(formDefinition, 'addPage')
 
-      await createPageOnDraftDefinition(
-        id,
-        formDefinitionPageCustomisedTitle,
-        author
-      )
+      await createPageOnDraftDefinition(id, formDefinitionPageCustomisedTitle, author)
       const dbOperationArgs = dbMetadataSpy.mock.calls[0]
 
       expect(dbDefinitionSpy).toHaveBeenCalledWith(
@@ -199,32 +168,28 @@ describe('Page service', () => {
 
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition1)
 
-      await expect(
-        createPageOnDraftDefinition('123', pageOneDuplicate, author)
-      ).rejects.toThrow(Boom.conflict('Duplicate page path on Form ID 123'))
+      await expect(createPageOnDraftDefinition('123', pageOneDuplicate, author)).rejects.toThrow(
+        Boom.conflict('Duplicate page path on Form ID 123')
+      )
     })
 
     it('should fail if no draft definition exists', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockRejectedValueOnce(Boom.notFound('Error'))
+      jest.mocked(formDefinition.get).mockRejectedValueOnce(Boom.notFound('Error'))
 
       const dbMetadataSpy = jest.spyOn(formMetadata, 'update')
 
-      await expect(
-        createPageOnDraftDefinition('123', buildQuestionPage({}), author)
-      ).rejects.toThrow(Boom.notFound('Error'))
+      await expect(createPageOnDraftDefinition('123', buildQuestionPage({}), author)).rejects.toThrow(
+        Boom.notFound('Error')
+      )
       expect(dbMetadataSpy).not.toHaveBeenCalled()
     })
 
     it('should surface errors correctly', async () => {
-      jest
-        .mocked(formDefinition.addPage)
-        .mockRejectedValueOnce(Boom.badRequest('Error'))
+      jest.mocked(formDefinition.addPage).mockRejectedValueOnce(Boom.badRequest('Error'))
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition)
-      await expect(
-        createPageOnDraftDefinition('123', buildQuestionPage({}), author)
-      ).rejects.toThrow(Boom.badRequest('Error'))
+      await expect(createPageOnDraftDefinition('123', buildQuestionPage({}), author)).rejects.toThrow(
+        Boom.badRequest('Error')
+      )
     })
   })
 
@@ -248,25 +213,16 @@ describe('Page service', () => {
         ...pageFields
       })
 
-      jest
-        .mocked(formDefinition.updatePageFields)
-        .mockResolvedValueOnce(buildDefinition())
+      jest.mocked(formDefinition.updatePageFields).mockResolvedValueOnce(buildDefinition())
 
-      const spy = jest
-        .spyOn(definitionService, 'getFormDefinition')
-        .mockResolvedValue(
-          buildDefinition({
-            pages: [expectedPage, summaryPage]
-          })
-        )
+      const spy = jest.spyOn(definitionService, 'getFormDefinition').mockResolvedValue(
+        buildDefinition({
+          pages: [expectedPage, summaryPage]
+        })
+      )
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const page = await patchFieldsOnDraftDefinitionPage(
-        '123',
-        pageId,
-        pageFields,
-        author
-      )
+      const page = await patchFieldsOnDraftDefinitionPage('123', pageId, pageFields, author)
 
       expect(page).toEqual(expectedPage)
       const [auditMessage] = publishEventSpy.mock.calls[0]
@@ -294,12 +250,8 @@ describe('Page service', () => {
         })
       )
 
-      await expect(
-        patchFieldsOnDraftDefinitionPage('123', pageId, pageFields, author)
-      ).rejects.toThrow(
-        Boom.notFound(
-          "Page not found with id 'ffefd409-f3f4-49fe-882e-6e89f44631b1'"
-        )
+      await expect(patchFieldsOnDraftDefinitionPage('123', pageId, pageFields, author)).rejects.toThrow(
+        Boom.notFound("Page not found with id 'ffefd409-f3f4-49fe-882e-6e89f44631b1'")
       )
     })
 
@@ -325,14 +277,9 @@ describe('Page service', () => {
         path: '/page-one'
       }
 
-      await expect(
-        patchFieldsOnDraftDefinitionPage(
-          '123',
-          'p2',
-          pageFieldsForConflict,
-          author
-        )
-      ).rejects.toThrow(Boom.notFound('Duplicate page path on Form ID 123'))
+      await expect(patchFieldsOnDraftDefinitionPage('123', 'p2', pageFieldsForConflict, author)).rejects.toThrow(
+        Boom.notFound('Duplicate page path on Form ID 123')
+      )
     })
 
     it('should not fail if not updating path', async () => {
@@ -356,12 +303,7 @@ describe('Page service', () => {
         title: 'Updated Title'
       }
 
-      const res = await patchFieldsOnDraftDefinitionPage(
-        '123',
-        'p2',
-        pageFieldsForConflict,
-        author
-      )
+      const res = await patchFieldsOnDraftDefinitionPage('123', 'p2', pageFieldsForConflict, author)
       expect(res).toBeDefined()
     })
 
@@ -388,16 +330,9 @@ describe('Page service', () => {
         .mockResolvedValueOnce(definitionWithCondition)
         .mockResolvedValueOnce(definitionWithCondition)
 
-      jest
-        .mocked(formDefinition.updatePageFields)
-        .mockResolvedValueOnce(buildDefinition())
+      jest.mocked(formDefinition.updatePageFields).mockResolvedValueOnce(buildDefinition())
 
-      const result = await patchFieldsOnDraftDefinitionPage(
-        '123',
-        pageId,
-        pageFieldsWithValidCondition,
-        author
-      )
+      const result = await patchFieldsOnDraftDefinitionPage('123', pageId, pageFieldsWithValidCondition, author)
 
       expect(result).toBeDefined()
       expect(formDefinition.updatePageFields).toHaveBeenCalledWith(
@@ -438,13 +373,11 @@ describe('Page service', () => {
     })
 
     it('should surface any errors', async () => {
-      jest
-        .mocked(formDefinition.deletePage)
-        .mockRejectedValueOnce(Boom.notFound('Form ID 123 not found'))
+      jest.mocked(formDefinition.deletePage).mockRejectedValueOnce(Boom.notFound('Form ID 123 not found'))
 
-      await expect(
-        deletePageOnDraftDefinition('123', pageId, author)
-      ).rejects.toThrow(Boom.notFound('Form ID 123 not found'))
+      await expect(deletePageOnDraftDefinition('123', pageId, author)).rejects.toThrow(
+        Boom.notFound('Form ID 123 not found')
+      )
     })
   })
 })

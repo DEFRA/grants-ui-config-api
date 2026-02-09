@@ -5,8 +5,7 @@ const s3Client = getS3Client()
  * @param {string} key
  * @param {string} body
  */
-const createS3Json = (key, body) =>
-  createS3File(key, body, 'application/json', s3Client)
+const createS3Json = (key, body) => createS3File(key, body, 'application/json', s3Client)
 
 const S3_KEY_BASE = 'audit-definitions/'
 

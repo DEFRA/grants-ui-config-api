@@ -41,10 +41,7 @@ export async function createFormVersion(formId, session) {
     logger.info(`Created version ${result.versionNumber} for form ID ${formId}`)
     return result
   } catch (err) {
-    logger.error(
-      err,
-      `[createFormVersion] Failed to create version for form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[createFormVersion] Failed to create version for form ID ${formId} - ${getErrorMessage(err)}`)
     throw err
   }
 }
@@ -56,14 +53,9 @@ export async function createFormVersion(formId, session) {
  * @param {ClientSession} session
  */
 async function createVersionInTransaction(formId, session) {
-  const nextVersionNumber =
-    await formMetadataRepository.getAndIncrementVersionNumber(formId, session)
+  const nextVersionNumber = await formMetadataRepository.getAndIncrementVersionNumber(formId, session)
 
-  const formDefinition = await formDefinitionRepository.get(
-    formId,
-    FormStatus.Draft,
-    session
-  )
+  const formDefinition = await formDefinitionRepository.get(formId, FormStatus.Draft, session)
 
   const createdAt = new Date()
 
@@ -72,11 +64,7 @@ async function createVersionInTransaction(formId, session) {
     createdAt
   })
 
-  await formMetadataRepository.addVersionMetadata(
-    formId,
-    versionMetadata,
-    session
-  )
+  await formMetadataRepository.addVersionMetadata(formId, versionMetadata, session)
 
   const versionDocument = /** @type {FormVersionDocument} */ ({
     formId,
@@ -125,18 +113,10 @@ export async function getFormVersions(formId) {
   logger.info(`Getting all versions for form ID ${formId}`)
 
   try {
-    const { versions } = await formVersionsRepository.getVersions(
-      formId,
-      undefined,
-      MAX_VERSIONS,
-      0
-    )
+    const { versions } = await formVersionsRepository.getVersions(formId, undefined, MAX_VERSIONS, 0)
     return versions
   } catch (err) {
-    logger.error(
-      err,
-      `[getFormVersions] Failed to get versions for form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[getFormVersions] Failed to get versions for form ID ${formId} - ${getErrorMessage(err)}`)
     throw err
   }
 }
@@ -172,10 +152,7 @@ export async function removeFormVersions(formId, session) {
     await formVersionsRepository.removeVersionsForForm(formId, session)
     logger.info(`Removed all versions for form ID ${formId}`)
   } catch (err) {
-    logger.error(
-      err,
-      `[removeFormVersions] Failed to remove versions for form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[removeFormVersions] Failed to remove versions for form ID ${formId} - ${getErrorMessage(err)}`)
     throw err
   }
 }

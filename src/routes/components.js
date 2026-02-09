@@ -16,8 +16,7 @@ import {
   sortIdsSchema
 } from '~/src/models/forms.js'
 
-export const ROUTE_COMPONENTS =
-  '/forms/{id}/definition/draft/pages/{pageId}/components/{componentId}'
+export const ROUTE_COMPONENTS = '/forms/{id}/definition/draft/pages/{pageId}/components/{componentId}'
 
 /**
  * @type {ServerRoute[]}
@@ -35,13 +34,7 @@ export default [
       const { prepend } = query
 
       const author = getAuthor(auth.credentials.user)
-      const component = await createComponentOnDraftDefinition(
-        id,
-        pageId,
-        payload,
-        author,
-        prepend
-      )
+      const component = await createComponentOnDraftDefinition(id, pageId, payload, author, prepend)
 
       return component
     },
@@ -67,12 +60,7 @@ export default [
       const { auth, params, payload } = request
       const author = getAuthor(auth.credentials.user)
 
-      return reorderDraftFormDefinitionComponents(
-        params.id,
-        params.pageId,
-        payload,
-        author
-      )
+      return reorderDraftFormDefinitionComponents(params.id, params.pageId, payload, author)
     },
     options: {
       auth: {
@@ -96,13 +84,7 @@ export default [
       const { id, pageId, componentId } = params
 
       const author = getAuthor(auth.credentials.user)
-      return updateComponentOnDraftDefinition(
-        id,
-        pageId,
-        componentId,
-        payload,
-        author
-      )
+      return updateComponentOnDraftDefinition(id, pageId, componentId, payload, author)
     },
     options: {
       auth: {

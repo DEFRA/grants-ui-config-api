@@ -1,17 +1,7 @@
-import {
-  ControllerType,
-  Engine,
-  FormStatus,
-  SchemaVersion,
-  Scopes,
-  organisations
-} from '@defra/forms-model'
+import { ControllerType, Engine, FormStatus, SchemaVersion, Scopes, organisations } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 
-import {
-  buildDefinition,
-  buildSummaryPage
-} from '~/src/api/forms/__stubs__/definition.js'
+import { buildDefinition, buildSummaryPage } from '~/src/api/forms/__stubs__/definition.js'
 import { FormAlreadyExistsError } from '~/src/api/forms/errors.js'
 import {
   createDraftFromLive,
@@ -21,18 +11,9 @@ import {
   listForms,
   updateDraftFormDefinition
 } from '~/src/api/forms/service/definition.js'
-import {
-  createForm,
-  getForm,
-  getFormBySlug,
-  removeForm,
-  updateFormMetadata
-} from '~/src/api/forms/service/index.js'
+import { createForm, getForm, getFormBySlug, removeForm, updateFormMetadata } from '~/src/api/forms/service/index.js'
 import { migrateDefinitionToV2 } from '~/src/api/forms/service/migration.js'
-import {
-  getFormVersion,
-  getFormVersions
-} from '~/src/api/forms/service/versioning.js'
+import { getFormVersion, getFormVersions } from '~/src/api/forms/service/versioning.js'
 import { createServer } from '~/src/api/server.js'
 import { auth } from '~/test/fixtures/auth.js'
 
@@ -66,8 +47,8 @@ describe('Forms route', () => {
   const jsonContentType = 'application/json'
   const id = '661e4ca5039739ef2902b214'
   const now = new Date()
-  const authorId = '86758ba9-92e7-4287-9751-7705e449688e'
-  const authorDisplayName = 'Enrique Chase'
+  const authorId = 'test-service-001'
+  const authorDisplayName = 'Test Service'
 
   /**
    * @satisfies {FormMetadataAuthor}
@@ -123,7 +104,7 @@ describe('Forms route', () => {
    * @satisfies {FilterOptions}
    */
   const mockFilters = {
-    authors: ['Joe Bloggs', 'Jane Doe', 'Enrique Chase'],
+    authors: ['Joe Bloggs', 'Jane Doe', 'Test Service'],
     organisations: ['Defra', 'Natural England'],
     status: [FormStatus.Live, FormStatus.Draft]
   }
@@ -478,8 +459,8 @@ describe('Forms route', () => {
         status: 'deleted'
       })
       expect(removeForm).toHaveBeenCalledWith(id, {
-        displayName: 'Enrique Chase',
-        id: '86758ba9-92e7-4287-9751-7705e449688e'
+        displayName: 'Test Service',
+        id: 'test-service-001'
       })
     })
 
@@ -498,8 +479,8 @@ describe('Forms route', () => {
         status: 'deleted'
       })
       expect(deleteDraftFormDefinition).toHaveBeenCalledWith(id, {
-        displayName: 'Enrique Chase',
-        id: '86758ba9-92e7-4287-9751-7705e449688e'
+        displayName: 'Test Service',
+        id: 'test-service-001'
       })
     })
 
@@ -650,7 +631,7 @@ describe('Forms route', () => {
           startPage: '/summary'
         }),
         expect.objectContaining({
-          displayName: 'Enrique Chase'
+          displayName: 'Test Service'
         })
       )
     })
@@ -703,7 +684,7 @@ describe('Forms route', () => {
           startPage: '/summary'
         }),
         expect.objectContaining({
-          displayName: 'Enrique Chase'
+          displayName: 'Test Service'
         })
       )
     })
@@ -770,11 +751,7 @@ describe('Forms route', () => {
         lists: []
       })
 
-      jest
-        .mocked(updateDraftFormDefinition)
-        .mockRejectedValue(
-          Boom.badRequest("Form with ID '123' has no draft state")
-        )
+      jest.mocked(updateDraftFormDefinition).mockRejectedValue(Boom.badRequest("Form with ID '123' has no draft state"))
 
       const response = await server.inject({
         method: 'POST',
@@ -852,13 +829,7 @@ describe('Forms route', () => {
           teamEmail: ''
         },
         error: {
-          keys: [
-            'title',
-            'organisation',
-            'organisation',
-            'teamName',
-            'teamEmail'
-          ],
+          keys: ['title', 'organisation', 'organisation', 'teamName', 'teamEmail'],
           messages: [
             '"title" is not allowed to be empty.',
             `"organisation" must be one of [${organisations.join(', ')}].`,
@@ -877,9 +848,7 @@ describe('Forms route', () => {
         },
         error: {
           keys: ['title'],
-          messages: [
-            '"title" length must be less than or equal to 250 characters long'
-          ]
+          messages: ['"title" length must be less than or equal to 250 characters long']
         }
       },
       {
@@ -891,9 +860,7 @@ describe('Forms route', () => {
         },
         error: {
           keys: ['organisation'],
-          messages: [
-            `"organisation" must be one of [${organisations.join(', ')}]`
-          ]
+          messages: [`"organisation" must be one of [${organisations.join(', ')}]`]
         }
       },
       {
@@ -905,9 +872,7 @@ describe('Forms route', () => {
         },
         error: {
           keys: ['teamName'],
-          messages: [
-            '"teamName" length must be less than or equal to 100 characters long'
-          ]
+          messages: ['"teamName" length must be less than or equal to 100 characters long']
         }
       },
       {
@@ -994,9 +959,7 @@ describe('Forms route', () => {
         },
         error: {
           keys: ['privacyNoticeUrl'],
-          messages: [
-            '"privacyNoticeUrl" must be a valid uri with a scheme matching the http|https pattern'
-          ]
+          messages: ['"privacyNoticeUrl" must be a valid uri with a scheme matching the http|https pattern']
         }
       },
       {
@@ -1005,9 +968,7 @@ describe('Forms route', () => {
         },
         error: {
           keys: ['privacyNoticeUrl'],
-          messages: [
-            '"privacyNoticeUrl" must be a valid uri with a scheme matching the http|https pattern'
-          ]
+          messages: ['"privacyNoticeUrl" must be a valid uri with a scheme matching the http|https pattern']
         }
       },
       ...invalidPayloadErrorsTestData
@@ -1134,9 +1095,7 @@ describe('Forms route', () => {
     })
 
     test('Testing POST /forms route with a slug that already exists returns 400 FormAlreadyExistsError', async () => {
-      jest
-        .mocked(createForm)
-        .mockRejectedValue(new FormAlreadyExistsError('my-title'))
+      jest.mocked(createForm).mockRejectedValue(new FormAlreadyExistsError('my-title'))
 
       const response = await server.inject({
         method: 'POST',
@@ -1173,28 +1132,23 @@ describe('Forms route', () => {
           messages: ['"id" must only contain hexadecimal characters']
         }
       }
-    ])(
-      'Testing GET /forms/{id} route with an invalid id returns validation errors',
-      async ({ url, error }) => {
-        const response = await server.inject({ method: 'GET', url })
+    ])('Testing GET /forms/{id} route with an invalid id returns validation errors', async ({ url, error }) => {
+      const response = await server.inject({ method: 'GET', url })
 
-        expect(response.statusCode).toEqual(badRequestStatusCode)
-        expect(response.headers['content-type']).toContain(jsonContentType)
-        expect(response.result).toMatchObject({
-          error: 'Bad Request',
-          message: error.messages.join(' '),
-          validation: {
-            keys: error.keys,
-            source: 'params'
-          }
-        })
-      }
-    )
+      expect(response.statusCode).toEqual(badRequestStatusCode)
+      expect(response.headers['content-type']).toContain(jsonContentType)
+      expect(response.result).toMatchObject({
+        error: 'Bad Request',
+        message: error.messages.join(' '),
+        validation: {
+          keys: error.keys,
+          source: 'params'
+        }
+      })
+    })
 
     test('Testing GET /forms/{id} route with an ID that is not found returns 404 Not found', async () => {
-      jest
-        .mocked(getForm)
-        .mockRejectedValue(Boom.notFound(`Form with ID '${id}' not found`))
+      jest.mocked(getForm).mockRejectedValue(Boom.notFound(`Form with ID '${id}' not found`))
 
       const response = await server.inject({
         method: 'GET',
@@ -1210,9 +1164,7 @@ describe('Forms route', () => {
     })
 
     test('Testing GET /forms/{slug} route with a slug that is not found returns 404 Not found', async () => {
-      jest
-        .mocked(getFormBySlug)
-        .mockRejectedValue(Boom.notFound(`Form with slug '${slug}' not found`))
+      jest.mocked(getFormBySlug).mockRejectedValue(Boom.notFound(`Form with slug '${slug}' not found`))
 
       const response = await server.inject({
         method: 'GET',
@@ -1277,9 +1229,7 @@ describe('Forms route', () => {
     })
 
     test('Testing GET /forms/{id}/definition/draft route throws unknown error', async () => {
-      jest
-        .mocked(getFormDefinition)
-        .mockRejectedValue(new Error('Unknown error'))
+      jest.mocked(getFormDefinition).mockRejectedValue(new Error('Unknown error'))
 
       const response = await server.inject({
         method: 'GET',
@@ -1363,8 +1313,7 @@ describe('Forms route', () => {
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toMatchObject({
         error: 'Bad Request',
-        message:
-          '"title" length must be less than or equal to 255 characters long',
+        message: '"title" length must be less than or equal to 255 characters long',
         validation: {
           keys: ['title'],
           source: 'query'
@@ -1383,8 +1332,7 @@ describe('Forms route', () => {
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toMatchObject({
         error: 'Bad Request',
-        message:
-          '"author" length must be less than or equal to 100 characters long',
+        message: '"author" length must be less than or equal to 100 characters long',
         validation: {
           keys: ['author'],
           source: 'query'
@@ -1470,9 +1418,7 @@ describe('Forms route', () => {
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toMatchObject({
         error: 'Bad Request',
-        message: expect.stringContaining(
-          'does not match any of the allowed types'
-        ),
+        message: expect.stringContaining('does not match any of the allowed types'),
         validation: {
           source: 'payload'
         }
@@ -1583,9 +1529,7 @@ describe('Forms route', () => {
     })
 
     test('GET /forms/{id}/versions handles error', async () => {
-      jest
-        .mocked(getFormVersions)
-        .mockRejectedValue(Boom.notFound('Form not found'))
+      jest.mocked(getFormVersions).mockRejectedValue(Boom.notFound('Form not found'))
 
       const response = await server.inject({
         method: 'GET',
@@ -1597,9 +1541,7 @@ describe('Forms route', () => {
     })
 
     test('GET /forms/{id}/versions/{versionNumber} handles version not found', async () => {
-      jest
-        .mocked(getFormVersion)
-        .mockRejectedValue(Boom.notFound('Version not found'))
+      jest.mocked(getFormVersion).mockRejectedValue(Boom.notFound('Version not found'))
 
       const response = await server.inject({
         method: 'GET',
@@ -1649,9 +1591,7 @@ describe('Forms route', () => {
     })
 
     test('POST /forms/{id}/create-live handles error', async () => {
-      jest
-        .mocked(createLiveFromDraft)
-        .mockRejectedValue(Boom.badRequest('No draft to publish'))
+      jest.mocked(createLiveFromDraft).mockRejectedValue(Boom.badRequest('No draft to publish'))
 
       const response = await server.inject({
         method: 'POST',
@@ -1667,9 +1607,7 @@ describe('Forms route', () => {
     })
 
     test('POST /forms/{id}/create-draft handles error', async () => {
-      jest
-        .mocked(createDraftFromLive)
-        .mockRejectedValue(Boom.badRequest('No live version to copy'))
+      jest.mocked(createDraftFromLive).mockRejectedValue(Boom.badRequest('No live version to copy'))
 
       const response = await server.inject({
         method: 'POST',
@@ -1702,9 +1640,7 @@ describe('Forms route', () => {
     })
 
     test('POST /forms/{id}/definition/draft/migrate/{version} handles migration errors', async () => {
-      jest
-        .mocked(migrateDefinitionToV2)
-        .mockRejectedValue(Boom.badRequest('Already migrated'))
+      jest.mocked(migrateDefinitionToV2).mockRejectedValue(Boom.badRequest('Already migrated'))
 
       const response = await server.inject({
         method: 'POST',
@@ -1767,9 +1703,7 @@ describe('Forms route', () => {
     })
 
     test('GET /forms/slug/{slug} handles not found', async () => {
-      jest
-        .mocked(getFormBySlug)
-        .mockRejectedValue(Boom.notFound('Form not found'))
+      jest.mocked(getFormBySlug).mockRejectedValue(Boom.notFound('Form not found'))
 
       const response = await server.inject({
         method: 'GET',

@@ -17,10 +17,7 @@ import {
   isSummaryPage
 } from '@defra/forms-model'
 
-import {
-  convertConditionDataToV2,
-  isConditionData
-} from '~/src/api/forms/service/condition-migration-helpers.js'
+import { convertConditionDataToV2, isConditionData } from '~/src/api/forms/service/condition-migration-helpers.js'
 import { validate } from '~/src/api/forms/service/helpers/definition.js'
 /**
  * @param {FormDefinition} definition
@@ -41,9 +38,7 @@ export function summaryHelper(definition) {
     summaryExists,
     shouldRepositionSummary,
     get summary() {
-      const summaryPage = /** @type {PageSummary | undefined} */ (
-        definition.pages[summaryIndex]
-      )
+      const summaryPage = /** @type {PageSummary | undefined} */ (definition.pages[summaryIndex])
       return summaryPage
     },
     indexOf: summaryIndex
@@ -68,10 +63,7 @@ export function repositionSummary(definition) {
   const { shouldRepositionSummary } = summaryHelperOutput
 
   if (shouldRepositionSummary) {
-    const { summary, indexOf } =
-      /** @type {{ summary: PageSummary, indexOf: number}} */ (
-        summaryHelperOutput
-      )
+    const { summary, indexOf } = /** @type {{ summary: PageSummary, indexOf: number}} */ (summaryHelperOutput)
 
     const pagesWithoutSummary = removeSummary(definition.pages, indexOf)
 
@@ -92,9 +84,7 @@ export function upgradeSummary(definition) {
   const summaryHelperOutput = summaryHelper(definition)
 
   const { summary, indexOf } =
-    /** @type {{ summary: PageSummary | PageSummaryWithConfirmationEmail, indexOf: number}} */ (
-      summaryHelperOutput
-    )
+    /** @type {{ summary: PageSummary | PageSummaryWithConfirmationEmail, indexOf: number}} */ (summaryHelperOutput)
 
   if (summary.controller === ControllerType.Summary) {
     const pagesWithoutSummary = removeSummary(definition.pages, indexOf)
@@ -195,16 +185,12 @@ export function migrateComponentFields(definition) {
 export function convertDeclaration(originalDefinition) {
   const definition = structuredClone(originalDefinition)
 
-  const summaryPage = /** @type { PageSummary | undefined } */ (
-    definition.pages.find((p) => isSummaryPage(p))
-  )
+  const summaryPage = /** @type { PageSummary | undefined } */ (definition.pages.find((p) => isSummaryPage(p)))
 
   let declarationComponent
 
   if (definition.declaration) {
-    declarationComponent = /** @type {MarkdownComponent} */ (
-      getComponentDefaults({ type: ComponentType.Markdown })
-    )
+    declarationComponent = /** @type {MarkdownComponent} */ (getComponentDefaults({ type: ComponentType.Markdown }))
     declarationComponent.content = definition.declaration
   }
 
@@ -263,9 +249,7 @@ export function populateComponentIds(pageWithoutComponentIds) {
  * @returns {FormDefinition}
  */
 export function addComponentIdsToDefinition(definition) {
-  const pagesWithIds = definition.pages.map((page) =>
-    populateComponentIds(page)
-  )
+  const pagesWithIds = definition.pages.map((page) => populateComponentIds(page))
 
   return {
     ...definition,
@@ -307,9 +291,7 @@ export function convertListNamesToIds(definition) {
         const newListReference = nameToId.get(component.list)
 
         if (!newListReference) {
-          throw new Error(
-            `List name "${component.list}" not found in definition lists - cannot migrate`
-          )
+          throw new Error(`List name "${component.list}" not found in definition lists - cannot migrate`)
         }
 
         return {
@@ -355,9 +337,7 @@ export function convertSectionNamesToIds(definition) {
   })
 
   // Build a map from section name to id
-  const nameToId = new Map(
-    sections.map((section) => [section.name, section.id])
-  )
+  const nameToId = new Map(sections.map((section) => [section.name, section.id]))
 
   // Update pages to use section id instead of name
   const pages = definition.pages.map((page) => {
@@ -398,10 +378,7 @@ function getComponentNameToIdMap(definition) {
 
   for (const page of componentPages) {
     for (const component of page.components) {
-      if (
-        typeof component.name === 'string' &&
-        typeof component.id === 'string'
-      ) {
+      if (typeof component.name === 'string' && typeof component.id === 'string') {
         fieldNameToComponentId.set(component.name, component.id)
       }
     }
@@ -417,9 +394,7 @@ function getConditionNamesInUse(definition) {
   return new Set(
     definition.pages.flatMap((page) => {
       if (hasNext(page)) {
-        return page.next
-          .map((next) => next.condition)
-          .filter((condition) => condition !== undefined)
+        return page.next.map((next) => next.condition).filter((condition) => condition !== undefined)
       }
       return []
     })
@@ -433,12 +408,7 @@ function getConditionNamesInUse(definition) {
  * @param {Set<string>} conditionsInUse
  * @param {FormDefinition} definition
  */
-function convertConditionWrapperToV2(
-  conditionWrapper,
-  fieldNameToComponentId,
-  conditionsInUse,
-  definition
-) {
+function convertConditionWrapperToV2(conditionWrapper, fieldNameToComponentId, conditionsInUse, definition) {
   const coordinators = new Set()
 
   const items = conditionWrapper.value.conditions
@@ -451,12 +421,7 @@ function convertConditionWrapperToV2(
         coordinators.add(conditionData.coordinator)
       }
 
-      return convertConditionDataToV2(
-        conditionData,
-        fieldNameToComponentId,
-        conditionsInUse,
-        definition
-      )
+      return convertConditionDataToV2(conditionData, fieldNameToComponentId, conditionsInUse, definition)
     })
     .filter((item) => item !== null)
 
@@ -470,9 +435,7 @@ function convertConditionWrapperToV2(
   }
 
   if (items.length > 1 && coordinators.size > 1) {
-    throw new Error(
-      'Different unique coordinators found in condition items. Manual intervention is required.'
-    )
+    throw new Error('Different unique coordinators found in condition items. Manual intervention is required.')
   } else if (items.length > 1 && coordinators.size === 1) {
     condition.coordinator = coordinators.values().next().value
   } else {
@@ -538,14 +501,10 @@ export function convertConditions(definition) {
 export function convertControllerPathsToNames(definition) {
   const pages = definition.pages.map((page) => {
     if (page.controller?.endsWith('.js')) {
-      const name = ControllerTypes.find(
-        (n) => n.path === page.controller?.toString()
-      )?.name
+      const name = ControllerTypes.find((n) => n.path === page.controller?.toString())?.name
 
       if (!name) {
-        throw new Error(
-          `Unrecognised controller name found for ${page.controller}. Cannot migrate.`
-        )
+        throw new Error(`Unrecognised controller name found for ${page.controller}. Cannot migrate.`)
       }
 
       page.controller = name

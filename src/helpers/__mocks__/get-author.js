@@ -11,5 +11,4 @@ export function getAuthor() {
 /**
  * @import { FormMetadataAuthor } from '@defra/forms-model'
  * @import { UserCredentials } from '@hapi/hapi'
- * @import { OidcStandardClaims } from 'oidc-client-ts'
  */

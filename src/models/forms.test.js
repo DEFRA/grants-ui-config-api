@@ -2,10 +2,7 @@ import { ControllerType, Engine, SchemaVersion } from '@defra/forms-model'
 import { ValidationError } from 'joi'
 
 import { buildDefinition } from '~/src/api/forms/__stubs__/definition.js'
-import {
-  sortIdsSchema,
-  updateFormDefinitionSchema
-} from '~/src/models/forms.js'
+import { sortIdsSchema, updateFormDefinitionSchema } from '~/src/models/forms.js'
 
 describe('forms model', () => {
   describe('sortIdsSchema', () => {
@@ -23,18 +20,10 @@ describe('forms model', () => {
 
     it('should not accept an invalid list', () => {
       expect(sortIdsSchema.validate([]).error).toEqual(
-        new ValidationError(
-          '"value" does not contain 1 required value(s)',
-          [],
-          []
-        )
+        new ValidationError('"value" does not contain 1 required value(s)', [], [])
       )
       expect(sortIdsSchema.validate(['not-a-valid-uuid']).error).toEqual(
-        new ValidationError(
-          '"[0]" must be a valid GUID',
-          [],
-          ['not-a-valid-uuid']
-        )
+        new ValidationError('"[0]" must be a valid GUID', [], ['not-a-valid-uuid'])
       )
     })
   })
@@ -162,13 +151,9 @@ describe('forms model', () => {
           schema: 999 // Invalid schema version
         }
 
-        const result = updateFormDefinitionSchema.validate(
-          invalidFormDefinition
-        )
+        const result = updateFormDefinitionSchema.validate(invalidFormDefinition)
         expect(result.error).toBeDefined()
-        expect(result.error?.message).toContain(
-          'does not match any of the allowed types'
-        )
+        expect(result.error?.message).toContain('does not match any of the allowed types')
       })
 
       it('should reject form definition with invalid properties', () => {
@@ -181,9 +166,7 @@ describe('forms model', () => {
           invalidProperty: 'should not be allowed'
         }
 
-        const result = updateFormDefinitionSchema.validate(
-          invalidFormDefinition
-        )
+        const result = updateFormDefinitionSchema.validate(invalidFormDefinition)
         expect(result.error).toBeDefined()
       })
 
@@ -192,9 +175,7 @@ describe('forms model', () => {
           // Missing required fields
         }
 
-        const result = updateFormDefinitionSchema.validate(
-          invalidFormDefinition
-        )
+        const result = updateFormDefinitionSchema.validate(invalidFormDefinition)
         expect(result.error).toBeDefined()
       })
     })

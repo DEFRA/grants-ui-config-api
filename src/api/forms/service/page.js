@@ -1,16 +1,8 @@
-import {
-  ApiErrorCode,
-  FormDefinitionRequestType,
-  FormStatus,
-  getErrorMessage
-} from '@defra/forms-model'
+import { ApiErrorCode, FormDefinitionRequestType, FormStatus, getErrorMessage } from '@defra/forms-model'
 
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
-import {
-  getPage,
-  uniquePathGate
-} from '~/src/api/forms/repositories/helpers.js'
+import { getPage, uniquePathGate } from '~/src/api/forms/repositories/helpers.js'
 import { getFormDefinition } from '~/src/api/forms/service/definition.js'
 import { SUMMARY_PAGE_ID, logger } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
@@ -35,11 +27,7 @@ export const addIdToSummary = (summaryPage) => ({
 export async function getFormDefinitionPage(formId, pageId, session) {
   logger.info(`Getting Page ID ${pageId} for Form ID ${formId}`)
 
-  const definition = /** @type {FormDefinition} */ await getFormDefinition(
-    formId,
-    FormStatus.Draft,
-    session
-  )
+  const definition = /** @type {FormDefinition} */ await getFormDefinition(formId, FormStatus.Draft, session)
   const page = getPage(definition, pageId)
 
   logger.info(`Got Page ID ${pageId} for Form ID ${formId}`)
@@ -71,25 +59,14 @@ export async function createPageOnDraftDefinition(formId, page, author) {
   try {
     await session.withTransaction(async () => {
       await formDefinition.addPage(formId, page, session)
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        page,
-        FormDefinitionRequestType.CREATE_PAGE
-      )
+      await publishFormUpdatedEvent(metadataDocument, page, FormDefinitionRequestType.CREATE_PAGE)
     })
   } catch (err) {
-    logger.error(
-      err,
-      `[addPage] Failed to add page on form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[addPage] Failed to add page on form ID ${formId} - ${getErrorMessage(err)}`)
 
     throw err
   } finally {
@@ -108,12 +85,7 @@ export async function createPageOnDraftDefinition(formId, page, author) {
  * @param {Partial<Page>} pageFieldsToUpdate
  * @param {FormMetadataAuthor} author
  */
-export async function patchFieldsOnDraftDefinitionPage(
-  formId,
-  pageId,
-  pageFieldsToUpdate,
-  author
-) {
+export async function patchFieldsOnDraftDefinitionPage(formId, pageId, pageFieldsToUpdate, author) {
   const session = client.startSession()
   let page
 
@@ -122,10 +94,7 @@ export async function patchFieldsOnDraftDefinitionPage(
 
     if (pageFieldsToUpdate.path) {
       /** @type {FormDefinition} */
-      const formDraftDefinition = await getFormDefinition(
-        formId,
-        FormStatus.Draft
-      )
+      const formDraftDefinition = await getFormDefinition(formId, FormStatus.Draft)
 
       uniquePathGate(
         formDraftDefinition,
@@ -137,20 +106,11 @@ export async function patchFieldsOnDraftDefinitionPage(
     }
 
     await session.withTransaction(async () => {
-      await formDefinition.updatePageFields(
-        formId,
-        pageId,
-        pageFieldsToUpdate,
-        session
-      )
+      await formDefinition.updatePageFields(formId, pageId, pageFieldsToUpdate, session)
 
       page = await getFormDefinitionPage(formId, pageId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
@@ -161,10 +121,7 @@ export async function patchFieldsOnDraftDefinitionPage(
       )
     })
   } catch (err) {
-    logger.error(
-      err,
-      `[updatePage] Failed to update page ${pageId} on form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[updatePage] Failed to update page ${pageId} on form ID ${formId} - ${getErrorMessage(err)}`)
 
     throw err
   } finally {
@@ -189,25 +146,14 @@ export async function deletePageOnDraftDefinition(formId, pageId, author) {
     await session.withTransaction(async () => {
       await formDefinition.deletePage(formId, pageId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { pageId },
-        FormDefinitionRequestType.DELETE_PAGE
-      )
+      await publishFormUpdatedEvent(metadataDocument, { pageId }, FormDefinitionRequestType.DELETE_PAGE)
     })
   } catch (err) {
-    logger.error(
-      err,
-      `[deletePage] Failed to delete Page ID ${pageId} on Form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[deletePage] Failed to delete Page ID ${pageId} on Form ID ${formId} - ${getErrorMessage(err)}`)
 
     throw err
   } finally {

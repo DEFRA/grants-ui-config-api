@@ -13,10 +13,9 @@ const mockLogger = {
 }
 
 jest.mock('~/src/mongo.js', () => {
-  const collection =
-    /** @satisfies {Collection<{draft: FormDefinition}>} */ jest
-      .fn()
-      .mockImplementation(() => mockCollection)
+  const collection = /** @satisfies {Collection<{draft: FormDefinition}>} */ jest
+    .fn()
+    .mockImplementation(() => mockCollection)
   return {
     db: {
       collection
@@ -48,9 +47,7 @@ jest.mock('~/src/helpers/logging/logger.js', () => ({
 describe('reinstate', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    jest
-      .mocked(db.collection)
-      .mockReturnValue(/** @type {any} */ (mockCollection))
+    jest.mocked(db.collection).mockReturnValue(/** @type {any} */ (mockCollection))
     jest.doMock('~/src/helpers/logging/logger.js', () => ({
       createLogger: jest.fn().mockReturnValue(mockLogger)
     }))
@@ -69,16 +66,10 @@ describe('reinstate', () => {
     expect(mockLogger.info.mock.calls[0][0]).toBe(
       '[reinstateFeedbackForm] Checking if feedback form exists and has correct contents'
     )
-    expect(mockLogger.info.mock.calls[1][0]).toBe(
-      '[reinstateFeedbackForm] Definition - inserted or updated'
-    )
-    expect(mockLogger.info.mock.calls[2][0]).toBe(
-      '[reinstateFeedbackForm] Metadata - inserted or updated'
-    )
+    expect(mockLogger.info.mock.calls[1][0]).toBe('[reinstateFeedbackForm] Definition - inserted or updated')
+    expect(mockLogger.info.mock.calls[2][0]).toBe('[reinstateFeedbackForm] Metadata - inserted or updated')
 
-    expect(mockLogger.info.mock.calls[3][0]).toBe(
-      '[reinstateFeedbackForm] Completed check for feedback form'
-    )
+    expect(mockLogger.info.mock.calls[3][0]).toBe('[reinstateFeedbackForm] Completed check for feedback form')
 
     // Metadata - both createdAt and updatedAt timestamps should have been updated
     const { $set: root } = mockCollection.updateOne.mock.calls[1][1]
@@ -105,12 +96,8 @@ describe('reinstate', () => {
     expect(mockLogger.info.mock.calls[1][0]).toBe(
       '[reinstateFeedbackForm] Definition - already exists with correct content'
     )
-    expect(mockLogger.info.mock.calls[2][0]).toBe(
-      '[reinstateFeedbackForm] Metadata - inserted or updated'
-    )
-    expect(mockLogger.info.mock.calls[3][0]).toBe(
-      '[reinstateFeedbackForm] Completed check for feedback form'
-    )
+    expect(mockLogger.info.mock.calls[2][0]).toBe('[reinstateFeedbackForm] Metadata - inserted or updated')
+    expect(mockLogger.info.mock.calls[3][0]).toBe('[reinstateFeedbackForm] Completed check for feedback form')
 
     // Metadata - both createdAt and updatedAt timestamps should have original timestamps
     const { $set: root } = mockCollection.updateOne.mock.calls[1][1]
@@ -134,15 +121,11 @@ describe('reinstate', () => {
     expect(mockLogger.info.mock.calls[0][0]).toBe(
       '[reinstateFeedbackForm] Checking if feedback form exists and has correct contents'
     )
-    expect(mockLogger.info.mock.calls[1][0]).toBe(
-      '[reinstateFeedbackForm] Definition - inserted or updated'
-    )
+    expect(mockLogger.info.mock.calls[1][0]).toBe('[reinstateFeedbackForm] Definition - inserted or updated')
     expect(mockLogger.info.mock.calls[2][0]).toBe(
       '[reinstateFeedbackForm] Metadata - already exists with correct content'
     )
-    expect(mockLogger.info.mock.calls[3][0]).toBe(
-      '[reinstateFeedbackForm] Completed check for feedback form'
-    )
+    expect(mockLogger.info.mock.calls[3][0]).toBe('[reinstateFeedbackForm] Completed check for feedback form')
 
     // Metadata - updatedAt timestamp should have new timestamp
     const { $set: root } = mockCollection.updateOne.mock.calls[1][1]

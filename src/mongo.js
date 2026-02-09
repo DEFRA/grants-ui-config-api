@@ -50,10 +50,7 @@ export async function prepareDb(logger) {
 
   // Create indexes for form versions collection
   await versionsCollection.createIndex({ formId: 1 })
-  await versionsCollection.createIndex(
-    { formId: 1, versionNumber: 1 },
-    { unique: true }
-  )
+  await versionsCollection.createIndex({ formId: 1, versionNumber: 1 }, { unique: true })
   await versionsCollection.createIndex({ formId: 1, versionNumber: -1 })
   await versionsCollection.createIndex({ createdAt: -1 })
 

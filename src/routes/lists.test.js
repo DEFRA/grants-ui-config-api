@@ -1,7 +1,4 @@
-import {
-  FormDefinitionError,
-  FormDefinitionErrorType
-} from '@defra/forms-model'
+import { FormDefinitionError, FormDefinitionErrorType } from '@defra/forms-model'
 
 import { buildList } from '~/src/api/forms/__stubs__/definition.js'
 import {
@@ -77,9 +74,7 @@ describe('Lists route', () => {
         id: '9719c91f-4341-4dc8-91a5-cab7bbdddb83'
       })
 
-      const updateList = jest
-        .mocked(updateListOnDraftFormDefinition)
-        .mockResolvedValue(list)
+      const updateList = jest.mocked(updateListOnDraftFormDefinition).mockResolvedValue(list)
 
       const response = await server.inject({
         method: 'PUT',
@@ -115,9 +110,7 @@ describe('Lists route', () => {
         id: listId,
         status: 'deleted'
       })
-      const [calledFormId, calledId] = jest.mocked(
-        removeListOnDraftFormDefinition
-      ).mock.calls[0]
+      const [calledFormId, calledId] = jest.mocked(removeListOnDraftFormDefinition).mock.calls[0]
       expect(calledFormId).toEqual(id)
       expect(calledId).toEqual(listId)
     })

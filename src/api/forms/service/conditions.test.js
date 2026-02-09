@@ -5,11 +5,7 @@ import {
   FormDefinitionRequestType,
   OperatorName
 } from '@defra/forms-model'
-import {
-  buildDefinition,
-  buildQuestionPage,
-  buildTextFieldComponent
-} from '@defra/forms-model/stubs'
+import { buildDefinition, buildQuestionPage, buildTextFieldComponent } from '@defra/forms-model/stubs'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
@@ -37,12 +33,8 @@ jest.mock('~/src/mongo.js')
 jest.mock('~/src/api/forms/service/versioning.js')
 jest.mock('~/src/messaging/publish-base.js')
 
-jest
-  .mocked(formDefinition.updatePageFields)
-  .mockResolvedValue(buildDefinition({}))
-jest
-  .mocked(formDefinition.deleteCondition)
-  .mockResolvedValue(buildDefinition({}))
+jest.mocked(formDefinition.updatePageFields).mockResolvedValue(buildDefinition({}))
+jest.mocked(formDefinition.deleteCondition).mockResolvedValue(buildDefinition({}))
 
 jest.useFakeTimers().setSystemTime(new Date('2020-01-01'))
 
@@ -151,22 +143,14 @@ describe('conditions', () => {
 
   beforeEach(() => {
     jest.mocked(formMetadata.get).mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(formMetadata.updateAudit)
-      .mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(versioningService.createFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
-    jest
-      .mocked(versioningService.getLatestFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
+    jest.mocked(versioningService.createFormVersion).mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(versioningService.getLatestFormVersion).mockResolvedValue(mockFormVersionDocument)
   })
 
   describe('addConditionToDraftFormDefinition', () => {
     it('should add a condition to the form definition', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithConditions)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithConditions)
 
       const expectedCondition = buildCondition({
         id: 'a9fdbd20-df6c-42ef-b6ce-e72f7b76b069',
@@ -182,16 +166,10 @@ describe('conditions', () => {
         ]
       })
 
-      const addConditionMock = jest
-        .mocked(formDefinition.addCondition)
-        .mockResolvedValueOnce(expectedCondition)
+      const addConditionMock = jest.mocked(formDefinition.addCondition).mockResolvedValueOnce(expectedCondition)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const result = await addConditionToDraftFormDefinition(
-        id,
-        expectedCondition,
-        defaultAuthor
-      )
+      const result = await addConditionToDraftFormDefinition(id, expectedCondition, defaultAuthor)
       const [expectedFormId, conditionToInsert] = addConditionMock.mock.calls[0]
       expect(expectedFormId).toBe(id)
       expect(conditionToInsert).toEqual(expectedCondition)
@@ -225,23 +203,13 @@ describe('conditions', () => {
         ]
       })
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithConditions)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithConditions)
 
-      const updateListMock = jest
-        .mocked(formDefinition.updateCondition)
-        .mockResolvedValueOnce(conditionToUpdate)
+      const updateListMock = jest.mocked(formDefinition.updateCondition).mockResolvedValueOnce(conditionToUpdate)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const result = await updateConditionOnDraftFormDefinition(
-        id,
-        condition1Id,
-        conditionToUpdate,
-        defaultAuthor
-      )
-      const [expectedFormId, expectedConditionId, expectedConditionToUpdate] =
-        updateListMock.mock.calls[0]
+      const result = await updateConditionOnDraftFormDefinition(id, condition1Id, conditionToUpdate, defaultAuthor)
+      const [expectedFormId, expectedConditionId, expectedConditionToUpdate] = updateListMock.mock.calls[0]
 
       expect(expectedFormId).toBe(id)
       expect(expectedConditionId).toBe(condition1Id)
@@ -266,23 +234,13 @@ describe('conditions', () => {
     })
 
     it('should remove a condition on the form definition', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValue(formDefinitionWithConditions)
+      jest.mocked(formDefinition.get).mockResolvedValue(formDefinitionWithConditions)
 
-      jest
-        .mocked(formDefinition.deleteCondition)
-        .mockResolvedValue(buildDefinition())
+      jest.mocked(formDefinition.deleteCondition).mockResolvedValue(buildDefinition())
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      await removeConditionOnDraftFormDefinition(
-        id,
-        condition1Id,
-        defaultAuthor
-      )
-      const [expectedFormId, expectedConditionId] = jest.mocked(
-        formDefinition.deleteCondition
-      ).mock.calls[0]
+      await removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)
+      const [expectedFormId, expectedConditionId] = jest.mocked(formDefinition.deleteCondition).mock.calls[0]
       expect(expectedFormId).toBe(id)
       expect(expectedConditionId).toBe(condition1Id)
       expectMetadataUpdate()
@@ -300,17 +258,11 @@ describe('conditions', () => {
     it('should surface errors', async () => {
       const boomInternal = Boom.internal('Something went wrong')
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValue(formDefinitionWithConditions)
+      jest.mocked(formDefinition.get).mockResolvedValue(formDefinitionWithConditions)
 
-      jest
-        .mocked(formDefinition.deleteCondition)
-        .mockRejectedValueOnce(boomInternal)
+      jest.mocked(formDefinition.deleteCondition).mockRejectedValueOnce(boomInternal)
 
-      await expect(
-        removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)
-      ).rejects.toThrow(boomInternal)
+      await expect(removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)).rejects.toThrow(boomInternal)
     })
 
     it('should unassign simple condition from page before deletion', async () => {
@@ -321,21 +273,11 @@ describe('conditions', () => {
 
       jest.mocked(formDefinition.get).mockResolvedValue(formWithPageCondition)
 
-      jest
-        .mocked(formDefinition.deleteCondition)
-        .mockResolvedValue(buildDefinition())
+      jest.mocked(formDefinition.deleteCondition).mockResolvedValue(buildDefinition())
 
-      await removeConditionOnDraftFormDefinition(
-        id,
-        condition1Id,
-        defaultAuthor
-      )
+      await removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)
 
-      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(
-        id,
-        condition1Id,
-        expect.anything()
-      )
+      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(id, condition1Id, expect.anything())
 
       expectMetadataUpdate()
     })
@@ -354,40 +296,26 @@ describe('conditions', () => {
         conditions: [condition1, condition2]
       })
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValue(formWithMultiplePageConditions)
+      jest.mocked(formDefinition.get).mockResolvedValue(formWithMultiplePageConditions)
 
-      jest
-        .mocked(formDefinition.deleteCondition)
-        .mockResolvedValue(buildDefinition())
+      jest.mocked(formDefinition.deleteCondition).mockResolvedValue(buildDefinition())
 
-      await removeConditionOnDraftFormDefinition(
-        id,
-        condition1Id,
-        defaultAuthor
-      )
+      await removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)
 
       expect(formDefinition.deleteCondition).toHaveBeenCalledTimes(1)
-      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(
-        id,
-        condition1Id,
-        expect.anything()
-      )
+      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(id, condition1Id, expect.anything())
     })
 
     it('should fail when condition is referenced by joined conditions', async () => {
       const mockValidationError = /** @type {ValidationError} */ ({
         name: 'ValidationError',
-        message:
-          '"conditions[2].items[0].conditionId" must be [ref:root:conditions]',
+        message: '"conditions[2].items[0].conditionId" must be [ref:root:conditions]',
         isJoi: true,
         annotate: () => '',
         _original: {},
         details: [
           {
-            message:
-              '"conditions[2].items[0].conditionId" must be [ref:root:conditions]',
+            message: '"conditions[2].items[0].conditionId" must be [ref:root:conditions]',
             path: ['conditions', 2, 'items', 0, 'conditionId'],
             type: 'any.ref',
             context: {
@@ -399,33 +327,25 @@ describe('conditions', () => {
         ]
       })
 
-      jest
-        .mocked(formDefinition.deleteCondition)
-        .mockRejectedValue(new InvalidFormDefinitionError(mockValidationError))
+      jest.mocked(formDefinition.deleteCondition).mockRejectedValue(new InvalidFormDefinitionError(mockValidationError))
 
-      await expect(
-        removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)
-      ).rejects.toThrow(InvalidFormDefinitionError)
-
-      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(
-        id,
-        condition1Id,
-        expect.anything()
+      await expect(removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)).rejects.toThrow(
+        InvalidFormDefinitionError
       )
+
+      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(id, condition1Id, expect.anything())
     })
 
     it('should fail when condition is referenced by joined condition even if also assigned to pages', async () => {
       const mockValidationError = /** @type {ValidationError} */ ({
         name: 'ValidationError',
-        message:
-          '"conditions[2].items[0].conditionId" must be [ref:root:conditions]',
+        message: '"conditions[2].items[0].conditionId" must be [ref:root:conditions]',
         isJoi: true,
         annotate: () => '',
         _original: {},
         details: [
           {
-            message:
-              '"conditions[2].items[0].conditionId" must be [ref:root:conditions]',
+            message: '"conditions[2].items[0].conditionId" must be [ref:root:conditions]',
             path: ['conditions', 2, 'items', 0, 'conditionId'],
             type: 'any.ref',
             context: {
@@ -437,19 +357,13 @@ describe('conditions', () => {
         ]
       })
 
-      jest
-        .mocked(formDefinition.deleteCondition)
-        .mockRejectedValue(new InvalidFormDefinitionError(mockValidationError))
+      jest.mocked(formDefinition.deleteCondition).mockRejectedValue(new InvalidFormDefinitionError(mockValidationError))
 
-      await expect(
-        removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)
-      ).rejects.toThrow(InvalidFormDefinitionError)
-
-      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(
-        id,
-        condition1Id,
-        expect.anything()
+      await expect(removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)).rejects.toThrow(
+        InvalidFormDefinitionError
       )
+
+      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(id, condition1Id, expect.anything())
     })
 
     it('should handle pages without ids gracefully', async () => {
@@ -468,15 +382,9 @@ describe('conditions', () => {
 
       jest.mocked(formDefinition.get).mockResolvedValue(formWithPageWithoutId)
 
-      jest
-        .mocked(formDefinition.deleteCondition)
-        .mockResolvedValue(buildDefinition())
+      jest.mocked(formDefinition.deleteCondition).mockResolvedValue(buildDefinition())
 
-      await removeConditionOnDraftFormDefinition(
-        id,
-        condition1Id,
-        defaultAuthor
-      )
+      await removeConditionOnDraftFormDefinition(id, condition1Id, defaultAuthor)
 
       expect(formDefinition.deleteCondition).toHaveBeenCalledTimes(1)
     })
@@ -489,21 +397,11 @@ describe('conditions', () => {
 
       jest.mocked(formDefinition.get).mockResolvedValue(formWithJoinedCondition)
 
-      jest
-        .mocked(formDefinition.deleteCondition)
-        .mockResolvedValue(buildDefinition())
+      jest.mocked(formDefinition.deleteCondition).mockResolvedValue(buildDefinition())
 
-      await removeConditionOnDraftFormDefinition(
-        id,
-        joinedConditionId,
-        defaultAuthor
-      )
+      await removeConditionOnDraftFormDefinition(id, joinedConditionId, defaultAuthor)
 
-      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(
-        id,
-        joinedConditionId,
-        expect.anything()
-      )
+      expect(formDefinition.deleteCondition).toHaveBeenCalledWith(id, joinedConditionId, expect.anything())
     })
   })
 })

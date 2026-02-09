@@ -38,16 +38,8 @@ export const MongoError = {
  * @returns {FormMetadata}
  */
 export function mapForm(document) {
-  if (
-    !document.slug ||
-    !document.title ||
-    !document.organisation ||
-    !document.teamName ||
-    !document.teamEmail
-  ) {
-    throw Error(
-      'Form is malformed in the database. Expected fields are missing.'
-    )
+  if (!document.slug || !document.title || !document.organisation || !document.teamName || !document.teamEmail) {
+    throw Error('Form is malformed in the database. Expected fields are missing.')
   }
 
   const lastUpdated = getLastUpdated(document)
@@ -74,9 +66,7 @@ export function mapForm(document) {
     createdAt: created.createdAt,
     updatedBy: lastUpdated.updatedBy,
     updatedAt: lastUpdated.updatedAt,
-    versions: document.versions ?? [
-      { versionNumber: 1, createdAt: lastUpdated.updatedAt }
-    ]
+    versions: document.versions ?? [{ versionNumber: 1, createdAt: lastUpdated.updatedAt }]
   }
 }
 

@@ -10,20 +10,14 @@ This repository is a fork of [DEFRA/forms-manager](https://github.com/DEFRA/form
     - [Node.js](#nodejs)
   - [Local development](#local-development)
     - [Setup](#setup)
-    - [Development](#development)
-    - [Production](#production)
     - [Npm scripts](#npm-scripts)
     - [Database Migrations](#database-migrations)
-      - [Production](#production-1)
+      - [Production](#production)
       - [Local Development](#local-development-1)
         - [Option 1: Using Docker (Recommended)](#option-1-using-docker-recommended)
         - [Option 2: Manual Migration Commands](#option-2-manual-migration-commands)
   - [API endpoints](#api-endpoints)
   - [Calling API endpoints](#calling-api-endpoints)
-    - [Postman](#postman)
-  - [Docker](#docker)
-    - [Development image](#development-image)
-    - [Production image](#production-image)
   - [Integration testing](#integration-testing)
     - [Local development with the integration test environment](#local-development-with-the-integration-test-environment)
     - [Running Postman tests locally](#running-postman-tests-locally)
@@ -48,10 +42,16 @@ nvm use
 
 1. Install Docker
 
-2. Bring up runtime dependencies
+2. Start compose stack
 
 ```bash
 docker compose up
+```
+
+or
+
+```bash
+npm run docker:up
 ```
 
 3. Create a `.env` file with the following mandatory environment variables populated at root level:
@@ -73,22 +73,6 @@ AWS_SECRET_ACCESS_KEY=
 Event-based audit publishing to SNS is disabled by default. To enable, set `FEATURE_FLAG_PUBLISH_AUDIT_EVENTS=true`, `SNS_TOPIC_ARN`, and optionally `SNS_ENDPOINT` (e.g. for LocalStack).
 
 For proxy options, see https://www.npmjs.com/package/proxy-from-env which is used by https://github.com/TooTallNate/proxy-agents/tree/main/packages/proxy-agent. It's currently supports Hapi Wreck only, e.g. in the JWKS lookup.
-
-### Development
-
-To run the application in `development` mode run:
-
-```bash
-npm run dev
-```
-
-### Production
-
-To mimic the application running in `production` mode locally run:
-
-```bash
-npm start
-```
 
 ### Npm scripts
 
@@ -155,52 +139,57 @@ npx migrate-mongo create <migration-name> -f migrate-mongo-config.js
 
 ## API endpoints
 
-| Endpoint                       | Description       |
-| :----------------------------- | :---------------- |
-| `GET: /health`                 | Health            |
-| `GET: /v1/entities`            | Entities          |
-| `GET: /v1/entities/<entityId>` | Entity by ID      |
-| `PATCH: /forms/<id>`           | Update Form by ID |
+The API follows the OpenAPI 3.1 specification. View the complete API documentation:
+
+- **[openapi.yaml](openapi.yaml)** - Complete OpenAPI specification
+
+The API provides endpoints for:
+
+- **Health** - Service health checks
+- **Forms** - Form metadata and lifecycle management (create, read, update, delete)
+- **Definitions** - Draft and live form definition management
+- **Versions** - Form version history and retrieval
+- **Pages** - Page management within form definitions
+- **Components** - Component management within pages
+
+Most endpoints require JWT Bearer token authentication. See [Calling API endpoints](#calling-api-endpoints) below for authentication setup.
 
 ## Calling API endpoints
 
-### Postman
+### Using the HTTP Client (IntelliJ/VS Code)
 
-A [Postman](https://www.postman.com/) collection and environment are available for making calls to the Teams and
-Repositories API. Simply import the collection and environment into Postman.
+The project includes an HTTP client configuration file ([config.http](config.http)) that works with IntelliJ IDEA and VS Code REST Client extensions.
 
-- [CDP Node Backend Template Postman Collection](postman/grants-ui-config-api.postman_collection.json)
-- [CDP Node Backend Template Postman Environment](postman/grants-ui-config-api.postman_environment.json)
+#### Prerequisites
 
-## Docker
+1. **Generate an authentication token** using the npm script:
 
-### Development image
+   ```bash
+   # Print token to console
+   npm run generate:token
 
-Build:
+   # Save token to http-client.private.env.json
+   npm run generate:token:save
+   ```
 
-```bash
-docker build --target development --no-cache --tag grants-ui-config-api:development .
-```
+   The `generate:token:save` command creates/updates `http-client.private.env.json` with your token, which is automatically used by the HTTP client.
 
-Run:
+2. **Set up environment variables**:
+   - The base configuration is in [http-client.env.json](http-client.env.json)
+   - Private/sensitive values (like tokens) are stored in `http-client.private.env.json` (git-ignored)
 
-```bash
-docker run -e GITHUB_API_TOKEN -p 3008:3008 grants-ui-config-api:development
-```
+3. **Start the API**:
 
-### Production image
+   ```bash
+   npm run docker:up
+   ```
 
-Build:
+4. **Execute requests**:
+   - Open [config.http](config.http) in your IDE
+   - Select the environment (e.g., "local") from the dropdown
+   - Click "Run" on any request to execute it
 
-```bash
-docker build --no-cache --tag grants-ui-config-api .
-```
-
-Run:
-
-```bash
-docker run -e GITHUB_API_TOKEN -p 3001:3001 grants-ui-config-api
-```
+The HTTP client file includes examples for all API endpoints including form management, pages, components, and versioning.
 
 ## Integration testing
 
@@ -299,7 +288,7 @@ To extend the integration test suite with new test cases:
 
 9. **Update documentation** if needed:
 
-If you're adding endpoints for new features, update the API endpoints section in this README
+If you're adding endpoints for new features, update the [openapi.yaml](openapi.yaml) file to include the new endpoints.
 
 The CI pipeline will automatically run your new test along with the existing ones on PRs and merges to main.
 

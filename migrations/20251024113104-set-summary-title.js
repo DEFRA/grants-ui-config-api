@@ -3,11 +3,7 @@ const LIVE = 'live'
 const DRAFT = 'draft'
 
 // Cannot import values from '@defra/forms-model' due to restrictions
-const SummaryControllers = [
-  './pages/summary.js',
-  'SummaryPageController',
-  'SummaryPageWithConfirmationEmailController'
-]
+const SummaryControllers = ['./pages/summary.js', 'SummaryPageController', 'SummaryPageWithConfirmationEmailController']
 const CHECK_YOUR_ANSWERS_TITLE = 'Check your answers before sending your form'
 const DEFINITION_COLLECTION_NAME = 'form-definition'
 const BATCH_SIZE = 10
@@ -34,14 +30,9 @@ async function getV2FormIdsToMigrate(definitionCollection, draftOrLive) {
   }
 
   const projection =
-    draftOrLive === DRAFT
-      ? { projection: { draft: { name: 1 } } }
-      : { projection: { live: { name: 1 } } }
+    draftOrLive === DRAFT ? { projection: { draft: { name: 1 } } } : { projection: { live: { name: 1 } } }
 
-  return await definitionCollection
-    .find(query, projection)
-    .limit(BATCH_SIZE)
-    .toArray()
+  return await definitionCollection.find(query, projection).limit(BATCH_SIZE).toArray()
 }
 
 /**
@@ -50,12 +41,7 @@ async function getV2FormIdsToMigrate(definitionCollection, draftOrLive) {
  * @param {DRAFT | LIVE} draftOrLive
  * @param {'v1' | 'v2'} version
  */
-async function updateDefinitions(
-  client,
-  definitionCollection,
-  draftOrLive,
-  version
-) {
+async function updateDefinitions(client, definitionCollection, draftOrLive, version) {
   let total = 0
   let updated = 0
   let errors = 0
@@ -66,17 +52,12 @@ async function updateDefinitions(
     let formIdsToMigrate = []
 
     try {
-      formIdsToMigrate = await getV2FormIdsToMigrate(
-        definitionCollection,
-        draftOrLive
-      )
+      formIdsToMigrate = await getV2FormIdsToMigrate(definitionCollection, draftOrLive)
 
       total = formIdsToMigrate.length
 
       if (formIdsToMigrate.length === 0) {
-        console.log(
-          `No ${draftOrLive.toUpperCase()} ${version} forms found for migration`
-        )
+        console.log(`No ${draftOrLive.toUpperCase()} ${version} forms found for migration`)
         return {
           updated,
           skipped: 0,
@@ -84,32 +65,25 @@ async function updateDefinitions(
           total
         }
       } else {
-        console.log(
-          `Found ${formIdsToMigrate.length} ${draftOrLive.toUpperCase()} ${version} forms for migration`
-        )
+        console.log(`Found ${formIdsToMigrate.length} ${draftOrLive.toUpperCase()} ${version} forms for migration`)
       }
 
       for (const form of formIdsToMigrate) {
         const setExpr = {
           $set: {
-            [`${draftOrLive}.pages.$[elem].title`]:
-              version === 'v1' ? CHECK_YOUR_ANSWERS_TITLE : ''
+            [`${draftOrLive}.pages.$[elem].title`]: version === 'v1' ? CHECK_YOUR_ANSWERS_TITLE : ''
           }
         }
 
-        await definitionCollection.findOneAndUpdate(
-          { _id: form._id },
-          setExpr,
-          {
-            arrayFilters: [
-              {
-                'elem.controller': {
-                  $in: SummaryControllers
-                }
+        await definitionCollection.findOneAndUpdate({ _id: form._id }, setExpr, {
+          arrayFilters: [
+            {
+              'elem.controller': {
+                $in: SummaryControllers
               }
-            ]
-          }
-        )
+            }
+          ]
+        })
         updated++
         console.log(
           `Migrated ${version} ${draftOrLive.toUpperCase()} form ${form.draft?.name ?? form.live?.name} to use new summary title`
@@ -140,12 +114,7 @@ async function updateDefinitions(
  * @param {DRAFT | LIVE} draftOrLive
  * @param {'v1' | 'v2'} version
  */
-async function migrateDraftOrLive(
-  client,
-  definitionCollection,
-  draftOrLive,
-  version
-) {
+async function migrateDraftOrLive(client, definitionCollection, draftOrLive, version) {
   const stats = {
     updated: 0,
     skipped: 0,
@@ -154,12 +123,7 @@ async function migrateDraftOrLive(
   }
 
   do {
-    const res = await updateDefinitions(
-      client,
-      definitionCollection,
-      draftOrLive,
-      version
-    )
+    const res = await updateDefinitions(client, definitionCollection, draftOrLive, version)
 
     stats.updated += res.updated
     stats.skipped += res.skipped
@@ -167,9 +131,7 @@ async function migrateDraftOrLive(
     stats.total += res.total
 
     if (res.total === 0) {
-      console.log(
-        `\n=== Migration Summary (${draftOrLive.toUpperCase()}) ${version} ===`
-      )
+      console.log(`\n=== Migration Summary (${draftOrLive.toUpperCase()}) ${version} ===`)
       console.log(`Total forms processed: ${stats.total}`)
       console.log(`Successfully migrated: ${stats.updated}`)
       console.log(`Skipped (already migrated): ${stats.skipped}`)
@@ -200,9 +162,7 @@ export async function up(db, client) {
  * @returns {Promise<void>}
  */
 export function down() {
-  return Promise.reject(
-    new Error('Migration rollback is not supported for data safety reasons')
-  )
+  return Promise.reject(new Error('Migration rollback is not supported for data safety reasons'))
 }
 
 /**

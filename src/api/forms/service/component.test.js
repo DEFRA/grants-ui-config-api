@@ -1,7 +1,4 @@
-import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
+import { AuditEventMessageType, FormDefinitionRequestType } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
@@ -85,15 +82,9 @@ describe('Forms service', () => {
     definition = emptyFormWithSummary()
     jest.mocked(formTemplates.empty).mockReturnValue(definition)
     jest.mocked(formMetadata.get).mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(formMetadata.updateAudit)
-      .mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(versioningService.createFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
-    jest
-      .mocked(versioningService.getLatestFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
+    jest.mocked(versioningService.createFormVersion).mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(versioningService.getLatestFormVersion).mockResolvedValue(mockFormVersionDocument)
   })
 
   describe('getFormDefinitionPageComponent', () => {
@@ -110,11 +101,7 @@ describe('Forms service', () => {
       })
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition1)
 
-      const component = await getFormDefinitionPageComponent(
-        id,
-        pageId,
-        componentId
-      )
+      const component = await getFormDefinitionPageComponent(id, pageId, componentId)
       expect(component).toEqual(textFieldComponent)
     })
 
@@ -130,14 +117,7 @@ describe('Forms service', () => {
 
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition1)
 
-      await expect(
-        getFormDefinitionPageComponent(
-          '123',
-          pageId,
-          'invalid-component-id',
-          undefined
-        )
-      ).rejects.toThrow(
+      await expect(getFormDefinitionPageComponent('123', pageId, 'invalid-component-id', undefined)).rejects.toThrow(
         Boom.notFound(
           'Component ID invalid-component-id not found on Page ID ffefd409-f3f4-49fe-882e-6e89f44631b1 & Form ID 123'
         )
@@ -162,20 +142,14 @@ describe('Forms service', () => {
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition1)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const createdComponent = await createComponentOnDraftDefinition(
-        '123',
-        pageId,
-        textFieldComponent,
-        author
-      )
+      const createdComponent = await createComponentOnDraftDefinition('123', pageId, textFieldComponent, author)
       const dbMetadataSpy = jest.spyOn(formMetadata, 'updateAudit')
       const dbDefinitionSpy = jest.spyOn(formDefinition, 'addComponent')
 
       expect(dbDefinitionSpy).toHaveBeenCalled()
       expect(dbMetadataSpy).toHaveBeenCalled()
       const [metaFormId, metaUpdateOperations] = dbMetadataSpy.mock.calls[0]
-      const [formId, calledPageId, component, , position] =
-        dbDefinitionSpy.mock.calls[0]
+      const [formId, calledPageId, component, , position] = dbDefinitionSpy.mock.calls[0]
 
       expect(formId).toBe('123')
       expect(calledPageId).toBe(pageId)
@@ -202,13 +176,7 @@ describe('Forms service', () => {
 
     it('should add a component to the start of a DraftDefinition page if called with prepend=true', async () => {
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition1)
-      await createComponentOnDraftDefinition(
-        '123',
-        pageId,
-        textFieldComponent,
-        author,
-        true
-      )
+      await createComponentOnDraftDefinition('123', pageId, textFieldComponent, author, true)
       const dbDefinitionSpy = jest.spyOn(formDefinition, 'addComponent')
 
       const [, , , , position] = dbDefinitionSpy.mock.calls[0]
@@ -223,30 +191,14 @@ describe('Forms service', () => {
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition2)
 
       await expect(
-        createComponentOnDraftDefinition(
-          '123',
-          'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d',
-          textFieldComponent,
-          author
-        )
-      ).rejects.toThrow(
-        Boom.notFound(
-          "Page not found with id 'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d'"
-        )
-      )
+        createComponentOnDraftDefinition('123', 'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d', textFieldComponent, author)
+      ).rejects.toThrow(Boom.notFound("Page not found with id 'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d'"))
     })
     it('should surface errors correctly', async () => {
-      jest
-        .mocked(formDefinition.addComponent)
-        .mockRejectedValueOnce(Boom.badRequest('Error'))
+      jest.mocked(formDefinition.addComponent).mockRejectedValueOnce(Boom.badRequest('Error'))
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition1)
       await expect(
-        createComponentOnDraftDefinition(
-          '123',
-          'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d',
-          textFieldComponent,
-          author
-        )
+        createComponentOnDraftDefinition('123', 'bdadbe9d-3c4d-4ec1-884d-e3576d60fe9d', textFieldComponent, author)
       ).rejects.toThrow(Boom.badRequest('Error'))
     })
   })
@@ -258,30 +210,17 @@ describe('Forms service', () => {
     })
 
     it('should update the component', async () => {
-      const dbDefinitionSpy = jest
-        .spyOn(formDefinition, 'updateComponent')
-        .mockResolvedValueOnce(newTextFieldComponent)
+      const dbDefinitionSpy = jest.spyOn(formDefinition, 'updateComponent').mockResolvedValueOnce(newTextFieldComponent)
       const dbMetadataSpy = jest.spyOn(formMetadata, 'updateAudit')
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const component = await updateComponentOnDraftDefinition(
-        id,
-        pageId,
-        componentId,
-        newTextFieldComponent,
-        author
-      )
+      const component = await updateComponentOnDraftDefinition(id, pageId, componentId, newTextFieldComponent, author)
 
       expect(component).toEqual(newTextFieldComponent)
       expect(dbDefinitionSpy).toHaveBeenCalled()
-      const [calledFormId, calledPageId, calledComponentId, calledComponent] =
-        dbDefinitionSpy.mock.calls[0]
+      const [calledFormId, calledPageId, calledComponentId, calledComponent] = dbDefinitionSpy.mock.calls[0]
 
-      expect([calledFormId, calledPageId, calledComponentId]).toEqual([
-        id,
-        pageId,
-        componentId
-      ])
+      expect([calledFormId, calledPageId, calledComponentId]).toEqual([id, pageId, componentId])
       expect(calledComponent).toEqual(newTextFieldComponent)
       const [metaFormId, metaUpdateOperations] = dbMetadataSpy.mock.calls[0]
       expect(metaFormId).toBe(id)
@@ -299,18 +238,10 @@ describe('Forms service', () => {
     })
 
     it('should correctly surface the error is the component is not found', async () => {
-      jest
-        .spyOn(formDefinition, 'updateComponent')
-        .mockRejectedValueOnce(Boom.notFound('Not found'))
+      jest.spyOn(formDefinition, 'updateComponent').mockRejectedValueOnce(Boom.notFound('Not found'))
 
       await expect(
-        updateComponentOnDraftDefinition(
-          id,
-          pageId,
-          componentId,
-          newTextFieldComponent,
-          author
-        )
+        updateComponentOnDraftDefinition(id, pageId, componentId, newTextFieldComponent, author)
       ).rejects.toThrow(Boom.notFound('Not found'))
     })
   })
@@ -352,14 +283,9 @@ describe('Forms service', () => {
       await deleteComponentOnDraftDefinition(id, pageId, componentId2, author)
 
       expect(dbDefinitionSpy).toHaveBeenCalled()
-      const [calledFormId, calledPageId, calledComponentId] =
-        dbDefinitionSpy.mock.calls[0]
+      const [calledFormId, calledPageId, calledComponentId] = dbDefinitionSpy.mock.calls[0]
 
-      expect([calledFormId, calledPageId, calledComponentId]).toEqual([
-        id,
-        pageId,
-        componentId2
-      ])
+      expect([calledFormId, calledPageId, calledComponentId]).toEqual([id, pageId, componentId2])
 
       const [metaFormId, metaUpdateOperations] = dbMetadataSpy.mock.calls[0]
 

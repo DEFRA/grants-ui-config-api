@@ -6,12 +6,7 @@ import {
   formDefinitionSchema,
   formDefinitionV2Schema
 } from '@defra/forms-model'
-import {
-  buildDefinition,
-  buildQuestionPage,
-  buildSummaryPage,
-  buildTextFieldComponent
-} from '@defra/forms-model/stubs'
+import { buildDefinition, buildQuestionPage, buildSummaryPage, buildTextFieldComponent } from '@defra/forms-model/stubs'
 import Boom from '@hapi/boom'
 import { ObjectId } from 'mongodb'
 import { pino } from 'pino'
@@ -23,10 +18,7 @@ import * as formDefinition from '~/src/api/forms/repositories/form-definition-re
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { MAX_RESULTS } from '~/src/api/forms/repositories/form-metadata-repository.js'
 import * as formVersions from '~/src/api/forms/repositories/form-versions-repository.js'
-import {
-  modifyReorderComponents,
-  modifyReorderPages
-} from '~/src/api/forms/repositories/helpers.js'
+import { modifyReorderComponents, modifyReorderPages } from '~/src/api/forms/repositories/helpers.js'
 import {
   formMetadataDocument,
   formMetadataInput,
@@ -45,11 +37,7 @@ import {
   reorderDraftFormDefinitionPages,
   updateDraftFormDefinition
 } from '~/src/api/forms/service/definition.js'
-import {
-  createForm,
-  getFormBySlug,
-  removeForm
-} from '~/src/api/forms/service/index.js'
+import { createForm, getFormBySlug, removeForm } from '~/src/api/forms/service/index.js'
 import * as versioningService from '~/src/api/forms/service/versioning.js'
 import * as formTemplates from '~/src/api/forms/templates.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
@@ -72,10 +60,9 @@ jest.useFakeTimers().setSystemTime(new Date('2020-01-01'))
 const { empty: emptyFormWithSummary } = /** @type {typeof formTemplates} */ (
   jest.requireActual('~/src/api/forms/templates.js')
 )
-const { emptyV2: emptyFormWithSummaryV2 } =
-  /** @type {typeof formTemplates} */ (
-    jest.requireActual('~/src/api/forms/templates.js')
-  )
+const { emptyV2: emptyFormWithSummaryV2 } = /** @type {typeof formTemplates} */ (
+  jest.requireActual('~/src/api/forms/templates.js')
+)
 const author = getAuthor()
 
 describe('Forms service', () => {
@@ -103,39 +90,27 @@ describe('Forms service', () => {
     definition = emptyFormWithSummary()
     jest.mocked(formMetadata.get).mockResolvedValue(formMetadataDocument)
     jest.mocked(formVersions.getVersionSummaries).mockResolvedValue([])
-    jest
-      .mocked(formMetadata.updateAudit)
-      .mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(versioningService.createFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
-    jest
-      .mocked(versioningService.getLatestFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
+    jest.mocked(versioningService.createFormVersion).mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(versioningService.getLatestFormVersion).mockResolvedValue(mockFormVersionDocument)
   })
 
   describe('createDraftFromLive', () => {
     beforeEach(() => {
       jest.mocked(formDefinition.createDraftFromLive).mockResolvedValueOnce()
-      jest
-        .mocked(formMetadata.update)
-        .mockResolvedValueOnce(buildMetadataDocument())
+      jest.mocked(formMetadata.update).mockResolvedValueOnce(buildMetadataDocument())
     })
 
     it("should throw bad request if there's no live definition", async () => {
       jest.mocked(formMetadata.get).mockResolvedValueOnce(formMetadataDocument)
 
       await expect(createDraftFromLive(id, author)).rejects.toThrow(
-        Boom.badRequest(
-          `Form with ID '${formMetadataWithLiveDocument._id.toString()}' has no live state`
-        )
+        Boom.badRequest(`Form with ID '${formMetadataWithLiveDocument._id.toString()}' has no live state`)
       )
     })
 
     it('should update the form state when creating', async () => {
-      jest
-        .mocked(formMetadata.get)
-        .mockResolvedValue(formMetadataWithLiveDocument)
+      jest.mocked(formMetadata.get).mockResolvedValue(formMetadataWithLiveDocument)
 
       const dbSpy = jest.spyOn(formMetadata, 'update')
 
@@ -161,9 +136,7 @@ describe('Forms service', () => {
   describe('createLiveFromDraft', () => {
     beforeEach(() => {
       jest.mocked(formDefinition.createLiveFromDraft).mockResolvedValue()
-      jest
-        .mocked(formMetadata.update)
-        .mockResolvedValue(buildMetadataDocument())
+      jest.mocked(formMetadata.update).mockResolvedValue(buildMetadataDocument())
     })
 
     it('should create a live state from existing draft form V1', async () => {
@@ -202,21 +175,15 @@ describe('Forms service', () => {
         updatedAt: dateUsedInFakeTime,
         updatedBy: author
       })
-      expect(dbMetadataOperationArgs[1].$set?.updatedAt).toEqual(
-        dateUsedInFakeTime
-      )
+      expect(dbMetadataOperationArgs[1].$set?.updatedAt).toEqual(dateUsedInFakeTime)
       expect(dbMetadataOperationArgs[1].$set?.updatedBy).toEqual(author)
     })
 
     it('should fail to create a live state from existing draft form when there is no start page', async () => {
-      const draftDefinitionNoStartPage = /** @type {FormDefinition} */ (
-        definition
-      )
+      const draftDefinitionNoStartPage = /** @type {FormDefinition} */ (definition)
       delete draftDefinitionNoStartPage.startPage
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(draftDefinitionNoStartPage)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(draftDefinitionNoStartPage)
 
       await expect(createLiveFromDraft(id, author)).rejects.toThrow(
         Boom.badRequest(makeFormLiveErrorMessages.missingStartPage)
@@ -224,9 +191,7 @@ describe('Forms service', () => {
     })
 
     it('should fail to create a live state from existing draft form when there is no output email', async () => {
-      const draftDefinitionNoOutputEmail = /** @type {FormDefinition} */ (
-        definition
-      )
+      const draftDefinitionNoOutputEmail = /** @type {FormDefinition} */ (definition)
       delete draftDefinitionNoOutputEmail.outputEmail
 
       const metadataNoNotificationEmail = {
@@ -234,13 +199,9 @@ describe('Forms service', () => {
       }
       delete metadataNoNotificationEmail.notificationEmail
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValue(draftDefinitionNoOutputEmail)
+      jest.mocked(formDefinition.get).mockResolvedValue(draftDefinitionNoOutputEmail)
 
-      jest
-        .mocked(formMetadata.get)
-        .mockResolvedValueOnce(metadataNoNotificationEmail)
+      jest.mocked(formMetadata.get).mockResolvedValueOnce(metadataNoNotificationEmail)
 
       await expect(createLiveFromDraft(id, author)).rejects.toThrow(
         Boom.badRequest(makeFormLiveErrorMessages.missingOutputEmail)
@@ -255,9 +216,7 @@ describe('Forms service', () => {
       delete metadataNoContact.contact
       jest.mocked(formMetadata.get).mockResolvedValue(metadataNoContact)
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
 
       await expect(createLiveFromDraft(id, author)).rejects.toThrow(
         Boom.badRequest(makeFormLiveErrorMessages.missingContact)
@@ -270,13 +229,9 @@ describe('Forms service', () => {
       }
 
       delete metadataNoSubmissionGuidance.submissionGuidance
-      jest
-        .mocked(formMetadata.get)
-        .mockResolvedValue(metadataNoSubmissionGuidance)
+      jest.mocked(formMetadata.get).mockResolvedValue(metadataNoSubmissionGuidance)
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
 
       await expect(createLiveFromDraft(id, author)).rejects.toThrow(
         Boom.badRequest(makeFormLiveErrorMessages.missingSubmissionGuidance)
@@ -291,9 +246,7 @@ describe('Forms service', () => {
       delete metadataNoPrivacyNotice.privacyNoticeUrl
       jest.mocked(formMetadata.get).mockResolvedValue(metadataNoPrivacyNotice)
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
 
       await expect(createLiveFromDraft(id, author)).rejects.toThrow(
         Boom.badRequest(makeFormLiveErrorMessages.missingPrivacyNotice)
@@ -307,9 +260,7 @@ describe('Forms service', () => {
         draft: undefined
       }
 
-      jest
-        .mocked(formMetadata.get)
-        .mockResolvedValueOnce(formMetadataWithoutDraft)
+      jest.mocked(formMetadata.get).mockResolvedValueOnce(formMetadataWithoutDraft)
 
       await expect(createLiveFromDraft(id, author)).rejects.toThrow(
         Boom.badRequest(makeFormLiveErrorMessages.missingDraft)
@@ -323,9 +274,7 @@ describe('Forms service', () => {
       })
       delete draftV2DefinitionNoStartPage.startPage
 
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(draftV2DefinitionNoStartPage)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(draftV2DefinitionNoStartPage)
 
       await expect(createLiveFromDraft(id, author)).resolves.toBeUndefined()
     })
@@ -353,9 +302,7 @@ describe('Forms service', () => {
     })
 
     it('should create a new form', async () => {
-      await expect(createForm(formMetadataInput, author)).resolves.toEqual(
-        formMetadataOutput
-      )
+      await expect(createForm(formMetadataInput, author)).resolves.toEqual(formMetadataOutput)
     })
 
     it('should check if form create DB operation is called with correct form data', async () => {
@@ -392,9 +339,7 @@ describe('Forms service', () => {
         teamEmail: ''
       }
 
-      await expect(createForm(input, author)).rejects.toThrow(
-        InvalidFormDefinitionError
-      )
+      await expect(createForm(input, author)).rejects.toThrow(InvalidFormDefinitionError)
     })
 
     it('should throw an error when writing for metadata fails', async () => {
@@ -434,9 +379,7 @@ describe('Forms service', () => {
 
       jest.mocked(formMetadata.get).mockRejectedValue(error)
 
-      await expect(
-        updateDraftFormDefinition('123', definition, author)
-      ).rejects.toThrow(error)
+      await expect(updateDraftFormDefinition('123', definition, author)).rejects.toThrow(error)
     })
   })
 
@@ -463,9 +406,7 @@ describe('Forms service', () => {
     })
 
     it('should fail if the form is live', async () => {
-      jest
-        .mocked(formMetadata.get)
-        .mockResolvedValueOnce(formMetadataWithLiveDocument)
+      jest.mocked(formMetadata.get).mockResolvedValueOnce(formMetadataWithLiveDocument)
 
       await expect(removeForm(id, author)).rejects.toBeDefined()
     })
@@ -673,9 +614,7 @@ describe('Forms service', () => {
           { ...formMetadataFullDocument }
         ]
 
-        jest
-          .mocked(formMetadata.list)
-          .mockResolvedValue({ documents, totalItems, filters: mockFilters })
+        jest.mocked(formMetadata.list).mockResolvedValue({ documents, totalItems, filters: mockFilters })
 
         const options = { page, perPage, sortBy, order, title }
         const result = await listForms(options)
@@ -947,9 +886,7 @@ describe('Forms service', () => {
 
   describe('getFormBySlug', () => {
     it('should return form metadata when form exists', async () => {
-      jest
-        .mocked(formMetadata.getBySlug)
-        .mockResolvedValue(formMetadataDocument)
+      jest.mocked(formMetadata.getBySlug).mockResolvedValue(formMetadataDocument)
 
       const result = await getFormBySlug(slug)
 
@@ -975,19 +912,14 @@ describe('Forms service', () => {
       jest.mocked(saveToS3).mockResolvedValue(s3Meta)
     })
     const formDefinitionCustomisedTitle = emptyFormWithSummary()
-    formDefinitionCustomisedTitle.name =
-      "A custom form name that shouldn't be allowed"
+    formDefinitionCustomisedTitle.name = "A custom form name that shouldn't be allowed"
 
     it('should update the draft form definition with required attributes upon creation', async () => {
       const updateSpy = jest.spyOn(formDefinition, 'update')
       const formMetadataGetSpy = jest.spyOn(formMetadata, 'get')
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      await updateDraftFormDefinition(
-        '123',
-        formDefinitionCustomisedTitle,
-        author
-      )
+      await updateDraftFormDefinition('123', formDefinitionCustomisedTitle, author)
 
       expect(updateSpy).toHaveBeenCalledWith(
         '123',
@@ -1001,9 +933,7 @@ describe('Forms service', () => {
 
       expect(formMetadataGetSpy).toHaveBeenCalledWith('123')
 
-      expect(formDefinitionCustomisedTitle.name).toBe(
-        formMetadataDocument.title
-      )
+      expect(formDefinitionCustomisedTitle.name).toBe(formMetadataDocument.title)
       const [auditMessage] = publishEventSpy.mock.calls[0]
       expect(auditMessage).toMatchObject({
         type: AuditEventMessageType.FORM_UPDATED
@@ -1078,11 +1008,7 @@ describe('Forms service', () => {
     test('should check if form update DB operation is called with correct form data', async () => {
       const dbSpy = jest.spyOn(formMetadata, 'updateAudit')
 
-      await updateDraftFormDefinition(
-        '123',
-        formDefinitionCustomisedTitle,
-        author
-      )
+      await updateDraftFormDefinition('123', formDefinitionCustomisedTitle, author)
 
       const dbOperationArgs = dbSpy.mock.calls[0]
 
@@ -1099,9 +1025,7 @@ describe('Forms service', () => {
 
       const formDefinitionCustomised = emptyFormWithSummary()
 
-      await expect(
-        updateDraftFormDefinition('123', formDefinitionCustomised, author)
-      ).rejects.toThrow(
+      await expect(updateDraftFormDefinition('123', formDefinitionCustomised, author)).rejects.toThrow(
         Boom.badRequest(`Form with ID '123' has no draft state`)
       )
     })
@@ -1134,18 +1058,12 @@ describe('Forms service', () => {
 
     it('should reorder the pages', async () => {
       const orderList = [pageOneId, pageOneId]
-      jest
-        .mocked(formDefinition.reorderPages)
-        .mockResolvedValueOnce(modifyReorderPages(definition, orderList))
+      jest.mocked(formDefinition.reorderPages).mockResolvedValueOnce(modifyReorderPages(definition, orderList))
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
       const expectedDefinition = buildDefinition({
         pages: [pageOne, pageTwo, summaryPage]
       })
-      const result = await reorderDraftFormDefinitionPages(
-        id,
-        orderList,
-        author
-      )
+      const result = await reorderDraftFormDefinitionPages(id, orderList, author)
 
       const [, order] = jest.mocked(formDefinition.reorderPages).mock.calls[0]
       expect(order).toEqual(orderList)
@@ -1164,11 +1082,7 @@ describe('Forms service', () => {
     })
 
     it('should not do any updates if no order list is sent', async () => {
-      const returnedDefinition = await reorderDraftFormDefinitionPages(
-        id,
-        [],
-        author
-      )
+      const returnedDefinition = await reorderDraftFormDefinitionPages(id, [], author)
       expect(returnedDefinition).toEqual(definition)
       expect(formDefinition.update).not.toHaveBeenCalled()
       expect(formMetadata.update).not.toHaveBeenCalled()
@@ -1176,15 +1090,9 @@ describe('Forms service', () => {
 
     it('should surface errors', async () => {
       const boomInternal = Boom.internal('Something went wrong')
-      jest
-        .mocked(formDefinition.reorderPages)
-        .mockRejectedValueOnce(boomInternal)
+      jest.mocked(formDefinition.reorderPages).mockRejectedValueOnce(boomInternal)
       await expect(
-        reorderDraftFormDefinitionPages(
-          id,
-          ['5a1c2ef7-ed4e-4ec7-9119-226fc3063bda'],
-          author
-        )
+        reorderDraftFormDefinitionPages(id, ['5a1c2ef7-ed4e-4ec7-9119-226fc3063bda'], author)
       ).rejects.toThrow(boomInternal)
     })
   })
@@ -1232,9 +1140,7 @@ describe('Forms service', () => {
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
       jest
         .mocked(formDefinition.reorderComponents)
-        .mockResolvedValueOnce(
-          modifyReorderComponents(definition, pageOneId, orderList)
-        )
+        .mockResolvedValueOnce(modifyReorderComponents(definition, pageOneId, orderList))
 
       const expectedPageOne = buildQuestionPage({
         id: pageOneId,
@@ -1258,15 +1164,9 @@ describe('Forms service', () => {
       const expectedDefinition = buildDefinition({
         pages: [expectedPageOne, summaryPage]
       })
-      const result = await reorderDraftFormDefinitionComponents(
-        id,
-        pageOneId,
-        orderList,
-        author
-      )
+      const result = await reorderDraftFormDefinitionComponents(id, pageOneId, orderList, author)
 
-      const [, , order] = jest.mocked(formDefinition.reorderComponents).mock
-        .calls[0]
+      const [, , order] = jest.mocked(formDefinition.reorderComponents).mock.calls[0]
       expect(order).toEqual(orderList)
       expect(result).toEqual(expectedDefinition)
       const [auditMessage] = publishEventSpy.mock.calls[0]
@@ -1281,12 +1181,7 @@ describe('Forms service', () => {
     })
 
     it('should not do any updates if no order list is sent', async () => {
-      const returnedDefinition = await reorderDraftFormDefinitionComponents(
-        id,
-        pageOneId,
-        [],
-        author
-      )
+      const returnedDefinition = await reorderDraftFormDefinitionComponents(id, pageOneId, [], author)
       expect(returnedDefinition).toEqual(definition)
       expect(formDefinition.update).not.toHaveBeenCalled()
       expect(formMetadata.update).not.toHaveBeenCalled()
@@ -1294,16 +1189,9 @@ describe('Forms service', () => {
 
     it('should surface errors', async () => {
       const boomInternal = Boom.internal('Something went wrong')
-      jest
-        .mocked(formDefinition.reorderComponents)
-        .mockRejectedValueOnce(boomInternal)
+      jest.mocked(formDefinition.reorderComponents).mockRejectedValueOnce(boomInternal)
       await expect(
-        reorderDraftFormDefinitionComponents(
-          id,
-          pageOneId,
-          [componentOneId, componentTwoId, componentThreeId],
-          author
-        )
+        reorderDraftFormDefinitionComponents(id, pageOneId, [componentOneId, componentTwoId, componentThreeId], author)
       ).rejects.toThrow(boomInternal)
     })
   })
@@ -1337,9 +1225,7 @@ describe('Forms service', () => {
       jest.mocked(formMetadata.update).mockImplementationOnce(() => {
         throw new Error('DB error')
       })
-      await expect(deleteDraftFormDefinition(id, author)).rejects.toThrow(
-        'DB error'
-      )
+      await expect(deleteDraftFormDefinition(id, author)).rejects.toThrow('DB error')
     })
 
     it('should delete draft', async () => {

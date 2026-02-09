@@ -53,16 +53,8 @@ export async function publishFormTitleUpdatedEvent(metadata, oldMetadata) {
  * @param {Date} createdAt
  * @param {AuditUser} createdBy
  */
-export async function publishLiveCreatedFromDraftEvent(
-  formId,
-  createdAt,
-  createdBy
-) {
-  const auditMessage = formLiveCreatedFromDraftMapper(
-    formId,
-    createdAt,
-    createdBy
-  )
+export async function publishLiveCreatedFromDraftEvent(formId, createdAt, createdBy) {
+  const auditMessage = formLiveCreatedFromDraftMapper(formId, createdAt, createdBy)
 
   return validateAndPublishEvent(auditMessage)
 }
@@ -73,16 +65,8 @@ export async function publishLiveCreatedFromDraftEvent(
  * @param {Date} createdAt
  * @param {AuditUser} createdBy
  */
-export async function publishDraftCreatedFromLiveEvent(
-  formId,
-  createdAt,
-  createdBy
-) {
-  const auditMessage = formDraftCreatedFromLiveMapper(
-    formId,
-    createdAt,
-    createdBy
-  )
+export async function publishDraftCreatedFromLiveEvent(formId, createdAt, createdBy) {
+  const auditMessage = formDraftCreatedFromLiveMapper(formId, createdAt, createdBy)
 
   return validateAndPublishEvent(auditMessage)
 }
@@ -104,9 +88,7 @@ export async function publishFormMigratedEvent(formId, createdAt, createdBy) {
  * @returns {Promise<{ messageId?: string; type: AuditEventMessageType }[]>}
  */
 export async function bulkPublishEvents(messages) {
-  const messagePromises = messages.map((message) =>
-    validateAndPublishEvent(message)
-  )
+  const messagePromises = messages.map((message) => validateAndPublishEvent(message))
 
   const publishResults = await Promise.all(messagePromises)
 
@@ -136,18 +118,9 @@ export async function publishFormDraftDeletedEvent(metadata, author) {
  * @param {FormDefinitionRequestType} requestType
  * @param {FormDefinitionS3Meta} [s3Meta]
  */
-export async function publishFormUpdatedEvent(
-  metadataDocument,
-  payload,
-  requestType,
-  s3Meta
-) {
+export async function publishFormUpdatedEvent(metadataDocument, payload, requestType, s3Meta) {
   const metadata = mapForm(metadataDocument)
-  const auditMessage = formUpdatedMapper(
-    metadata,
-    requestType,
-    s3Meta === undefined ? { payload } : { s3Meta }
-  )
+  const auditMessage = formUpdatedMapper(metadata, requestType, s3Meta === undefined ? { payload } : { s3Meta })
 
   return validateAndPublishEvent(auditMessage)
 }
@@ -157,21 +130,14 @@ export async function publishFormUpdatedEvent(
  * @param {WithId<Partial<FormMetadataDocument & { 'draft.updatedAt': Date; 'draft.updatedBy': FormMetadataAuthor; }>>} metadataDocument
  * @param {FormDefinition} definition
  */
-export async function publishFormDraftReplacedEvent(
-  metadataDocument,
-  definition
-) {
+export async function publishFormDraftReplacedEvent(metadataDocument, definition) {
   const metadata = mapForm(metadataDocument)
   const filename = `${metadata.id}.json`
   const s3Meta = await saveToS3(filename, definition)
 
-  const auditMessage = formUpdatedMapper(
-    metadata,
-    FormDefinitionRequestType.REPLACE_DRAFT,
-    {
-      s3Meta
-    }
-  )
+  const auditMessage = formUpdatedMapper(metadata, FormDefinitionRequestType.REPLACE_DRAFT, {
+    s3Meta
+  })
 
   return validateAndPublishEvent(auditMessage)
 }

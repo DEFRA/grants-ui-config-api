@@ -1,9 +1,4 @@
-import {
-  ConditionType,
-  Coordinator,
-  OperatorName,
-  formDefinitionV2Schema
-} from '@defra/forms-model'
+import { ConditionType, Coordinator, OperatorName, formDefinitionV2Schema } from '@defra/forms-model'
 import { buildDefinition, buildQuestionPage } from '@defra/forms-model/stubs'
 
 import { buildCondition } from '~/src/api/forms/__stubs__/definition.js'
@@ -108,9 +103,7 @@ describe('Conditions route', () => {
         ]
       })
 
-      const updateCondition = jest
-        .mocked(updateConditionOnDraftFormDefinition)
-        .mockResolvedValue(condition)
+      const updateCondition = jest.mocked(updateConditionOnDraftFormDefinition).mockResolvedValue(condition)
 
       const response = await server.inject({
         method: 'PUT',
@@ -146,9 +139,7 @@ describe('Conditions route', () => {
         id: conditionId,
         status: 'deleted'
       })
-      const [calledFormId, calledId] = jest.mocked(
-        removeConditionOnDraftFormDefinition
-      ).mock.calls[0]
+      const [calledFormId, calledId] = jest.mocked(removeConditionOnDraftFormDefinition).mock.calls[0]
       expect(calledFormId).toEqual(id)
       expect(calledId).toEqual(conditionId)
     })
@@ -191,15 +182,11 @@ describe('Conditions route', () => {
       // Condition references a component that doesn't exist
       const refConditionComponentIdDefinition = buildDefinition({
         name: 'Test form',
-        pages: [
-          buildQuestionPage({ id: 'cf49d84a-096a-461a-ae8c-a4c38ec1837d' })
-        ],
+        pages: [buildQuestionPage({ id: 'cf49d84a-096a-461a-ae8c-a4c38ec1837d' })],
         conditions: [stringValueCondition]
       })
 
-      const { error } = formDefinitionV2Schema.validate(
-        refConditionComponentIdDefinition
-      )
+      const { error } = formDefinitionV2Schema.validate(refConditionComponentIdDefinition)
 
       expect(error).toBeDefined()
 
@@ -220,8 +207,7 @@ describe('Conditions route', () => {
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toEqual({
         error: 'InvalidFormDefinitionError',
-        message:
-          '"conditions[0].items[0].componentId" must be [ref:root:pages]',
+        message: '"conditions[0].items[0].componentId" must be [ref:root:pages]',
         statusCode: 400,
         cause: err.cause
       })

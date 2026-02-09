@@ -19,8 +19,8 @@ export const requestLogger = {
       if (isAuthenticated && credentials.user) {
         const { user } = credentials
 
-        if (user.oid) {
-          userPrefix = ` [${user.oid}] `
+        if (user.id) {
+          userPrefix = ` [${user.id}] `
         }
       }
 

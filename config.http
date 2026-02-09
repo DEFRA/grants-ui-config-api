@@ -1,0 +1,268 @@
+### Grants UI Config API - HTTP Client
+
+### Health Check
+# @name HealthCheck
+GET {{baseUrl}}/health
+
+###
+
+### List Forms
+# @name ListForms
+GET {{baseUrl}}/forms
+
+###
+
+### List Forms with Query Parameters
+# @name ListFormsWithQuery
+GET {{baseUrl}}/forms?organisations=Defra
+
+###
+
+### Create Form (requires auth)
+# @name CreateForm
+POST {{baseUrl}}/forms
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Sample Form",
+  "organisation": "Defra",
+  "teamName": "Test Team",
+  "teamEmail": "test.team.email@defra.gov.uk"
+}
+
+###
+
+### Default IDs for the pre-seeded feedback form
+@formId=691db72966b1bdc98fa3e72a
+@versionNumber=1
+
+###
+
+### Get Form by ID
+# @name GetFormById
+GET {{baseUrl}}/forms/{{formId}}
+
+###
+
+### Get Form by Slug
+# @name GetFormBySlug
+GET {{baseUrl}}/forms/slug/feedback
+
+###
+
+### Update Form Metadata (requires auth)
+# @name UpdateFormMetadata
+PATCH {{baseUrl}}/forms/{{formId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Updated Form Title"
+}
+
+###
+
+### Delete Form (requires auth)
+# @name DeleteForm
+DELETE {{baseUrl}}/forms/{{formId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+### Get Draft Form Definition
+# @name GetDraftDefinition
+GET {{baseUrl}}/forms/{{formId}}/definition/draft
+
+###
+
+### Update Draft Form Definition (requires auth)
+# @name UpdateDraftDefinition
+POST {{baseUrl}}/forms/{{formId}}/definition/draft
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "pages": [],
+  "lists": [],
+  "sections": [],
+  "conditions": []
+}
+
+###
+
+### Get Live Form Definition
+# @name GetLiveDefinition
+GET {{baseUrl}}/forms/{{formId}}/definition
+
+###
+
+### Create Live from Draft (requires auth)
+# @name CreateLiveFromDraft
+POST {{baseUrl}}/forms/{{formId}}/create-live
+Authorization: Bearer {{authToken}}
+
+###
+
+### Create Draft from Live (requires auth)
+# @name CreateDraftFromLive
+POST {{baseUrl}}/forms/{{formId}}/create-draft
+Authorization: Bearer {{authToken}}
+
+###
+
+### Delete Draft Definition Only (requires auth)
+# @name DeleteDraftDefinition
+DELETE {{baseUrl}}/forms/{{formId}}/draft
+Authorization: Bearer {{authToken}}
+
+###
+
+### Migrate Definition to V2 (requires auth)
+# @name MigrateDefinitionToV2
+POST {{baseUrl}}/forms/{{formId}}/definition/draft/migrate/2
+Authorization: Bearer {{authToken}}
+
+###
+
+### Get Form Versions
+# @name GetFormVersions
+GET {{baseUrl}}/forms/{{formId}}/versions
+
+###
+
+### Get Specific Form Version
+# @name GetFormVersion
+GET {{baseUrl}}/forms/{{formId}}/versions/{{versionNumber}}
+
+###
+
+### Get Specific Form Version Definition
+# @name GetFormVersionDefinition
+GET {{baseUrl}}/forms/{{formId}}/versions/{{versionNumber}}/definition
+
+###
+
+### Create Page on Draft Definition (requires auth)
+# @name CreatePage
+POST {{baseUrl}}/forms/{{formId}}/definition/draft/pages
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "New Page",
+  "path": "/new-page",
+  "next": []
+}
+
+> {%
+  client.global.set("pageId", response.body.id);
+%}
+
+###
+
+# Manually set pageId if required
+# @pageId=
+
+### Reorder Pages on Draft Definition (requires auth)
+# @name ReorderPages
+POST {{baseUrl}}/forms/{{formId}}/definition/draft/pages/order
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "ids": ["pageId1", "pageId2", "pageId3"]
+}
+
+###
+
+### Patch Page on Draft Definition (requires auth)
+# @name PatchPage
+PATCH {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Updated Page Title"
+}
+
+###
+
+### Delete Page from Draft Definition (requires auth)
+# @name DeletePage
+DELETE {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+### Create Component on Draft Definition (requires auth)
+# @name CreateComponent
+POST {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}/components
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "type": "TextField",
+  "name": "fieldName",
+  "title": "Field Title1",
+  "options": {}
+}
+
+> {%
+  client.global.set("componentId", response.body.id);
+%}
+
+###
+
+# Manually set componentId if required
+# @componentId=
+
+### Create Component with Prepend (requires auth)
+# @name CreateComponentWithPrepend
+POST {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}/components?prepend=true
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "type": "TextField",
+  "name": "fieldName",
+  "title": "Prepended Field Title",
+  "options": {}
+}
+
+###
+
+### Reorder Components on Draft Definition (requires auth)
+# @name ReorderComponents
+POST {{baseUrl}}/forms/{{formId}}/definition/draft/page/{{pageId}}/components/order
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "ids": ["componentId1", "componentId2", "componentId3"]
+}
+
+###
+
+### Update Component on Draft Definition (requires auth)
+# @name UpdateComponent
+PUT {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}/components/{{componentId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "id": "{{componentId}}",
+  "type": "TextField",
+  "name": "updatedFieldName",
+  "title": "Updated Field Title",
+  "options": {}
+}
+
+###
+
+### Delete Component from Draft Definition (requires auth)
+# @name DeleteComponent
+DELETE {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}/components/{{componentId}}
+Authorization: Bearer {{authToken}}
+
+###

@@ -15,18 +15,9 @@ import {
   listForms,
   updateDraftFormDefinition
 } from '~/src/api/forms/service/definition.js'
-import {
-  createForm,
-  getForm,
-  getFormBySlug,
-  removeForm,
-  updateFormMetadata
-} from '~/src/api/forms/service/index.js'
+import { createForm, getForm, getFormBySlug, removeForm, updateFormMetadata } from '~/src/api/forms/service/index.js'
 import { migrateDefinitionToV2 } from '~/src/api/forms/service/migration.js'
-import {
-  getFormVersion,
-  getFormVersions
-} from '~/src/api/forms/service/versioning.js'
+import { getFormVersion, getFormVersions } from '~/src/api/forms/service/versioning.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
 import { formVersionByIdSchema } from '~/src/models/form-versions.js'
 import {
@@ -106,9 +97,7 @@ export default [
       if (form.live) {
         const userScopes = auth.credentials.scope ?? []
         if (!userScopes.includes(Scopes.FormPublish)) {
-          throw Boom.forbidden(
-            'Form is live - FormPublish scope required to update metadata'
-          )
+          throw Boom.forbidden('Form is live - FormPublish scope required to update metadata')
         }
       }
 
@@ -127,10 +116,7 @@ export default [
       validate: {
         params: formByIdSchema,
         // Take the form metadata update schema and make all fields optional. This acts similar to Partial<T> in Typescript.
-        payload: formMetadataInputSchema.fork(
-          Object.keys(formMetadataInputKeys),
-          (schema) => schema.optional()
-        )
+        payload: formMetadataInputSchema.fork(Object.keys(formMetadataInputKeys), (schema) => schema.optional())
       }
     }
   },

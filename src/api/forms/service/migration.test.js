@@ -1,14 +1,5 @@
-import {
-  Engine,
-  FormDefinitionRequestType,
-  SchemaVersion
-} from '@defra/forms-model'
-import {
-  buildDefinition,
-  buildQuestionPage,
-  buildSummaryPage,
-  buildTextFieldComponent
-} from '@defra/forms-model/stubs'
+import { Engine, FormDefinitionRequestType, SchemaVersion } from '@defra/forms-model'
+import { buildDefinition, buildQuestionPage, buildSummaryPage, buildTextFieldComponent } from '@defra/forms-model/stubs'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
@@ -16,15 +7,9 @@ import * as formDefinition from '~/src/api/forms/repositories/form-definition-re
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { formMetadataDocument } from '~/src/api/forms/service/__stubs__/service.js'
 import * as migrationHelperStubs from '~/src/api/forms/service/migration-helpers.js'
-import {
-  migrateDefinitionToV2,
-  repositionSummaryPipeline
-} from '~/src/api/forms/service/migration.js'
+import { migrateDefinitionToV2, repositionSummaryPipeline } from '~/src/api/forms/service/migration.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
-import {
-  publishFormMigratedEvent,
-  publishFormUpdatedEvent
-} from '~/src/messaging/publish.js'
+import { publishFormMigratedEvent, publishFormUpdatedEvent } from '~/src/messaging/publish.js'
 import { prepareDb } from '~/src/mongo.js'
 
 jest.mock('~/src/helpers/get-author.js')
@@ -103,19 +88,13 @@ describe('migration', () => {
       const addPageSpy = jest.spyOn(formDefinition, 'addPage')
       const formMetadataUpdateSpy = jest.spyOn(formMetadata, 'updateAudit')
 
-      jest
-        .mocked(formMetadata.updateAudit)
-        .mockResolvedValue(formMetadataDocument)
+      jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
       const auditMock = jest.mocked(publishFormUpdatedEvent)
       const formDefinition1 = buildDefinition({
         pages: [initialSummary, buildQuestionPage({})]
       })
 
-      const returnedSummary = await repositionSummaryPipeline(
-        id,
-        formDefinition1,
-        author
-      )
+      const returnedSummary = await repositionSummaryPipeline(id, formDefinition1, author)
 
       expect(deletePagesSpy).toHaveBeenCalled()
       expect(addPageSpy).toHaveBeenCalled()
@@ -182,39 +161,30 @@ describe('migration', () => {
     })
 
     it('should surface errors correctly', async () => {
-      jest
-        .mocked(formDefinition.addPage)
-        .mockRejectedValueOnce(Boom.badRequest('Error'))
+      jest.mocked(formDefinition.addPage).mockRejectedValueOnce(Boom.badRequest('Error'))
 
       const formDefinition1 = buildDefinition({
         pages: [summary, buildQuestionPage({})]
       })
-      await expect(
-        repositionSummaryPipeline('123', formDefinition1, author)
-      ).rejects.toThrow(Boom.badRequest('Error'))
+      await expect(repositionSummaryPipeline('123', formDefinition1, author)).rejects.toThrow(Boom.badRequest('Error'))
     })
   })
 
   describe('migrateDefinitionToV2', () => {
-    const getMock = jest
-      .mocked(formDefinition.get)
-      .mockResolvedValue(versionOne)
+    const getMock = jest.mocked(formDefinition.get).mockResolvedValue(versionOne)
 
     it('should migrate a v1 definition to v2', async () => {
       const updateMock = jest.mocked(formDefinition.update)
       const auditMock = jest.mocked(publishFormMigratedEvent)
 
-      jest
-        .spyOn(migrationHelperStubs, 'migrateToV2')
-        .mockReturnValueOnce(versionTwo)
+      jest.spyOn(migrationHelperStubs, 'migrateToV2').mockReturnValueOnce(versionTwo)
 
       getMock.mockResolvedValueOnce(versionOne)
 
       const updatedDefinition = await migrateDefinitionToV2(id, author)
 
       expect(updateMock).toHaveBeenCalled()
-      const [finalExpectedId, finalExpectedDefinition] =
-        updateMock.mock.calls[0]
+      const [finalExpectedId, finalExpectedDefinition] = updateMock.mock.calls[0]
 
       expect(finalExpectedId).toBe(id)
       expect(finalExpectedDefinition).toEqual(versionTwo)
@@ -235,12 +205,8 @@ describe('migration', () => {
 
     it('should surface errors correctly', async () => {
       jest.mocked(formDefinition.get).mockResolvedValue(versionOne)
-      jest
-        .mocked(formDefinition.update)
-        .mockRejectedValueOnce(Boom.internal('err'))
-      await expect(migrateDefinitionToV2(id, author)).rejects.toThrow(
-        Boom.internal('err')
-      )
+      jest.mocked(formDefinition.update).mockRejectedValueOnce(Boom.internal('err'))
+      await expect(migrateDefinitionToV2(id, author)).rejects.toThrow(Boom.internal('err'))
     })
   })
 })

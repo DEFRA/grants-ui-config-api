@@ -63,8 +63,7 @@ describe('Components route', () => {
       expect(response.statusCode).toEqual(okStatusCode)
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toEqual(expectedComponent)
-      const [calledFormId, calledPageId, component, , prepend] =
-        createComponentOnDraftDefinitionMock.mock.calls[0]
+      const [calledFormId, calledPageId, component, , prepend] = createComponentOnDraftDefinitionMock.mock.calls[0]
       expect([calledFormId, calledPageId, component, prepend]).toEqual([
         id,
         pageId,
@@ -110,9 +109,7 @@ describe('Components route', () => {
           })
         ]
       })
-      jest
-        .mocked(reorderDraftFormDefinitionComponents)
-        .mockResolvedValue(expectedDefinition)
+      jest.mocked(reorderDraftFormDefinitionComponents).mockResolvedValue(expectedDefinition)
 
       const response = await server.inject({
         method: 'POST',
@@ -146,14 +143,13 @@ describe('Components route', () => {
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toEqual(updatedComponent)
       expect(updateComponentOnDraftPageMock).toHaveBeenCalled()
-      const [calledFormId, calledPageId, calledComponentId, component] =
-        updateComponentOnDraftPageMock.mock.calls[0]
-      expect([
-        calledFormId,
-        calledPageId,
-        calledComponentId,
-        component
-      ]).toEqual([id, pageId, componentId, updatedComponent])
+      const [calledFormId, calledPageId, calledComponentId, component] = updateComponentOnDraftPageMock.mock.calls[0]
+      expect([calledFormId, calledPageId, calledComponentId, component]).toEqual([
+        id,
+        pageId,
+        componentId,
+        updatedComponent
+      ])
     })
 
     test('Testing POST /forms/{id}/definition/draft/pages/{pageId}/components?prepend=true adds a new component to the start of a page', async () => {
@@ -174,8 +170,7 @@ describe('Components route', () => {
 
       expect(response.statusCode).toEqual(okStatusCode)
       expect(response.headers['content-type']).toContain(jsonContentType)
-      const [, , , , prepend] =
-        createComponentOnDraftDefinitionMock.mock.calls[0]
+      const [, , , , prepend] = createComponentOnDraftDefinitionMock.mock.calls[0]
       expect(prepend).toBe(true)
     })
   })
@@ -215,9 +210,7 @@ describe('Components route', () => {
 
         expect(response.statusCode).toEqual(badRequestStatusCode)
         expect(response.headers['content-type']).toContain(jsonContentType)
-        const validation = errors.validation
-          ? { validation: errors.validation }
-          : {}
+        const validation = errors.validation ? { validation: errors.validation } : {}
         expect(response.result).toMatchObject({
           error: errors.error ?? 'Bad Request',
           message: errors.message,
@@ -270,9 +263,7 @@ describe('Components route', () => {
     })
 
     test('Testing DELETE /forms/{id}/pages/{pageId}/components/{componentId} route returns a "deleted" status', async () => {
-      const deleteComponentOnDraftDefinitionMock = jest
-        .mocked(deleteComponentOnDraftDefinition)
-        .mockResolvedValue()
+      const deleteComponentOnDraftDefinitionMock = jest.mocked(deleteComponentOnDraftDefinition).mockResolvedValue()
 
       const response = await server.inject({
         method: 'DELETE',
@@ -287,12 +278,7 @@ describe('Components route', () => {
         componentId,
         status: 'deleted'
       })
-      expect(deleteComponentOnDraftDefinitionMock).toHaveBeenCalledWith(
-        id,
-        pageId,
-        componentId,
-        expect.anything()
-      )
+      expect(deleteComponentOnDraftDefinitionMock).toHaveBeenCalledWith(id, pageId, componentId, expect.anything())
     })
   })
 })

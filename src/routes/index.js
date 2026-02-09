@@ -7,13 +7,4 @@ import options from '~/src/routes/options.js'
 import pages from '~/src/routes/pages.js'
 import sections from '~/src/routes/sections.js'
 
-export default [
-  health,
-  forms,
-  pages,
-  components,
-  lists,
-  conditions,
-  options,
-  sections
-].flat()
+export default [health, forms, pages, components, lists, conditions, options, sections].flat()

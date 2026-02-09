@@ -1,8 +1,4 @@
-import {
-  FormDefinitionRequestType,
-  FormStatus,
-  getErrorMessage
-} from '@defra/forms-model'
+import { FormDefinitionRequestType, FormStatus, getErrorMessage } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
@@ -22,31 +18,16 @@ import { client } from '~/src/mongo.js'
  * @param {string} componentId
  * @param {ClientSession} [session]
  */
-export async function getFormDefinitionPageComponent(
-  formId,
-  pageId,
-  componentId,
-  session
-) {
-  logger.info(
-    `Getting Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`
-  )
+export async function getFormDefinitionPageComponent(formId, pageId, componentId, session) {
+  logger.info(`Getting Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`)
 
-  const definition = /** @type {FormDefinition} */ await getFormDefinition(
-    formId,
-    FormStatus.Draft,
-    session
-  )
+  const definition = /** @type {FormDefinition} */ await getFormDefinition(formId, FormStatus.Draft, session)
   const component = findComponent(definition, pageId, componentId)
 
   if (component === undefined) {
-    throw Boom.notFound(
-      `Component ID ${componentId} not found on Page ID ${pageId} & Form ID ${formId}`
-    )
+    throw Boom.notFound(`Component ID ${componentId} not found on Page ID ${pageId} & Form ID ${formId}`)
   }
-  logger.info(
-    `Got Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`
-  )
+  logger.info(`Got Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`)
 
   return component
 }
@@ -59,13 +40,7 @@ export async function getFormDefinitionPageComponent(
  * @param {FormMetadataAuthor} author
  * @param {boolean} prepend
  */
-export async function createComponentOnDraftDefinition(
-  formId,
-  pageId,
-  component,
-  author,
-  prepend = false
-) {
+export async function createComponentOnDraftDefinition(formId, pageId, component, author, prepend = false) {
   await getFormDefinitionPage(formId, pageId)
 
   logger.info(`Adding new component on Page ID ${pageId} on Form ID ${formId}`)
@@ -74,27 +49,13 @@ export async function createComponentOnDraftDefinition(
 
   try {
     await session.withTransaction(async () => {
-      await formDefinition.addComponent(
-        formId,
-        pageId,
-        component,
-        session,
-        prepend ? 0 : undefined
-      )
+      await formDefinition.addComponent(formId, pageId, component, session, prepend ? 0 : undefined)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        component,
-        FormDefinitionRequestType.CREATE_COMPONENT
-      )
+      await publishFormUpdatedEvent(metadataDocument, component, FormDefinitionRequestType.CREATE_COMPONENT)
     })
   } catch (err) {
     logger.error(
@@ -120,52 +81,35 @@ export async function createComponentOnDraftDefinition(
  * @param {ComponentDef} componentPayload
  * @param {FormMetadataAuthor} author
  */
-export async function updateComponentOnDraftDefinition(
-  formId,
-  pageId,
-  componentId,
-  componentPayload,
-  author
-) {
-  logger.info(
-    `Updating Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`
-  )
+export async function updateComponentOnDraftDefinition(formId, pageId, componentId, componentPayload, author) {
+  logger.info(`Updating Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`)
 
   const session = client.startSession()
 
   try {
-    const updatedFormDefinitionPageComponent = await session.withTransaction(
-      async () => {
-        const formDefinitionPageComponent =
-          await formDefinition.updateComponent(
-            formId,
-            pageId,
-            componentId,
-            componentPayload,
-            session
-          )
+    const updatedFormDefinitionPageComponent = await session.withTransaction(async () => {
+      const formDefinitionPageComponent = await formDefinition.updateComponent(
+        formId,
+        pageId,
+        componentId,
+        componentPayload,
+        session
+      )
 
-        const metadataDocument = await formMetadata.updateAudit(
-          formId,
-          author,
-          session
-        )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
-        await createFormVersion(formId, session)
+      await createFormVersion(formId, session)
 
-        await publishFormUpdatedEvent(
-          metadataDocument,
-          formDefinitionPageComponent,
-          FormDefinitionRequestType.UPDATE_COMPONENT
-        )
+      await publishFormUpdatedEvent(
+        metadataDocument,
+        formDefinitionPageComponent,
+        FormDefinitionRequestType.UPDATE_COMPONENT
+      )
 
-        return formDefinitionPageComponent
-      }
-    )
+      return formDefinitionPageComponent
+    })
 
-    logger.info(
-      `Updated Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`
-    )
+    logger.info(`Updated Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`)
 
     return updatedFormDefinitionPageComponent
   } catch (err) {
@@ -187,15 +131,8 @@ export async function updateComponentOnDraftDefinition(
  * @param {string} componentId
  * @param {FormMetadataAuthor} author
  */
-export async function deleteComponentOnDraftDefinition(
-  formId,
-  pageId,
-  componentId,
-  author
-) {
-  logger.info(
-    `Deleting Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`
-  )
+export async function deleteComponentOnDraftDefinition(formId, pageId, componentId, author) {
+  logger.info(`Deleting Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`)
 
   const session = client.startSession()
 
@@ -203,11 +140,7 @@ export async function deleteComponentOnDraftDefinition(
     await session.withTransaction(async () => {
       await formDefinition.deleteComponent(formId, pageId, componentId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
@@ -228,9 +161,7 @@ export async function deleteComponentOnDraftDefinition(
     await session.endSession()
   }
 
-  logger.info(
-    `Deleted Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`
-  )
+  logger.info(`Deleted Component ID ${componentId} on Page ID ${pageId} & Form ID ${formId}`)
 }
 
 /**

@@ -1,8 +1,4 @@
-import {
-  buildDefinition,
-  buildQuestionPage,
-  buildSummaryPage
-} from '~/src/api/forms/__stubs__/definition.js'
+import { buildDefinition, buildQuestionPage, buildSummaryPage } from '~/src/api/forms/__stubs__/definition.js'
 import { reorderDraftFormDefinitionPages } from '~/src/api/forms/service/definition.js'
 import {
   createPageOnDraftDefinition,
@@ -34,8 +30,8 @@ describe('Pages route', () => {
   const jsonContentType = 'application/json'
   const id = '661e4ca5039739ef2902b214'
   const pageId = 'c7b9f0fa-3223-46b8-b7d3-b2bf00f37155'
-  const authorId = 'f50ceeed-b7a4-47cf-a498-094efc99f8bc'
-  const authorDisplayName = 'Enrique Chase'
+  const authorId = 'test-service-001'
+  const authorDisplayName = 'Test Service'
 
   /**
    * @satisfies {FormMetadataAuthor}
@@ -76,9 +72,7 @@ describe('Pages route', () => {
       const questionPage = buildQuestionPage({
         title: 'Updated title for page'
       })
-      const patchFieldsOnDraftPageMock = jest
-        .mocked(patchFieldsOnDraftDefinitionPage)
-        .mockResolvedValue(questionPage)
+      const patchFieldsOnDraftPageMock = jest.mocked(patchFieldsOnDraftDefinitionPage).mockResolvedValue(questionPage)
 
       const response = await server.inject({
         method: 'PATCH',
@@ -90,13 +84,8 @@ describe('Pages route', () => {
       expect(response.statusCode).toEqual(okStatusCode)
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toEqual(questionPage)
-      const [calledFormId, calledPageId, patchedFields] =
-        patchFieldsOnDraftPageMock.mock.calls[0]
-      expect([calledFormId, calledPageId, patchedFields]).toEqual([
-        id,
-        pageId,
-        stubPatchPageFields
-      ])
+      const [calledFormId, calledPageId, patchedFields] = patchFieldsOnDraftPageMock.mock.calls[0]
+      expect([calledFormId, calledPageId, patchedFields]).toEqual([id, pageId, stubPatchPageFields])
     })
 
     test('Testing POST /forms/{id}/definition/draft/pages/order reorders the pages in the db', async () => {
@@ -116,9 +105,7 @@ describe('Pages route', () => {
           buildSummaryPage()
         ]
       })
-      jest
-        .mocked(reorderDraftFormDefinitionPages)
-        .mockResolvedValue(expectedDefinition)
+      jest.mocked(reorderDraftFormDefinitionPages).mockResolvedValue(expectedDefinition)
 
       const response = await server.inject({
         method: 'POST',
@@ -147,8 +134,7 @@ describe('Pages route', () => {
         id: pageId,
         status: 'deleted'
       })
-      const [calledFormId, calledId] = jest.mocked(deletePageOnDraftDefinition)
-        .mock.calls[0]
+      const [calledFormId, calledId] = jest.mocked(deletePageOnDraftDefinition).mock.calls[0]
       expect(calledFormId).toEqual(id)
       expect(calledId).toEqual(pageId)
     })
@@ -193,8 +179,7 @@ describe('Pages route', () => {
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toEqual({
         error: 'Bad Request',
-        message:
-          '"[0]" must be a valid GUID. "value" does not contain 1 required value(s)',
+        message: '"[0]" must be a valid GUID. "value" does not contain 1 required value(s)',
         statusCode: 400,
         validation: {
           keys: ['0', ''],

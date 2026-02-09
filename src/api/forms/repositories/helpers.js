@@ -103,9 +103,7 @@ export function getComponent(definition, pageId, componentId) {
   const page = getPage(definition, pageId)
 
   if (!hasComponentsEvenIfNoNext(page)) {
-    throw Boom.notFound(
-      `Component not found on page '${page.id}' with id '${componentId}' - page has no components`
-    )
+    throw Boom.notFound(`Component not found on page '${page.id}' with id '${componentId}' - page has no components`)
   }
 
   const idx = getComponentIndex(page, componentId)
@@ -147,9 +145,7 @@ export function getPageIndex(definition, pageId) {
  * @returns {number}
  */
 export function findComponentIndex(page, componentId) {
-  return hasComponentsEvenIfNoNext(page)
-    ? page.components.findIndex((component) => component.id === componentId)
-    : -1
+  return hasComponentsEvenIfNoNext(page) ? page.components.findIndex((component) => component.id === componentId) : -1
 }
 
 /**
@@ -163,9 +159,7 @@ export function getComponentIndex(page, componentId) {
   const idx = findComponentIndex(page, componentId)
 
   if (idx === -1) {
-    throw Boom.notFound(
-      `Component not found on page '${page.id}' with id '${componentId}'`
-    )
+    throw Boom.notFound(`Component not found on page '${page.id}' with id '${componentId}'`)
   }
 
   return idx
@@ -218,9 +212,7 @@ export function getList(definition, listId) {
  * @returns {number}
  */
 export function findConditionIndex(definition, conditionId) {
-  return definition.conditions
-    .filter(isConditionWrapperV2)
-    .findIndex((condition) => condition.id === conditionId)
+  return definition.conditions.filter(isConditionWrapperV2).findIndex((condition) => condition.id === conditionId)
 }
 
 /**
@@ -272,11 +264,7 @@ export function uniquePathGate(
   errorCode = ApiErrorCode.General,
   excludePageId = ''
 ) {
-  if (
-    formDraftDefinition.pages.some(
-      (page) => page.path === path && page.id !== excludePageId
-    )
-  ) {
+  if (formDraftDefinition.pages.some((page) => page.path === path && page.id !== excludePageId)) {
     throw Boom.conflict(message, { errorCode })
   }
 }
@@ -288,21 +276,14 @@ export function uniquePathGate(
  * @param {ClientSession} session - the mongo transaction session
  * @param {ObjectSchema<FormDefinition>} schema - the schema to use (defaults to V2)
  */
-export async function insertDraft(
-  formId,
-  definition,
-  session,
-  schema = formDefinitionV2Schema
-) {
+export async function insertDraft(formId, definition, session, schema = formDefinitionV2Schema) {
   // Validate form definition
   const draft = validate(definition, schema)
 
   const id = { _id: new ObjectId(formId) }
 
   // Persist the new draft
-  const coll = /** @satisfies {Collection<{draft: FormDefinition}>} */ (
-    db.collection(DEFINITION_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<{draft: FormDefinition}>} */ (db.collection(DEFINITION_COLLECTION_NAME))
 
   const insertResult = await coll.findOneAndUpdate(
     id,
@@ -328,15 +309,8 @@ export async function insertDraft(
  * @param {ClientSession} session - the mongo transaction session
  * @param {ObjectSchema<FormDefinition>} schema - the schema to use (defaults to V2)
  */
-export async function modifyDraft(
-  formId,
-  updateCallback,
-  session,
-  schema = formDefinitionV2Schema
-) {
-  const coll = /** @satisfies {Collection<{draft?: FormDefinition}>} */ (
-    db.collection(DEFINITION_COLLECTION_NAME)
-  )
+export async function modifyDraft(formId, updateCallback, session, schema = formDefinitionV2Schema) {
+  const coll = /** @satisfies {Collection<{draft?: FormDefinition}>} */ (db.collection(DEFINITION_COLLECTION_NAME))
 
   const id = { _id: new ObjectId(formId) }
   const document = await coll.findOne(id)
@@ -356,9 +330,7 @@ export async function modifyDraft(
   const draft = validate(updated, schema)
 
   // Persist the updated draft
-  const coll2 = /** @satisfies {Collection<{draft: FormDefinition}>} */ (
-    db.collection(DEFINITION_COLLECTION_NAME)
-  )
+  const coll2 = /** @satisfies {Collection<{draft: FormDefinition}>} */ (db.collection(DEFINITION_COLLECTION_NAME))
 
   const updateResult = await coll2.findOneAndUpdate(
     id,
@@ -500,8 +472,7 @@ export function modifyAddComponent(definition, pageId, component, position) {
   const page = definition.pages[idx]
 
   if (!hasComponentsEvenIfNoNext(page) && isSummaryPage(page)) {
-    const summaryPage =
-      /** @type {PageSummary | PageSummaryWithConfirmationEmail} */ (page)
+    const summaryPage = /** @type {PageSummary | PageSummaryWithConfirmationEmail} */ (page)
     summaryPage.components = []
   }
 
@@ -524,12 +495,7 @@ export function modifyAddComponent(definition, pageId, component, position) {
  * @param {ComponentDef} component
  * @returns {FormDefinition}
  */
-export function modifyUpdateComponent(
-  definition,
-  pageId,
-  componentId,
-  component
-) {
+export function modifyUpdateComponent(definition, pageId, componentId, component) {
   const pageIdx = getPageIndex(definition, pageId)
   const page = definition.pages[pageIdx]
   const componentIdx = getComponentIndex(page, componentId)
@@ -569,9 +535,7 @@ export function handleControllerPatch(page, controller) {
     page.controller = controller
     if (controller === ControllerType.FileUpload && hasComponents(page)) {
       // There could be a markdown component (or other non-form components) so look for first non-content field
-      const firstFormComponent = page.components.find((comp) =>
-        isFormType(comp.type)
-      )
+      const firstFormComponent = page.components.find((comp) => isFormType(comp.type))
       if (firstFormComponent) {
         firstFormComponent.type = ComponentType.FileUploadField
       }
@@ -725,9 +689,7 @@ export function modifyDeleteCondition(definition, conditionId) {
 export function modifyUnassignCondition(definition, conditionId) {
   definition.pages.forEach((page) => {
     if (page.condition === conditionId) {
-      logger.info(
-        `Unassigning condition ${conditionId} from page ${page.id ?? 'unknown'}`
-      )
+      logger.info(`Unassigning condition ${conditionId} from page ${page.id ?? 'unknown'}`)
       delete page.condition
     }
   })
@@ -759,14 +721,12 @@ export function modifyAssignSections(definition, sectionAssignments) {
   }
 
   // Update the sections array with the new sections (without pageIds)
-  definition.sections = sectionsWithIds.map(
-    ({ id, name, title, hideTitle }) => ({
-      id,
-      name,
-      title,
-      ...(hideTitle !== undefined && { hideTitle })
-    })
-  )
+  definition.sections = sectionsWithIds.map(({ id, name, title, hideTitle }) => ({
+    id,
+    name,
+    title,
+    ...(hideTitle !== undefined && { hideTitle })
+  }))
 
   // First, clear all existing section assignments from pages
   for (const page of definition.pages) {
