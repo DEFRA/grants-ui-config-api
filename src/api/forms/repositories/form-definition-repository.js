@@ -121,7 +121,8 @@ export async function createDraftFromLive(id, session) {
  * @param {ClientSession | undefined} [session]
  * @returns {Promise<FormDefinition>}
  */
-export async function get(formId, state = FormStatus.Draft, session) {
+// eslint-disable-next-line @typescript-eslint/no-useless-default-assignment
+export async function get(formId, state = FormStatus.Draft, session = undefined) {
   logger.info(`Getting form definition (${state}) for form ID ${formId}`)
 
   const coll = /** @satisfies {Collection<{draft?: FormDefinition, live?: FormDefinition}>} */ (

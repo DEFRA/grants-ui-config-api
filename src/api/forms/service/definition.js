@@ -36,7 +36,8 @@ export async function listForms(options) {
  * @param {FormStatus} state - the form state
  * @param {ClientSession | undefined} [session]
  */
-export async function getFormDefinition(formId, state = FormStatus.Draft, session) {
+// eslint-disable-next-line @typescript-eslint/no-useless-default-assignment
+export async function getFormDefinition(formId, state = FormStatus.Draft, session = undefined) {
   return formDefinition.get(formId, state, session)
 }
 
