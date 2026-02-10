@@ -14,14 +14,10 @@ This repository is a fork of [DEFRA/forms-manager](https://github.com/DEFRA/form
     - [Database Migrations](#database-migrations)
       - [Production](#production)
       - [Local Development](#local-development-1)
-        - [Option 1: Using Docker (Recommended)](#option-1-using-docker-recommended)
+        - [Option 1: Using Docker Compose (Recommended)](#option-1-using-docker-compose-recommended)
         - [Option 2: Manual Migration Commands](#option-2-manual-migration-commands)
   - [API endpoints](#api-endpoints)
   - [Calling API endpoints](#calling-api-endpoints)
-  - [Integration testing](#integration-testing)
-    - [Local development with the integration test environment](#local-development-with-the-integration-test-environment)
-    - [Running Postman tests locally](#running-postman-tests-locally)
-    - [Adding new API tests](#adding-new-api-tests)
   - [Licence](#licence)
     - [About the licence](#about-the-licence)
 
@@ -59,10 +55,6 @@ npm run docker:up
 ```text
 MONGO_URI=""
 MONGO_DATABASE=""
-OIDC_JWKS_URI=""
-OIDC_VERIFY_AUD=""
-OIDC_VERIFY_ISS=""
-ROLE_EDITOR_GROUP_ID=""
 HTTP_PROXY=
 HTTPS_PROXY=
 NO_PROXY=
@@ -101,7 +93,7 @@ In production, migrations run automatically when the Docker container starts via
 
 For local development, you have two options:
 
-##### Option 1: Using Docker (Recommended)
+##### Option 1: Using Docker Compose (Recommended)
 
 Migrations run automatically when using Docker:
 
@@ -154,6 +146,10 @@ The API provides endpoints for:
 
 Most endpoints require JWT Bearer token authentication. See [Calling API endpoints](#calling-api-endpoints) below for authentication setup.
 
+If you're adding endpoints for new features, update the [openapi.yaml](openapi.yaml) file to include the new endpoints.
+
+The CI pipeline will automatically run your new test along with the existing ones on PRs and merges to main.
+
 ## Calling API endpoints
 
 ### Using the HTTP Client (IntelliJ/VS Code)
@@ -191,106 +187,154 @@ The project includes an HTTP client configuration file ([config.http](config.htt
 
 The HTTP client file includes examples for all API endpoints including form management, pages, components, and versioning.
 
-## Integration testing
+## Test coverage
 
-### Local development with the integration test environment
+The project includes unit and integration tests, which are run automatically on CI.
 
-If you want to run the API with the integration test environment (which includes mock OIDC and test MongoDB):
-
-1. Set up the integration test environment:
+You can also run tests locally (unit and integration):
 
 ```bash
-npm run test:integration:setup    # Start OIDC mock server and MongoDB
-npm run test:integration:start    # Start the API service
-npm run test:integration:wait     # Wait for the app to be ready
+npm run test
 ```
 
-2. The API will be available at http://localhost:3001
+### Unit tests
 
-3. When finished, clean up the environment:
+#### Running Unit Tests
 
 ```bash
-npm run test:integration:stop
+npm run test:unit
 ```
 
-### Running Postman tests locally
+#### Run unit tests in watch mode
 
-To run the integration tests manually in Postman:
+```bash
+npm run test:unit:watch
+```
 
-1. Set up the integration test environment as described above
-2. Import the test collection and environment into Postman:
+### Integration tests
 
-- Collection: `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`
-- Environment: `test/integration/postman/grants-ui-config-api-ci-mock.postman_environment.json`
+#### Running Integration Tests
 
-3. Ensure the environment variable `root` is set to `http://localhost:3001`
-4. Run the collection or individual requests through the Postman GUI
-5. Clean up the environment when done with `npm run test:integration:stop`
+```bash
+npm run test:integration
+```
 
-### Adding new API tests
+#### Run integration tests in watch mode
 
-To extend the integration test suite with new test cases:
+```bash
+npm run test:integration:watch
+```
 
-1. **Open the collection in Postman**:
+#### Test Structure
 
-- Import the collection if you haven't already: `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`
-- Import the environment: `test/integration/postman/grants-ui-config-api-ci-mock.postman_environment.json`
+##### Files
 
-2. **Create a new request**:
+- `test/integration/api.integration.test.js` - Main integration test suite
+- `test/helpers/auth.js` - Authentication helper for generating JWT tokens
 
-- Right-click on the appropriate folder in the collection and select "Add Request"
-- Name it clearly, describing what it tests (e.g., "Create Form - Valid Input")
-- Set the HTTP method (GET, POST, PUT, etc.) and URL using environment variables: `{{root}}/forms`
+##### Test Coverage
 
-3. **Configure authentication**:
+The integration test suite covers 37 test cases equivalent to the original Postman collection:
 
-- In the Authorization tab, select "Bearer Token"
-- Use `{{accessToken}}` as the token value (the collection's pre-request scripts will handle token acquisition)
+1. **Health Check** - API health endpoint
+2. **Forms CRUD** - Create, read, update, delete forms
+3. **Form Definitions** - Draft and live form definitions
+4. **Form Migration** - V1 to V2 engine migration
+5. **Pages** - Create, update, delete, reorder pages
+6. **Components** - Create, update, delete form components
+7. **Lists** - Create, update, delete lists (including large lists with 100 elements)
+8. **Sections** - Add and remove sections
+9. **Form Options** - Configure form options like showReferenceNumber
+10. **Go-Live Flow** - Complete workflow to publish a form
 
-4. **Add request body or parameters** if needed:
+#### Authentication
 
-- For POST/PUT requests, add your JSON body in the Body tab
-- Use the "raw" format and select JSON
+Tests use JWT tokens for authentication, generated using the `@hapi/jwt` library. The token generation helper is located in `test/helpers/auth.js`.
 
-5. **Add pre-request scripts** if required:
+##### JWT Token Generation
 
-- Use the Pre-request Script tab for setup logic
-- Create test data or variables needed for this specific test
+```javascript
+import { generateTestToken } from '~/test/helpers/auth.js'
 
-6. **Add test assertions**:
+const token = generateTestToken()
+```
 
-- In the Tests tab, write assertions to verify the response
-- Example:
+By default, tokens are valid for 90 days and include:
 
-  ```javascript
-  pm.test('Status code is 200', function () {
-    pm.response.to.have.status(200)
-  })
+- `serviceId`: 'test-service-001'
+- `serviceName`: 'Test Service'
+- All available scopes (form-read, form-edit, form-delete, form-publish)
 
-  pm.test('Response has expected data', function () {
-    const responseData = pm.response.json()
-    pm.expect(responseData).to.have.property('id')
-    pm.expect(responseData.name).to.eql('Expected Name')
-  })
-  ```
+#### Test Flow
 
-7. **Test locally**:
+Tests run sequentially and maintain state between tests using a `testState` object. This mirrors the Postman collection approach where collection variables stored IDs between requests.
 
-- Start the integration environment with `npm run test:integration:setup && npm run test:integration:start && npm run test:integration:wait`
-- Run your new request and verify it passes
-- Make adjustments as needed
+Example flow:
 
-8. **Export and commit**:
+1. Create a form → Store `formId`
+2. Add pages to form → Store `pageId`, `pageId2`, `pageId3`
+3. Reorder pages using stored IDs
+4. Clean up by deleting form using stored `formId`
 
-- Export the updated collection: File → Export → Collection
-- Save it to `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`, overwriting the existing file
-- Commit the updated collection file to the repository
+#### Configuration
 
-9. **Update documentation** if needed:
+##### Jest Configuration
 
-If you're adding endpoints for new features, update the [openapi.yaml](openapi.yaml) file to include the new endpoints.
+Integration tests are included in `jest.config.cjs`:
 
-The CI pipeline will automatically run your new test along with the existing ones on PRs and merges to main.
+- `testMatch`: Includes `test/**/*.test.{cjs,js,mjs}`
+- `testPathIgnorePatterns`: Excludes the Postman collection directory
+
+##### Environment Variables
+
+The JWT secret is read from environment variables or defaults to 'change-me-in-production':
+
+- `JWT_SECRET` - Secret for signing JWT tokens (configured in `.env`)
+
+#### Debugging
+
+##### Debug a specific test
+
+```bash
+npm run test:integration -- -t "should create a new form"
+```
+
+##### View detailed output
+
+```bash
+npm run test:integration -- --verbose
+```
+
+##### Run with coverage
+
+```bash
+npm run test -- --testPathPattern=integration --coverage
+```
+
+#### Best Practices
+
+1. **Sequential Execution**: Tests in the main suite run sequentially as they depend on state from previous tests
+2. **Cleanup**: Always clean up created resources (forms, pages, etc.)
+3. **Assertions**: Use specific assertions that match the Postman test equivalents
+4. **Token Management**: Tokens are generated once per test suite in `beforeAll`
+5. **State Management**: Use `testState` object to pass data between sequential tests
+
+#### Troubleshooting
+
+##### Tests failing due to authentication
+
+- Verify `JWT_SECRET` in your `.env` file matches the server configuration
+- Check that the token generation includes all required scopes
+
+##### Tests timing out
+
+- Increase timeout: `jest.setTimeout(60000)` in test file
+- Check server initialization in `beforeAll`
+
+##### State issues between tests
+
+- Ensure tests run sequentially (not in parallel)
+- Verify cleanup in `afterAll` and cleanup tests
 
 ## Licence
 
