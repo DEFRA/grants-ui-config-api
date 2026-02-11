@@ -23,7 +23,7 @@ services:
 #      - grants-ui-config-api-net
 
   mongodb:
-    image: mongo:6.0.13
+    image: mongo:7.0
     networks:
       - grants-ui-config-api-net
     ports:
@@ -45,7 +45,7 @@ services:
     restart: always
 
   mongo-ready:
-    image: mongo:6.0.13
+    image: mongo:7.0
     networks: [grants-ui-config-api-net]
     environment:
       PRIMARY: "mongodb:27017"
