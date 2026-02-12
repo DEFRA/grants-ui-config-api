@@ -158,7 +158,16 @@ The project includes an HTTP client configuration file ([config.http](config.htt
 
 #### Prerequisites
 
-1. **Generate an authentication token** using the npm script:
+1. **Generate JWT_SECRET** using the npm script:
+
+   ```bash
+   # Print JWT secret to console
+   npm run generate:jwt_secret
+   ```
+
+   and paste into `.env` file.
+
+2. **Generate an authentication token** using the npm script:
 
    ```bash
    # Print token to console
@@ -170,17 +179,17 @@ The project includes an HTTP client configuration file ([config.http](config.htt
 
    The `generate:token:save` command creates/updates `http-client.private.env.json` with your token, which is automatically used by the HTTP client.
 
-2. **Set up environment variables**:
+3. **Set up environment variables**:
    - The base configuration is in [http-client.env.json](http-client.env.json)
    - Private/sensitive values (like tokens) are stored in `http-client.private.env.json` (git-ignored)
 
-3. **Start the API**:
+4. **Start the API**:
 
    ```bash
    npm run docker:up
    ```
 
-4. **Execute requests**:
+5. **Execute requests**:
    - Open [config.http](config.http) in your IDE
    - Select the environment (e.g., "local") from the dropdown
    - Click "Run" on any request to execute it
@@ -230,7 +239,6 @@ npm run test:integration:watch
 ##### Files
 
 - `test/integration/api.integration.test.js` - Main integration test suite
-- `test/helpers/auth.js` - Authentication helper for generating JWT tokens
 
 ##### Test Coverage
 
@@ -246,24 +254,6 @@ The integration test suite covers 37 test cases equivalent to the original Postm
 8. **Sections** - Add and remove sections
 9. **Form Options** - Configure form options like showReferenceNumber
 10. **Go-Live Flow** - Complete workflow to publish a form
-
-#### Authentication
-
-Tests use JWT tokens for authentication, generated using the `@hapi/jwt` library. The token generation helper is located in `test/helpers/auth.js`.
-
-##### JWT Token Generation
-
-```javascript
-import { generateTestToken } from '~/test/helpers/auth.js'
-
-const token = generateTestToken()
-```
-
-By default, tokens are valid for 90 days and include:
-
-- `serviceId`: 'test-service-001'
-- `serviceName`: 'Test Service'
-- All available scopes (form-read, form-edit, form-delete, form-publish)
 
 #### Test Flow
 
@@ -284,12 +274,6 @@ Integration tests are included in `jest.config.cjs`:
 
 - `testMatch`: Includes `test/**/*.test.{cjs,js,mjs}`
 - `testPathIgnorePatterns`: Excludes the Postman collection directory
-
-##### Environment Variables
-
-The JWT secret is read from environment variables or defaults to 'change-me-in-production':
-
-- `JWT_SECRET` - Secret for signing JWT tokens (configured in `.env`)
 
 #### Debugging
 
@@ -320,11 +304,6 @@ npm run test -- --testPathPattern=integration --coverage
 5. **State Management**: Use `testState` object to pass data between sequential tests
 
 #### Troubleshooting
-
-##### Tests failing due to authentication
-
-- Verify `JWT_SECRET` in your `.env` file matches the server configuration
-- Check that the token generation includes all required scopes
 
 ##### Tests timing out
 

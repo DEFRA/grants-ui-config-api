@@ -36,6 +36,7 @@
     "migrate:up": "migrate-mongo up -f migrate-mongo-config.js",
     "migrate:down": "migrate-mongo down -f migrate-mongo-config.js",
     "migrate:status": "migrate-mongo status -f migrate-mongo-config.js",
+    "generate:jwt_secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
     "generate:token": "node scripts/generate-token.js",
     "generate:token:save": "node scripts/generate-token.js --save"
   },

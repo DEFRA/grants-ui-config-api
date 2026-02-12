@@ -20,7 +20,13 @@ import { fileURLToPath } from 'url'
 import 'dotenv/config'
 import Jwt from '@hapi/jwt'
 
-const jwtSecret = process.env.JWT_SECRET ?? 'change-me-in-production'
+const jwtSecret = process.env.JWT_SECRET
+
+if (!jwtSecret) {
+  throw new Error(
+    'JWT_SECRET environment variable is not set. Set it in your .env file or export it before running this script.'
+  )
+}
 
 const token = Jwt.token.generate(
   {

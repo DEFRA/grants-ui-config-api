@@ -127,7 +127,7 @@ export const config = convict({
   jwtSecret: {
     doc: 'Secret key for JWT service-to-service authentication',
     format: String,
-    default: 'change-me-in-production',
+    default: '',
     env: 'JWT_SECRET',
     sensitive: true
   },
@@ -191,6 +191,9 @@ export const config = convict({
 
 config.validate({ allowed: 'strict' })
 
+if (!config.get('jwtSecret')) {
+  throw new Error('JWT_SECRET environment variable must be set.')
+}
 /**
  * @import { SchemaObj } from 'convict'
  * @import { LevelWithSilent } from 'pino'
