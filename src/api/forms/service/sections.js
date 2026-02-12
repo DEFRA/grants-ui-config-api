@@ -16,37 +16,20 @@ import { client } from '~/src/mongo.js'
  * @param {FormDefinitionRequestType} requestType
  * @returns {Promise<SectionAssignmentItem[]>}
  */
-export async function assignSectionsToForm(
-  formId,
-  sectionAssignments,
-  author,
-  requestType
-) {
+export async function assignSectionsToForm(formId, sectionAssignments, author, requestType) {
   logger.info(`Assigning sections to form ID ${formId}`)
 
   const session = client.startSession()
 
   try {
     const sections = await session.withTransaction(async () => {
-      const updatedSections = await formDefinition.assignSections(
-        formId,
-        sectionAssignments,
-        session
-      )
+      const updatedSections = await formDefinition.assignSections(formId, sectionAssignments, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { sections: sectionAssignments },
-        requestType
-      )
+      await publishFormUpdatedEvent(metadataDocument, { sections: sectionAssignments }, requestType)
 
       return updatedSections
     })
@@ -55,10 +38,7 @@ export async function assignSectionsToForm(
 
     return sections
   } catch (err) {
-    logger.error(
-      err,
-      `[assignSections] Failed to assign sections to form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[assignSections] Failed to assign sections to form ID ${formId} - ${getErrorMessage(err)}`)
 
     throw err
   } finally {

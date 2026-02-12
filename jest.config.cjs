@@ -11,10 +11,9 @@ module.exports = {
   restoreMocks: true,
   clearMocks: true,
   silent: true,
-  testMatch: ['<rootDir>/src/**/*.test.{cjs,js,mjs}'],
-  reporters: CI
-    ? [['github-actions', { silent: false }], 'summary']
-    : ['default', 'summary'],
+  testMatch: ['<rootDir>/src/**/*.test.{cjs,js,mjs}', '<rootDir>/test/**/*.test.{cjs,js,mjs}'],
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/test/integration/postman/'],
+  reporters: CI ? [['github-actions', { silent: false }], 'summary'] : ['default', 'summary'],
   collectCoverageFrom: ['<rootDir>/src/**/*.{cjs,js,mjs}'],
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',

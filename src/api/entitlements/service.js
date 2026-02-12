@@ -31,27 +31,17 @@ export async function getUserScopes(oid, authToken) {
     const { body } = await getJson(requestUrl, options)
 
     if (body?.entity?.scopes) {
-      logger.info(
-        `[entitlementsApi] Retrieved ${body.entity.scopes.length} scopes for user ${oid}`
-      )
+      logger.info(`[entitlementsApi] Retrieved ${body.entity.scopes.length} scopes for user ${oid}`)
       return body.entity.scopes
     }
 
-    logger.warn(
-      `[entitlementsApi] Invalid response format for user ${oid}, expected entity object with scopes array`
-    )
+    logger.warn(`[entitlementsApi] Invalid response format for user ${oid}, expected entity object with scopes array`)
     return []
   } catch (err) {
     if (Boom.isBoom(err)) {
-      logger.error(
-        err,
-        `[entitlementsApi] Failed to fetch scopes for user ${oid}`
-      )
+      logger.error(err, `[entitlementsApi] Failed to fetch scopes for user ${oid}`)
     } else {
-      logger.error(
-        err,
-        `[entitlementsApi] Failed to fetch scopes for user ${oid}:`
-      )
+      logger.error(err, `[entitlementsApi] Failed to fetch scopes for user ${oid}:`)
     }
 
     return []

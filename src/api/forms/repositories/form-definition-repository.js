@@ -64,12 +64,7 @@ export async function insert(id, formDefinition, session, schema) {
 export async function update(id, formDefinition, session, schema) {
   logger.info(`Updating form for form ID ${id}`)
 
-  const updateResult = await modifyDraft(
-    id,
-    () => formDefinition,
-    session,
-    schema
-  )
+  const updateResult = await modifyDraft(id, () => formDefinition, session, schema)
 
   logger.info(`Updated form for form ID ${id}`)
 
@@ -84,15 +79,9 @@ export async function update(id, formDefinition, session, schema) {
 export async function createLiveFromDraft(id, session) {
   logger.info(`Copying form definition (draft to live) for form ID ${id}`)
 
-  const coll = /** @satisfies {Collection<{draft: FormDefinition}>} */ (
-    db.collection(DEFINITION_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<{draft: FormDefinition}>} */ (db.collection(DEFINITION_COLLECTION_NAME))
 
-  await coll.updateOne(
-    { _id: new ObjectId(id) },
-    [{ $set: { live: '$draft' } }],
-    { session }
-  )
+  await coll.updateOne({ _id: new ObjectId(id) }, [{ $set: { live: '$draft' } }], { session })
 
   logger.info(`Copied form definition (draft to live) for form ID ${id}`)
 }
@@ -106,15 +95,9 @@ export async function createDraftFromLive(id, session) {
   logger.info(`Copying form definition (live to draft) for form ID ${id}`)
 
   try {
-    const coll = /** @satisfies {Collection<{draft: FormDefinition}>} */ (
-      db.collection(DEFINITION_COLLECTION_NAME)
-    )
+    const coll = /** @satisfies {Collection<{draft: FormDefinition}>} */ (db.collection(DEFINITION_COLLECTION_NAME))
 
-    await coll.updateOne(
-      { _id: new ObjectId(id) },
-      [{ $set: { draft: '$live' } }],
-      { session }
-    )
+    await coll.updateOne({ _id: new ObjectId(id) }, [{ $set: { draft: '$live' } }], { session })
   } catch (err) {
     logger.error(
       err,
@@ -138,17 +121,13 @@ export async function createDraftFromLive(id, session) {
  * @param {ClientSession | undefined} [session]
  * @returns {Promise<FormDefinition>}
  */
-export async function get(
-  formId,
-  state = FormStatus.Draft,
-  session = undefined
-) {
+// eslint-disable-next-line @typescript-eslint/no-useless-default-assignment
+export async function get(formId, state = FormStatus.Draft, session = undefined) {
   logger.info(`Getting form definition (${state}) for form ID ${formId}`)
 
-  const coll =
-    /** @satisfies {Collection<{draft?: FormDefinition, live?: FormDefinition}>} */ (
-      db.collection(DEFINITION_COLLECTION_NAME)
-    )
+  const coll = /** @satisfies {Collection<{draft?: FormDefinition, live?: FormDefinition}>} */ (
+    db.collection(DEFINITION_COLLECTION_NAME)
+  )
   const sessionOptions = /** @type {FindOptions} */ session && { session }
   const options = /** @type {FindOptions} */ ({
     projection: { [state]: 1 },
@@ -168,10 +147,7 @@ export async function get(
 
     return definition
   } catch (err) {
-    logger.error(
-      err,
-      `[get] Failed to get form definition (${state}) for form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[get] Failed to get form definition (${state}) for form ID ${formId} - ${getErrorMessage(err)}`)
 
     if (err instanceof Error && !Boom.isBoom(err)) {
       throw Boom.internal(err)
@@ -202,18 +178,14 @@ export async function remove(formId, session) {
  * @returns {Promise<FormDefinition>}
  */
 export async function setEngineVersion(formId, engineVersion, session) {
-  logger.info(
-    `Updating engine version to ${engineVersion} for form ID ${formId}`
-  )
+  logger.info(`Updating engine version to ${engineVersion} for form ID ${formId}`)
 
   /** @type {UpdateCallback} */
   const callback = (draft) => modifyEngineVersion(draft, engineVersion)
 
   const result = await modifyDraft(formId, callback, session)
 
-  logger.info(
-    `Updated engine version to ${engineVersion} for form ID ${formId}`
-  )
+  logger.info(`Updated engine version to ${engineVersion} for form ID ${formId}`)
 
   return result.draft
 }
@@ -270,8 +242,7 @@ export async function addPage(formId, page, session) {
   logger.info(`Adding page on form ID ${formId}`)
 
   /** @type {UpdateCallback} */
-  const callback = (draft) =>
-    modifyAddPage(draft, page, getPageInsertPosition(draft))
+  const callback = (draft) => modifyAddPage(draft, page, getPageInsertPosition(draft))
 
   const result = await modifyDraft(formId, callback, session)
 
@@ -351,18 +322,11 @@ export async function reorderComponents(formId, pageId, order, session) {
  * @param {number | undefined} [position]
  * @returns {Promise<FormDefinition>}
  */
-export async function addComponent(
-  formId,
-  pageId,
-  component,
-  session,
-  position
-) {
+export async function addComponent(formId, pageId, component, session, position) {
   logger.info(`Adding a new component to form ID ${formId}`)
 
   /** @type {UpdateCallback} */
-  const callback = (draft) =>
-    modifyAddComponent(draft, pageId, component, position)
+  const callback = (draft) => modifyAddComponent(draft, pageId, component, position)
 
   const result = await modifyDraft(formId, callback, session)
 
@@ -379,26 +343,15 @@ export async function addComponent(
  * @param {ComponentDef} component
  * @param {ClientSession} session
  */
-export async function updateComponent(
-  formId,
-  pageId,
-  componentId,
-  component,
-  session
-) {
-  logger.info(
-    `Updating component ID ${componentId} on page ID ${pageId} and form ID ${formId}`
-  )
+export async function updateComponent(formId, pageId, componentId, component, session) {
+  logger.info(`Updating component ID ${componentId} on page ID ${pageId} and form ID ${formId}`)
 
   /** @type {UpdateCallback} */
-  const callback = (draft) =>
-    modifyUpdateComponent(draft, pageId, componentId, component)
+  const callback = (draft) => modifyUpdateComponent(draft, pageId, componentId, component)
 
   const updateResult = await modifyDraft(formId, callback, session)
 
-  logger.info(
-    `Updated component ID ${componentId} on page ID ${pageId} and form ID ${formId}`
-  )
+  logger.info(`Updated component ID ${componentId} on page ID ${pageId} and form ID ${formId}`)
 
   return getComponent(updateResult.draft, pageId, componentId)
 }
@@ -412,18 +365,14 @@ export async function updateComponent(
  * @returns {Promise<FormDefinition>}
  */
 export async function deleteComponent(formId, pageId, componentId, session) {
-  logger.info(
-    `Deleting component ID ${componentId} on page ID ${pageId} and form ID ${formId}`
-  )
+  logger.info(`Deleting component ID ${componentId} on page ID ${pageId} and form ID ${formId}`)
 
   /** @type {UpdateCallback} */
   const callback = (draft) => modifyDeleteComponent(draft, pageId, componentId)
 
   const result = await modifyDraft(formId, callback, session)
 
-  logger.info(
-    `Deleted component ID ${componentId} on page ID ${pageId} and form ID ${formId}`
-  )
+  logger.info(`Deleted component ID ${componentId} on page ID ${pageId} and form ID ${formId}`)
 
   return result.draft
 }
@@ -439,18 +388,14 @@ export async function deleteComponent(formId, pageId, componentId, session) {
 export async function updatePageFields(formId, pageId, pageFields, session) {
   const pageFieldKeys = Object.keys(pageFields)
 
-  logger.info(
-    `Updating page fields ${pageFieldKeys.toString()} on page ID ${pageId} and form ID ${formId}`
-  )
+  logger.info(`Updating page fields ${pageFieldKeys.toString()} on page ID ${pageId} and form ID ${formId}`)
 
   /** @type {UpdateCallback} */
   const callback = (draft) => modifyUpdatePageFields(draft, pageId, pageFields)
 
   const result = await modifyDraft(formId, callback, session)
 
-  logger.info(
-    `Updated page fields ${pageFieldKeys.toString()} on page ID ${pageId} and form ID ${formId}`
-  )
+  logger.info(`Updated page fields ${pageFieldKeys.toString()} on page ID ${pageId} and form ID ${formId}`)
 
   return result.draft
 }
@@ -568,8 +513,7 @@ export async function updateCondition(formId, conditionId, condition, session) {
   logger.info(`Updating condition with ID ${conditionId} on form ID ${formId}`)
 
   /** @type {UpdateCallback} */
-  const callback = (draft) =>
-    modifyUpdateCondition(draft, conditionId, condition)
+  const callback = (draft) => modifyUpdateCondition(draft, conditionId, condition)
 
   const result = await modifyDraft(formId, callback, session)
 
@@ -609,24 +553,16 @@ export async function deleteCondition(formId, conditionId, session) {
  * @param {ClientSession} [session] - mongo transaction session
  */
 export async function upsertDraftAndLive(formId, document, session) {
-  const coll =
-    /** @satisfies {Collection<{draft: FormDefinition, live: FormDefinition}>} */ (
-      db.collection(DEFINITION_COLLECTION_NAME)
-    )
+  const coll = /** @satisfies {Collection<{draft: FormDefinition, live: FormDefinition}>} */ (
+    db.collection(DEFINITION_COLLECTION_NAME)
+  )
 
   try {
-    const result = await coll.updateOne(
-      { _id: new ObjectId(formId) },
-      { $set: document },
-      { session, upsert: true }
-    )
+    const result = await coll.updateOne({ _id: new ObjectId(formId) }, { $set: document }, { session, upsert: true })
 
     return result
   } catch (err) {
-    logger.error(
-      err,
-      `[upsertFormDefinition] Updating form with ID ${formId} failed - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[upsertFormDefinition] Updating form with ID ${formId} failed - ${getErrorMessage(err)}`)
 
     if (err instanceof Error && !Boom.isBoom(err)) {
       throw Boom.internal(err)
@@ -663,15 +599,9 @@ export async function assignSections(formId, sectionAssignments, session) {
  */
 export async function deleteDraft(formId, session) {
   // Delete the draft
-  const col = /** @satisfies {Collection<{draft: FormDefinition}>} */ (
-    db.collection(DEFINITION_COLLECTION_NAME)
-  )
+  const col = /** @satisfies {Collection<{draft: FormDefinition}>} */ (db.collection(DEFINITION_COLLECTION_NAME))
 
-  const updateResult = await col.updateOne(
-    { _id: new ObjectId(formId) },
-    { $unset: { draft: '' } },
-    { session }
-  )
+  const updateResult = await col.updateOne({ _id: new ObjectId(formId) }, { $unset: { draft: '' } }, { session })
 
   if (updateResult.matchedCount === 0) {
     throw Boom.notFound(`Document not found '${formId}'`)

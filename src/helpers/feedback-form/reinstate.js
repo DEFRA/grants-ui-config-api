@@ -64,18 +64,12 @@ export async function saveFormVersion(formId, session) {
 export async function reinstateFeedbackForm(client, logger) {
   const session = client.startSession()
 
-  logger.info(
-    `${moduleTag} Checking if feedback form exists and has correct contents`
-  )
+  logger.info(`${moduleTag} Checking if feedback form exists and has correct contents`)
 
   try {
     await session.withTransaction(async () => {
       // Ensure definition exists with expected content
-      const { upsertedCount, modifiedCount } = await saveDefinition(
-        feedbackMetadata.id,
-        session,
-        logger
-      )
+      const { upsertedCount, modifiedCount } = await saveDefinition(feedbackMetadata.id, session, logger)
 
       let currentMeta
       try {
@@ -83,9 +77,7 @@ export async function reinstateFeedbackForm(client, logger) {
       } catch {}
 
       // Align structures, whether from DB or codebase metadata
-      const metadata = currentMeta
-        ? mapForm(currentMeta)
-        : mapForm(mapToDocument(feedbackMetadata))
+      const metadata = currentMeta ? mapForm(currentMeta) : mapForm(mapToDocument(feedbackMetadata))
 
       // Only update timestamps if the form definition has changed or was newly-inserted
       const now = new Date()
@@ -115,10 +107,7 @@ export async function reinstateFeedbackForm(client, logger) {
     })
     logger.info(`${moduleTag} Completed check for feedback form`)
   } catch (err) {
-    logger.error(
-      err,
-      `${moduleTag} Failed during reinstate Feedback Form - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `${moduleTag} Failed during reinstate Feedback Form - ${getErrorMessage(err)}`)
   } finally {
     await session.endSession()
   }

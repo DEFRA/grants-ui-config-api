@@ -1,9 +1,4 @@
-import {
-  FormStatus,
-  formDefinitionV2Schema,
-  getErrorMessage,
-  slugify
-} from '@defra/forms-model'
+import { FormStatus, formDefinitionV2Schema, getErrorMessage, slugify } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 import { MongoServerError } from 'mongodb'
 
@@ -11,20 +6,9 @@ import { removeFormErrorMessages } from '~/src/api/forms/constants.js'
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import * as formVersions from '~/src/api/forms/repositories/form-versions-repository.js'
-import {
-  getValidationSchema,
-  validate
-} from '~/src/api/forms/service/helpers/definition.js'
-import {
-  MongoError,
-  logger,
-  mapForm,
-  partialAuditFields
-} from '~/src/api/forms/service/shared.js'
-import {
-  createFormVersion,
-  removeFormVersions
-} from '~/src/api/forms/service/versioning.js'
+import { getValidationSchema, validate } from '~/src/api/forms/service/helpers/definition.js'
+import { MongoError, logger, mapForm, partialAuditFields } from '~/src/api/forms/service/shared.js'
+import { createFormVersion, removeFormVersions } from '~/src/api/forms/service/versioning.js'
 import * as formTemplates from '~/src/api/forms/templates.js'
 import { getFormMetadataAuditMessages } from '~/src/messaging/mappers/form-events-bulk.js'
 import {
@@ -43,9 +27,7 @@ import { client } from '~/src/mongo.js'
  */
 export function validateLiveFormTitleUpdate(form, formId, formUpdate) {
   if (form.live && 'title' in formUpdate) {
-    throw Boom.badRequest(
-      `Form with ID '${formId}' is live so 'title' cannot be updated`
-    )
+    throw Boom.badRequest(`Form with ID '${formId}' is live so 'title' cannot be updated`)
   }
 }
 
@@ -57,10 +39,7 @@ export function validateLiveFormTitleUpdate(form, formId, formUpdate) {
  */
 export function prepareUpdatedFormMetadata(formUpdate, author) {
   const now = new Date()
-  const { updatedAt, updatedBy, ...draftAuditFields } = partialAuditFields(
-    now,
-    author
-  )
+  const { updatedAt, updatedBy, ...draftAuditFields } = partialAuditFields(now, author)
 
   let updatedForm = {
     ...formUpdate,
@@ -87,13 +66,7 @@ export function prepareUpdatedFormMetadata(formUpdate, author) {
  * @param {PartialFormMetadataDocument} updatedForm - The prepared update
  * @param {ClientSession} session - MongoDB session
  */
-export async function handleTitleUpdate(
-  formId,
-  form,
-  formUpdate,
-  updatedForm,
-  session
-) {
+export async function handleTitleUpdate(formId, form, formUpdate, updatedForm, session) {
   if (!formUpdate.title) {
     throw new Error('Title is required for title update')
   }
@@ -256,13 +229,8 @@ export async function updateFormMetadata(formId, formUpdate, author) {
     logger.info(`Updated form metadata for form ID ${formId}`)
     return updatedForm.slug ?? form.slug
   } catch (err) {
-    if (
-      err instanceof MongoServerError &&
-      err.code === MongoError.DuplicateKey
-    ) {
-      logger.info(
-        `[duplicateFormTitle] Form title ${formUpdate.title} already exists - validation failed`
-      )
+    if (err instanceof MongoServerError && err.code === MongoError.DuplicateKey) {
+      logger.info(`[duplicateFormTitle] Form title ${formUpdate.title} already exists - validation failed`)
       throw Boom.badRequest(`Form title ${formUpdate.title} already exists`)
     }
     logger.error(

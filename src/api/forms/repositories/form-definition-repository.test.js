@@ -82,10 +82,9 @@ const condition2Id = '91c10139-a0dd-46a4-a2c5-4d7a02fdf923'
 
 jest.mock('~/src/mongo.js', () => {
   let isPrepared = false
-  const collection =
-    /** @satisfies {Collection<{draft: FormDefinition}>} */ jest
-      .fn()
-      .mockImplementation(() => mockCollection)
+  const collection = /** @satisfies {Collection<{draft: FormDefinition}>} */ jest
+    .fn()
+    .mockImplementation(() => mockCollection)
   return {
     db: {
       collection
@@ -148,9 +147,7 @@ describe('form-definition-repository', () => {
   let conditions
 
   beforeEach(() => {
-    jest
-      .mocked(db.collection)
-      .mockReturnValue(/** @type {any} */ (mockCollection))
+    jest.mocked(db.collection).mockReturnValue(/** @type {any} */ (mockCollection))
     mockDefinition = buildDefinition({})
     const component1 = buildTextFieldComponent({
       id: component1Id
@@ -337,9 +334,7 @@ describe('form-definition-repository', () => {
     it('should throw Boom.notFound when form definition not found', async () => {
       mockCollection.findOne.mockResolvedValue(null)
 
-      await expect(get(formId)).rejects.toThrow(
-        Boom.notFound(`Form definition with ID '${formId}' not found`)
-      )
+      await expect(get(formId)).rejects.toThrow(Boom.notFound(`Form definition with ID '${formId}' not found`))
     })
 
     it('should throw Boom.notFound when state property is missing', async () => {
@@ -376,11 +371,7 @@ describe('form-definition-repository', () => {
     it('should delete a page with predicate', async () => {
       await helper(
         async () => {
-          await deletePages(
-            formId,
-            (page) => page.controller === ControllerType.Summary,
-            mockSession
-          )
+          await deletePages(formId, (page) => page.controller === ControllerType.Summary, mockSession)
         },
         (definition) => {
           expect(definition.pages).toHaveLength(5)
@@ -456,12 +447,7 @@ describe('form-definition-repository', () => {
     it('should update name', async () => {
       await helper(
         async () => {
-          await updateName(
-            formId,
-            'New Name',
-            mockSession,
-            formDefinitionV2Schema
-          )
+          await updateName(formId, 'New Name', mockSession, formDefinitionV2Schema)
         },
         (definition) => {
           expect(definition.name).toBe('New Name')
@@ -517,12 +503,8 @@ describe('form-definition-repository', () => {
         },
         (definition) => {
           const page = definition.pages.at(0)
-          expect(
-            hasComponentsEvenIfNoNext(page) && page.components
-          ).toHaveLength(2)
-          expect(
-            hasComponentsEvenIfNoNext(page) && page.components.at(1)
-          ).toEqual(component)
+          expect(hasComponentsEvenIfNoNext(page) && page.components).toHaveLength(2)
+          expect(hasComponentsEvenIfNoNext(page) && page.components.at(1)).toEqual(component)
         }
       )
     })
@@ -534,12 +516,8 @@ describe('form-definition-repository', () => {
         },
         (definition) => {
           const page = definition.pages.at(0)
-          expect(
-            hasComponentsEvenIfNoNext(page) && page.components
-          ).toHaveLength(2)
-          expect(
-            hasComponentsEvenIfNoNext(page) && page.components.at(0)
-          ).toEqual(component)
+          expect(hasComponentsEvenIfNoNext(page) && page.components).toHaveLength(2)
+          expect(hasComponentsEvenIfNoNext(page) && page.components.at(0)).toEqual(component)
         }
       )
     })
@@ -556,13 +534,7 @@ describe('form-definition-repository', () => {
 
       await helper(
         async () => {
-          savedComponent = await updateComponent(
-            formId,
-            page1Id,
-            component1Id,
-            component,
-            mockSession
-          )
+          savedComponent = await updateComponent(formId, page1Id, component1Id, component, mockSession)
         },
         (definition) => {
           const expectedComponent = buildTextFieldComponent({
@@ -571,9 +543,7 @@ describe('form-definition-repository', () => {
           const page = definition.pages.at(0)
           expect(savedComponent).toEqual(expectedComponent)
 
-          expect(
-            hasComponentsEvenIfNoNext(page) && page.components
-          ).toHaveLength(1)
+          expect(hasComponentsEvenIfNoNext(page) && page.components).toHaveLength(1)
         }
       )
     })
@@ -581,9 +551,7 @@ describe('form-definition-repository', () => {
     it('should fail if the component is not found', async () => {
       mockCollection.findOne.mockResolvedValue(null)
 
-      await expect(
-        updateComponent(formId, page1Id, component1Id, component, mockSession)
-      ).rejects.toThrow(
+      await expect(updateComponent(formId, page1Id, component1Id, component, mockSession)).rejects.toThrow(
         Boom.notFound("Document not found '1eabd1437567fe1b26708bbb'")
       )
     })
@@ -725,9 +693,7 @@ describe('form-definition-repository', () => {
         (definition) => {
           const page = definition.pages.at(0)
 
-          expect(
-            hasComponentsEvenIfNoNext(page) && page.components
-          ).toHaveLength(0)
+          expect(hasComponentsEvenIfNoNext(page) && page.components).toHaveLength(0)
         }
       )
     })
@@ -927,12 +893,7 @@ describe('form-definition-repository', () => {
 
       await helper(
         async () => {
-          await update(
-            formId,
-            newV2Definition,
-            mockSession,
-            formDefinitionV2Schema
-          )
+          await update(formId, newV2Definition, mockSession, formDefinitionV2Schema)
         },
         (definition) => {
           expect(definition.pages).toHaveLength(1)
@@ -979,18 +940,14 @@ describe('form-definition-repository', () => {
       const mongoError = new Error('Database connection failed')
       mockCollection.updateOne.mockRejectedValue(mongoError)
 
-      await expect(
-        formDefinition.createDraftFromLive(formId, mockSession)
-      ).rejects.toThrow(Boom.internal(mongoError))
+      await expect(formDefinition.createDraftFromLive(formId, mockSession)).rejects.toThrow(Boom.internal(mongoError))
     })
 
     it('should rethrow Boom errors', async () => {
       const boomError = Boom.notFound('Form not found')
       mockCollection.updateOne.mockRejectedValue(boomError)
 
-      await expect(
-        formDefinition.createDraftFromLive(formId, mockSession)
-      ).rejects.toThrow(boomError)
+      await expect(formDefinition.createDraftFromLive(formId, mockSession)).rejects.toThrow(boomError)
     })
   })
 
@@ -1021,11 +978,7 @@ describe('form-definition-repository', () => {
         upsertedCount: 1
       })
 
-      const result = await formDefinition.upsertDraftAndLive(
-        formId,
-        document,
-        mockSession
-      )
+      const result = await formDefinition.upsertDraftAndLive(formId, document, mockSession)
 
       expect(mockCollection.updateOne).toHaveBeenCalledWith(
         { _id: new ObjectId(formId) },
@@ -1039,18 +992,14 @@ describe('form-definition-repository', () => {
       const error = Boom.badRequest('Boom error')
       mockCollection.updateOne.mockRejectedValue(error)
 
-      await expect(
-        formDefinition.upsertDraftAndLive(formId, document, mockSession)
-      ).rejects.toThrow(error)
+      await expect(formDefinition.upsertDraftAndLive(formId, document, mockSession)).rejects.toThrow(error)
     })
 
     it('should handle generic errors', async () => {
       const error = new Error('Generic error')
       mockCollection.updateOne.mockRejectedValue(error)
 
-      await expect(
-        formDefinition.upsertDraftAndLive(formId, document, mockSession)
-      ).rejects.toThrow(error)
+      await expect(formDefinition.upsertDraftAndLive(formId, document, mockSession)).rejects.toThrow(error)
     })
   })
 
@@ -1088,9 +1037,7 @@ describe('form-definition-repository', () => {
     const formId = '620653928dfe476a90b6a6f2'
     it('should throw if document not found', async () => {
       mockCollection.updateOne.mockReturnValueOnce({ matchedCount: 0 })
-      await expect(deleteDraft(formId, mockSession)).rejects.toThrow(
-        "Document not found '620653928dfe476a90b6a6f2'"
-      )
+      await expect(deleteDraft(formId, mockSession)).rejects.toThrow("Document not found '620653928dfe476a90b6a6f2'")
     })
 
     it('should throw if draft not found', async () => {

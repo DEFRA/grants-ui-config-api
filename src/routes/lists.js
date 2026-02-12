@@ -7,11 +7,7 @@ import {
 } from '~/src/api/forms/service/lists.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
 import { failAction } from '~/src/helpers/payload-fail-action.js'
-import {
-  formByIdSchema,
-  listByIdSchema,
-  listSchemaWithRequiredIdSchema
-} from '~/src/models/forms.js'
+import { formByIdSchema, listByIdSchema, listSchemaWithRequiredIdSchema } from '~/src/models/forms.js'
 
 export const ROUTE_LISTS = '/forms/{id}/definition/draft/lists/{listId}'
 
@@ -60,12 +56,7 @@ export default [
       const { id, listId } = params
       const author = getAuthor(auth.credentials.user)
 
-      const updatedList = await updateListOnDraftFormDefinition(
-        id,
-        listId,
-        payload,
-        author
-      )
+      const updatedList = await updateListOnDraftFormDefinition(id, listId, payload, author)
 
       return {
         id: updatedList.id,

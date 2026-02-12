@@ -1,6 +1,5 @@
 /**
  * @import { HapiJwt } from '@hapi/jwt'
- * @import { IdTokenClaims } from 'oidc-client-ts'
  */
 
 /**

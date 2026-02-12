@@ -1,14 +1,8 @@
-import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
+import { AuditEventMessageType, FormDefinitionRequestType } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
-import {
-  buildDefinition,
-  buildList
-} from '~/src/api/forms/__stubs__/definition.js'
+import { buildDefinition, buildList } from '~/src/api/forms/__stubs__/definition.js'
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { formMetadataDocument } from '~/src/api/forms/service/__stubs__/service.js'
@@ -85,22 +79,14 @@ describe('lists', () => {
 
   beforeEach(() => {
     jest.mocked(formMetadata.get).mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(formMetadata.updateAudit)
-      .mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(versioningService.createFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
-    jest
-      .mocked(versioningService.getLatestFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
+    jest.mocked(versioningService.createFormVersion).mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(versioningService.getLatestFormVersion).mockResolvedValue(mockFormVersionDocument)
   })
 
   describe('duplicateListGuard', () => {
     it('should fail with a Boom.conflict given duplicate list title', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithDuplicateListTitle)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithDuplicateListTitle)
 
       await expect(duplicateListGuard('abc', mockSession)).rejects.toThrow(
         Boom.conflict('Duplicate list name or title found.')
@@ -108,9 +94,7 @@ describe('lists', () => {
     })
 
     it('should fail with a Boom.conflict given duplicate list name', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithDuplicateListName)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithDuplicateListName)
 
       await expect(duplicateListGuard('abc', mockSession)).rejects.toThrow(
         Boom.conflict('Duplicate list name or title found.')
@@ -118,9 +102,7 @@ describe('lists', () => {
     })
 
     it('should pass given unique list', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithList)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithList)
       const receivedDefinition = await duplicateListGuard('abc', mockSession)
       expect(receivedDefinition).toEqual(formDefinitionWithList)
     })
@@ -130,26 +112,16 @@ describe('lists', () => {
     it('should add a list to the form definition', async () => {
       const s3Meta = {
         fileId: '3HL4kqtJlcpXrof3W3Zz4YBdvdz2FJ9n',
-        filename:
-          '6883d8667a2a64da10af4312_list_47cfaf57-6cda-44aa-9268-f37c674823d2.json',
-        s3Key:
-          'audit-definitions/6883d8667a2a64da10af4312_list_47cfaf57-6cda-44aa-9268-f37c674823d2.json'
+        filename: '6883d8667a2a64da10af4312_list_47cfaf57-6cda-44aa-9268-f37c674823d2.json',
+        s3Key: 'audit-definitions/6883d8667a2a64da10af4312_list_47cfaf57-6cda-44aa-9268-f37c674823d2.json'
       }
       jest.mocked(saveToS3).mockResolvedValue(s3Meta)
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithList)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithList)
       const expectedList = buildList()
-      const addListsMock = jest
-        .mocked(formDefinition.addList)
-        .mockResolvedValueOnce(expectedList)
+      const addListsMock = jest.mocked(formDefinition.addList).mockResolvedValueOnce(expectedList)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const result = await addListToDraftFormDefinition(
-        id,
-        expectedList,
-        defaultAuthor
-      )
+      const result = await addListToDraftFormDefinition(id, expectedList, defaultAuthor)
       const [expectedFormId, listToInsert] = addListsMock.mock.calls[0]
       expect(expectedFormId).toBe(id)
       expect(listToInsert).toEqual(expectedList)
@@ -167,12 +139,10 @@ describe('lists', () => {
       })
     })
     it('should fail with a conflict if there is a duplicate list', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValue(formDefinitionWithDuplicateListName)
-      await expect(
-        addListToDraftFormDefinition(id, buildList(), defaultAuthor)
-      ).rejects.toThrow(Boom.conflict('Duplicate list name or title found.'))
+      jest.mocked(formDefinition.get).mockResolvedValue(formDefinitionWithDuplicateListName)
+      await expect(addListToDraftFormDefinition(id, buildList(), defaultAuthor)).rejects.toThrow(
+        Boom.conflict('Duplicate list name or title found.')
+      )
     })
   })
 
@@ -180,30 +150,18 @@ describe('lists', () => {
     it('should update a list on the form definition', async () => {
       const s3Meta = {
         fileId: '3HL4kqtJlcpXrof3W3Zz4YBdvdz2FJ9n',
-        filename:
-          '6883d8667a2a64da10af4312_list_47cfaf57-6cda-44aa-9268-f37c674823d2.json',
-        s3Key:
-          'audit-definitions/6883d8667a2a64da10af4312_list_47cfaf57-6cda-44aa-9268-f37c674823d2.json'
+        filename: '6883d8667a2a64da10af4312_list_47cfaf57-6cda-44aa-9268-f37c674823d2.json',
+        s3Key: 'audit-definitions/6883d8667a2a64da10af4312_list_47cfaf57-6cda-44aa-9268-f37c674823d2.json'
       }
       jest.mocked(saveToS3).mockResolvedValue(s3Meta)
       const listToUpdate = buildList()
       const listId = '47cfaf57-6cda-44aa-9268-f37c674823d2'
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithList)
-      const updateListMock = jest
-        .mocked(formDefinition.updateList)
-        .mockResolvedValueOnce(listToUpdate)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithList)
+      const updateListMock = jest.mocked(formDefinition.updateList).mockResolvedValueOnce(listToUpdate)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const result = await updateListOnDraftFormDefinition(
-        id,
-        listId,
-        listToUpdate,
-        defaultAuthor
-      )
-      const [expectedFormId, expectedListId, expectedListToUpdate] =
-        updateListMock.mock.calls[0]
+      const result = await updateListOnDraftFormDefinition(id, listId, listToUpdate, defaultAuthor)
+      const [expectedFormId, expectedListId, expectedListToUpdate] = updateListMock.mock.calls[0]
       expect(expectedFormId).toBe(id)
       expect(expectedListId).toBe(listId)
       expect(expectedListToUpdate).toEqual(listToUpdate)
@@ -221,9 +179,7 @@ describe('lists', () => {
       })
     })
     it('should throw a conflict if updated list name or title exists in other list', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithDuplicateListTitle)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithDuplicateListTitle)
       await expect(
         updateListOnDraftFormDefinition(
           id,
@@ -242,9 +198,7 @@ describe('lists', () => {
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       await removeListOnDraftFormDefinition(id, listId, defaultAuthor)
-      const [expectedFormId, expectedListId] = jest.mocked(
-        formDefinition.deleteList
-      ).mock.calls[0]
+      const [expectedFormId, expectedListId] = jest.mocked(formDefinition.deleteList).mock.calls[0]
       expect(expectedFormId).toBe(id)
       expect(expectedListId).toBe(listId)
       expectMetadataUpdate()
@@ -261,9 +215,7 @@ describe('lists', () => {
     it('should surface errors', async () => {
       const boomInternal = Boom.internal('Something went wrong')
       jest.mocked(formDefinition.deleteList).mockRejectedValueOnce(boomInternal)
-      await expect(
-        removeListOnDraftFormDefinition(id, listId, defaultAuthor)
-      ).rejects.toThrow(boomInternal)
+      await expect(removeListOnDraftFormDefinition(id, listId, defaultAuthor)).rejects.toThrow(boomInternal)
     })
   })
 })

@@ -13,11 +13,7 @@ import { client } from '~/src/mongo.js'
  * @param {ConditionWrapperV2} condition
  * @param {FormMetadataAuthor} author
  */
-export async function addConditionToDraftFormDefinition(
-  formId,
-  condition,
-  author
-) {
+export async function addConditionToDraftFormDefinition(formId, condition, author) {
   logger.info(`Adding condition ${condition.displayName} to form ID ${formId}`)
 
   const session = client.startSession()
@@ -25,25 +21,13 @@ export async function addConditionToDraftFormDefinition(
   try {
     const newForm = await session.withTransaction(async () => {
       // Add the condition to the form definition
-      const returnedCondition = await formDefinition.addCondition(
-        formId,
-        condition,
-        session
-      )
+      const returnedCondition = await formDefinition.addCondition(formId, condition, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        condition,
-        FormDefinitionRequestType.CREATE_CONDITION
-      )
+      await publishFormUpdatedEvent(metadataDocument, condition, FormDefinitionRequestType.CREATE_CONDITION)
 
       return returnedCondition
     })
@@ -52,10 +36,7 @@ export async function addConditionToDraftFormDefinition(
 
     return newForm
   } catch (err) {
-    logger.error(
-      err,
-      `[addCondition] Failed to add condition on Form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[addCondition] Failed to add condition on Form ID ${formId} - ${getErrorMessage(err)}`)
 
     throw err
   } finally {
@@ -70,12 +51,7 @@ export async function addConditionToDraftFormDefinition(
  * @param {ConditionWrapperV2} condition
  * @param {FormMetadataAuthor} author
  */
-export async function updateConditionOnDraftFormDefinition(
-  formId,
-  conditionId,
-  condition,
-  author
-) {
+export async function updateConditionOnDraftFormDefinition(formId, conditionId, condition, author) {
   logger.info(`Updating condition ${conditionId} for form ID ${formId}`)
 
   const session = client.startSession()
@@ -83,26 +59,13 @@ export async function updateConditionOnDraftFormDefinition(
   try {
     const updatedCondition = await session.withTransaction(async () => {
       // Update the condition on the form definition
-      const returnedCondition = await formDefinition.updateCondition(
-        formId,
-        conditionId,
-        condition,
-        session
-      )
+      const returnedCondition = await formDefinition.updateCondition(formId, conditionId, condition, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        condition,
-        FormDefinitionRequestType.UPDATE_CONDITION
-      )
+      await publishFormUpdatedEvent(metadataDocument, condition, FormDefinitionRequestType.UPDATE_CONDITION)
 
       return returnedCondition
     })
@@ -128,11 +91,7 @@ export async function updateConditionOnDraftFormDefinition(
  * @param {string} conditionId
  * @param {FormMetadataAuthor} author
  */
-export async function removeConditionOnDraftFormDefinition(
-  formId,
-  conditionId,
-  author
-) {
+export async function removeConditionOnDraftFormDefinition(formId, conditionId, author) {
   logger.info(`Removing condition ${conditionId} for form ID ${formId}`)
 
   const session = client.startSession()
@@ -142,19 +101,11 @@ export async function removeConditionOnDraftFormDefinition(
       // Update the condition on the form definition
       await formDefinition.deleteCondition(formId, conditionId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { conditionId },
-        FormDefinitionRequestType.DELETE_CONDITION
-      )
+      await publishFormUpdatedEvent(metadataDocument, { conditionId }, FormDefinitionRequestType.DELETE_CONDITION)
     })
 
     logger.info(`Removed condition ${conditionId} for form ID ${formId}`)

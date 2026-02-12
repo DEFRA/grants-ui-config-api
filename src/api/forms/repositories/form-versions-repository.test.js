@@ -41,9 +41,7 @@ describe('form-versions-repository', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    jest
-      .mocked(db.collection)
-      .mockReturnValue(/** @type {any} */ (mockCollection))
+    jest.mocked(db.collection).mockReturnValue(/** @type {any} */ (mockCollection))
   })
 
   describe('createVersion', () => {
@@ -56,10 +54,7 @@ describe('form-versions-repository', () => {
 
       const result = await createVersion(mockVersionDocument, mockSession)
 
-      expect(mockCollection.insertOne).toHaveBeenCalledWith(
-        mockVersionDocument,
-        { session: mockSession }
-      )
+      expect(mockCollection.insertOne).toHaveBeenCalledWith(mockVersionDocument, { session: mockSession })
       expect(result).toEqual({
         ...mockVersionDocument,
         _id: insertedId
@@ -70,18 +65,14 @@ describe('form-versions-repository', () => {
       const error = new Error('Database error')
       mockCollection.insertOne.mockRejectedValue(error)
 
-      await expect(
-        createVersion(mockVersionDocument, mockSession)
-      ).rejects.toThrow(Boom.internal(error))
+      await expect(createVersion(mockVersionDocument, mockSession)).rejects.toThrow(Boom.internal(error))
     })
 
     it('should throw non-Error objects directly', async () => {
       const error = 'String error'
       mockCollection.insertOne.mockRejectedValue(error)
 
-      await expect(
-        createVersion(mockVersionDocument, mockSession)
-      ).rejects.toBe(error)
+      await expect(createVersion(mockVersionDocument, mockSession)).rejects.toBe(error)
     })
   })
 
@@ -113,9 +104,7 @@ describe('form-versions-repository', () => {
       const error = new Error('Database error')
       mockCollection.findOne.mockRejectedValue(error)
 
-      await expect(getLatestVersionNumber(formId)).rejects.toThrow(
-        Boom.internal(error)
-      )
+      await expect(getLatestVersionNumber(formId)).rejects.toThrow(Boom.internal(error))
     })
 
     it('should throw non-Error objects directly', async () => {
@@ -150,10 +139,7 @@ describe('form-versions-repository', () => {
 
       const result = await getVersion(formId, versionNumber)
 
-      expect(mockCollection.findOne).toHaveBeenCalledWith(
-        { formId, versionNumber },
-        undefined
-      )
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ formId, versionNumber }, undefined)
       expect(result).toEqual(mockVersionDocument)
     })
 
@@ -161,9 +147,7 @@ describe('form-versions-repository', () => {
       mockCollection.findOne.mockResolvedValue(null)
 
       await expect(getVersion(formId, versionNumber)).rejects.toThrow(
-        Boom.notFound(
-          `Version ${versionNumber} for form ID '${formId}' not found`
-        )
+        Boom.notFound(`Version ${versionNumber} for form ID '${formId}' not found`)
       )
     })
 
@@ -171,9 +155,7 @@ describe('form-versions-repository', () => {
       const error = new Error('Database error')
       mockCollection.findOne.mockRejectedValue(error)
 
-      await expect(getVersion(formId, versionNumber)).rejects.toThrow(
-        Boom.internal(error)
-      )
+      await expect(getVersion(formId, versionNumber)).rejects.toThrow(Boom.internal(error))
     })
 
     it('should throw non-Error objects directly', async () => {
@@ -188,10 +170,7 @@ describe('form-versions-repository', () => {
 
       const result = await getVersion(formId, versionNumber, mockSession)
 
-      expect(mockCollection.findOne).toHaveBeenCalledWith(
-        { formId, versionNumber },
-        { session: mockSession }
-      )
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ formId, versionNumber }, { session: mockSession })
       expect(result).toEqual(mockVersionDocument)
     })
   })
@@ -202,10 +181,7 @@ describe('form-versions-repository', () => {
 
       const result = await getLatestVersion(formId)
 
-      expect(mockCollection.findOne).toHaveBeenCalledWith(
-        { formId },
-        { sort: { versionNumber: -1 } }
-      )
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ formId }, { sort: { versionNumber: -1 } })
       expect(result).toEqual(mockVersionDocument)
     })
 
@@ -221,9 +197,7 @@ describe('form-versions-repository', () => {
       const error = new Error('Database error')
       mockCollection.findOne.mockRejectedValue(error)
 
-      await expect(getLatestVersion(formId)).rejects.toThrow(
-        Boom.internal(error)
-      )
+      await expect(getLatestVersion(formId)).rejects.toThrow(Boom.internal(error))
     })
 
     it('should throw non-Error objects directly', async () => {
@@ -297,10 +271,7 @@ describe('form-versions-repository', () => {
     it('should work with session parameter', async () => {
       const result = await getVersions(formId, mockSession, 5, 10)
 
-      expect(mockCollection.find).toHaveBeenCalledWith(
-        { formId },
-        { session: mockSession }
-      )
+      expect(mockCollection.find).toHaveBeenCalledWith({ formId }, { session: mockSession })
       expect(result).toEqual({ versions: mockVersions, totalCount: 3 })
     })
   })
@@ -314,28 +285,21 @@ describe('form-versions-repository', () => {
 
       await removeVersionsForForm(formId, mockSession)
 
-      expect(mockCollection.deleteMany).toHaveBeenCalledWith(
-        { formId },
-        { session: mockSession }
-      )
+      expect(mockCollection.deleteMany).toHaveBeenCalledWith({ formId }, { session: mockSession })
     })
 
     it('should handle database errors', async () => {
       const error = new Error('Database error')
       mockCollection.deleteMany.mockRejectedValue(error)
 
-      await expect(removeVersionsForForm(formId, mockSession)).rejects.toThrow(
-        Boom.internal(error)
-      )
+      await expect(removeVersionsForForm(formId, mockSession)).rejects.toThrow(Boom.internal(error))
     })
 
     it('should throw non-Error objects directly', async () => {
       const error = 'String error'
       mockCollection.deleteMany.mockRejectedValue(error)
 
-      await expect(removeVersionsForForm(formId, mockSession)).rejects.toBe(
-        error
-      )
+      await expect(removeVersionsForForm(formId, mockSession)).rejects.toBe(error)
     })
   })
 
@@ -368,9 +332,7 @@ describe('form-versions-repository', () => {
         })
       })
 
-      await expect(getVersionSummaries(formId)).rejects.toThrow(
-        Boom.internal(error)
-      )
+      await expect(getVersionSummaries(formId)).rejects.toThrow(Boom.internal(error))
     })
 
     it('should throw non-Error objects directly', async () => {
@@ -424,12 +386,8 @@ describe('form-versions-repository', () => {
       const result = await getVersionSummariesBatch(formIds)
 
       expect(result).toBeInstanceOf(Map)
-      expect(result.get('form1')).toEqual([
-        { versionNumber: 1, createdAt: now }
-      ])
-      expect(result.get('form2')).toEqual([
-        { versionNumber: 1, createdAt: now }
-      ])
+      expect(result.get('form1')).toEqual([{ versionNumber: 1, createdAt: now }])
+      expect(result.get('form2')).toEqual([{ versionNumber: 1, createdAt: now }])
     })
 
     it('should handle database errors', async () => {
@@ -441,9 +399,7 @@ describe('form-versions-repository', () => {
         })
       })
 
-      await expect(getVersionSummariesBatch(formIds)).rejects.toThrow(
-        Boom.internal(error)
-      )
+      await expect(getVersionSummariesBatch(formIds)).rejects.toThrow(Boom.internal(error))
     })
 
     it('should throw non-Error objects directly', async () => {
@@ -473,12 +429,8 @@ describe('form-versions-repository', () => {
       const result = await getVersionSummariesBatch(formIds, mockSession)
 
       expect(result).toBeInstanceOf(Map)
-      expect(result.get('form1')).toEqual([
-        { versionNumber: 1, createdAt: now }
-      ])
-      expect(result.get('form2')).toEqual([
-        { versionNumber: 1, createdAt: now }
-      ])
+      expect(result.get('form1')).toEqual([{ versionNumber: 1, createdAt: now }])
+      expect(result.get('form2')).toEqual([{ versionNumber: 1, createdAt: now }])
       expect(mockCollection.find).toHaveBeenCalledWith(
         { formId: { $in: formIds } },
         {
@@ -503,13 +455,9 @@ describe('form-versions-repository', () => {
       const result = await getVersionSummariesBatch(formIds, mockSession)
 
       expect(result).toBeInstanceOf(Map)
-      expect(result.get('form1')).toEqual([
-        { versionNumber: 1, createdAt: now }
-      ])
+      expect(result.get('form1')).toEqual([{ versionNumber: 1, createdAt: now }])
       expect(result.get('form2')).toEqual([])
-      expect(result.get('form3')).toEqual([
-        { versionNumber: 1, createdAt: now }
-      ])
+      expect(result.get('form3')).toEqual([{ versionNumber: 1, createdAt: now }])
     })
   })
 

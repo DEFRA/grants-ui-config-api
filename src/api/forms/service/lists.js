@@ -1,9 +1,4 @@
-import {
-  FormDefinitionRequestType,
-  FormStatus,
-  formDefinitionSchema,
-  getErrorMessage
-} from '@defra/forms-model'
+import { FormDefinitionRequestType, FormStatus, formDefinitionSchema, getErrorMessage } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
@@ -23,9 +18,7 @@ import { client } from '~/src/mongo.js'
 export async function duplicateListGuard(formId, session) {
   const definition = await formDefinition.get(formId, FormStatus.Draft, session)
 
-  const { error } = formDefinitionSchema
-    .extract('lists')
-    .validate(definition.lists)
+  const { error } = formDefinitionSchema.extract('lists').validate(definition.lists)
 
   if (error) {
     throw Boom.conflict('Duplicate list name or title found.')
@@ -52,23 +45,14 @@ export async function addListToDraftFormDefinition(formId, list, author) {
 
       await duplicateListGuard(formId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
       const filename = `${formId}_list_${returnedList.id}.json`
       const s3Meta = await saveToS3(filename, returnedList)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        undefined,
-        FormDefinitionRequestType.CREATE_LIST,
-        s3Meta
-      )
+      await publishFormUpdatedEvent(metadataDocument, undefined, FormDefinitionRequestType.CREATE_LIST, s3Meta)
 
       return returnedList
     })
@@ -77,10 +61,7 @@ export async function addListToDraftFormDefinition(formId, list, author) {
 
     return newForm
   } catch (err) {
-    logger.error(
-      err,
-      `[addList] Failed to add list ${list.name} to form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[addList] Failed to add list ${list.name} to form ID ${formId} - ${getErrorMessage(err)}`)
 
     throw err
   } finally {
@@ -95,12 +76,7 @@ export async function addListToDraftFormDefinition(formId, list, author) {
  * @param {List} list
  * @param {FormMetadataAuthor} author
  */
-export async function updateListOnDraftFormDefinition(
-  formId,
-  listId,
-  list,
-  author
-) {
+export async function updateListOnDraftFormDefinition(formId, listId, list, author) {
   logger.info(`Updating list ${listId} for form ID ${formId}`)
 
   const session = client.startSession()
@@ -108,32 +84,18 @@ export async function updateListOnDraftFormDefinition(
   try {
     const updatedList = await session.withTransaction(async () => {
       // Update the list on the form definition
-      const returnedList = await formDefinition.updateList(
-        formId,
-        listId,
-        list,
-        session
-      )
+      const returnedList = await formDefinition.updateList(formId, listId, list, session)
 
       await duplicateListGuard(formId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
       const filename = `${formId}_list_${returnedList.id}.json`
       const s3Meta = await saveToS3(filename, returnedList)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        undefined,
-        FormDefinitionRequestType.UPDATE_LIST,
-        s3Meta
-      )
+      await publishFormUpdatedEvent(metadataDocument, undefined, FormDefinitionRequestType.UPDATE_LIST, s3Meta)
 
       return returnedList
     })
@@ -142,10 +104,7 @@ export async function updateListOnDraftFormDefinition(
 
     return updatedList
   } catch (err) {
-    logger.error(
-      err,
-      `[updateList] Failed to update list ${listId} for form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[updateList] Failed to update list ${listId} for form ID ${formId} - ${getErrorMessage(err)}`)
 
     throw err
   } finally {
@@ -169,27 +128,16 @@ export async function removeListOnDraftFormDefinition(formId, listId, author) {
       // Update the list on the form definition
       await formDefinition.deleteList(formId, listId, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        { listId },
-        FormDefinitionRequestType.DELETE_LIST
-      )
+      await publishFormUpdatedEvent(metadataDocument, { listId }, FormDefinitionRequestType.DELETE_LIST)
     })
 
     logger.info(`Removed list ${listId} for form ID ${formId}`)
   } catch (err) {
-    logger.error(
-      err,
-      `[removeList] Failed to remove list ${listId} for form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[removeList] Failed to remove list ${listId} for form ID ${formId} - ${getErrorMessage(err)}`)
 
     throw err
   } finally {

@@ -15,20 +15,14 @@ const logger = createLogger()
  * @returns {Promise<FormVersionDocument>}
  */
 export async function createVersion(versionDocument, session) {
-  logger.info(
-    `Creating new version ${versionDocument.versionNumber} for form ID ${versionDocument.formId}`
-  )
+  logger.info(`Creating new version ${versionDocument.versionNumber} for form ID ${versionDocument.formId}`)
 
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (
-    db.collection(VERSIONS_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
     const result = await coll.insertOne(versionDocument, { session })
 
-    logger.info(
-      `Created version ${versionDocument.versionNumber} for form ID ${versionDocument.formId}`
-    )
+    logger.info(`Created version ${versionDocument.versionNumber} for form ID ${versionDocument.formId}`)
 
     return { ...versionDocument, _id: result.insertedId }
   } catch (err) {
@@ -53,9 +47,7 @@ export async function createVersion(versionDocument, session) {
 export async function getLatestVersionNumber(formId, session) {
   logger.info(`Getting latest version number for form ID ${formId}`)
 
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (
-    db.collection(VERSIONS_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
     const sessionOptions = /** @type {FindOptions} */ session && { session }
@@ -69,9 +61,7 @@ export async function getLatestVersionNumber(formId, session) {
     )
 
     const versionNumber = result?.versionNumber ?? 0
-    logger.info(
-      `Latest version number for form ID ${formId} is ${versionNumber}`
-    )
+    logger.info(`Latest version number for form ID ${formId} is ${versionNumber}`)
 
     return versionNumber
   } catch (err) {
@@ -97,18 +87,14 @@ export async function getLatestVersionNumber(formId, session) {
 export async function getVersion(formId, versionNumber, session) {
   logger.info(`Getting version ${versionNumber} for form ID ${formId}`)
 
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (
-    db.collection(VERSIONS_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
     const sessionOptions = /** @type {FindOptions} */ session && { session }
     const result = await coll.findOne({ formId, versionNumber }, sessionOptions)
 
     if (!result) {
-      throw Boom.notFound(
-        `Version ${versionNumber} for form ID '${formId}' not found`
-      )
+      throw Boom.notFound(`Version ${versionNumber} for form ID '${formId}' not found`)
     }
 
     logger.info(`Retrieved version ${versionNumber} for form ID ${formId}`)
@@ -140,9 +126,7 @@ export async function getVersion(formId, versionNumber, session) {
 export async function getLatestVersion(formId, session) {
   logger.info(`Getting latest version for form ID ${formId}`)
 
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (
-    db.collection(VERSIONS_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
     const sessionOptions = /** @type {FindOptions} */ session && { session }
@@ -159,16 +143,11 @@ export async function getLatestVersion(formId, session) {
       return null
     }
 
-    logger.info(
-      `Retrieved latest version ${result.versionNumber} for form ID ${formId}`
-    )
+    logger.info(`Retrieved latest version ${result.versionNumber} for form ID ${formId}`)
 
     return result
   } catch (err) {
-    logger.error(
-      err,
-      `[getLatestVersion] Failed to get latest version for form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[getLatestVersion] Failed to get latest version for form ID ${formId} - ${getErrorMessage(err)}`)
 
     if (err instanceof Error) {
       throw Boom.internal(err)
@@ -186,13 +165,9 @@ export async function getLatestVersion(formId, session) {
  * @returns {Promise<{versions: FormVersionDocument[], totalCount: number}>}
  */
 export async function getVersions(formId, session, limit = 10, offset = 0) {
-  logger.info(
-    `Getting versions for form ID ${formId} (limit: ${limit}, offset: ${offset})`
-  )
+  logger.info(`Getting versions for form ID ${formId} (limit: ${limit}, offset: ${offset})`)
 
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (
-    db.collection(VERSIONS_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
     const sessionOptions = /** @type {AggregateOptions} */ session && {
@@ -201,12 +176,7 @@ export async function getVersions(formId, session, limit = 10, offset = 0) {
     const query = { formId }
 
     const [versions, totalCount] = await Promise.all([
-      coll
-        .find(query, sessionOptions)
-        .sort({ versionNumber: -1 })
-        .skip(offset)
-        .limit(limit)
-        .toArray(),
+      coll.find(query, sessionOptions).sort({ versionNumber: -1 }).skip(offset).limit(limit).toArray(),
       coll.countDocuments(query, sessionOptions)
     ])
 
@@ -214,10 +184,7 @@ export async function getVersions(formId, session, limit = 10, offset = 0) {
 
     return { versions, totalCount }
   } catch (err) {
-    logger.error(
-      err,
-      `[getVersions] Failed to get versions for form ID ${formId} - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[getVersions] Failed to get versions for form ID ${formId} - ${getErrorMessage(err)}`)
 
     if (err instanceof Error) {
       throw Boom.internal(err)
@@ -234,9 +201,7 @@ export async function getVersions(formId, session, limit = 10, offset = 0) {
 export async function removeVersionsForForm(formId, session) {
   logger.info(`Removing all versions for form ID ${formId}`)
 
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (
-    db.collection(VERSIONS_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
     const result = await coll.deleteMany({ formId }, { session })
@@ -264,9 +229,7 @@ export async function removeVersionsForForm(formId, session) {
 export async function getVersionSummaries(formId, session) {
   logger.info(`Getting version summaries for form ID ${formId}`)
 
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (
-    db.collection(VERSIONS_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
     const sessionOptions = /** @type {FindOptions} */ session && { session }
@@ -281,9 +244,7 @@ export async function getVersionSummaries(formId, session) {
       .sort({ versionNumber: -1 })
       .toArray()
 
-    logger.info(
-      `Retrieved ${versions.length} version summaries for form ID ${formId}`
-    )
+    logger.info(`Retrieved ${versions.length} version summaries for form ID ${formId}`)
 
     return versions
   } catch (err) {
@@ -308,9 +269,7 @@ export async function getVersionSummaries(formId, session) {
 export async function getVersionSummariesBatch(formIds, session) {
   logger.info(`Getting version summaries for ${formIds.length} forms`)
 
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (
-    db.collection(VERSIONS_COLLECTION_NAME)
-  )
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
     const sessionOptions = /** @type {FindOptions} */ session && { session }
@@ -343,10 +302,7 @@ export async function getVersionSummariesBatch(formIds, session) {
 
     return versionsByForm
   } catch (err) {
-    logger.error(
-      err,
-      `[getVersionSummariesBatch] Failed to get version summaries for batch - ${getErrorMessage(err)}`
-    )
+    logger.error(err, `[getVersionSummariesBatch] Failed to get version summaries for batch - ${getErrorMessage(err)}`)
 
     if (err instanceof Error) {
       throw Boom.internal(err)

@@ -11,8 +11,7 @@ jest.mock('~/src/config/index.js', () => {
   const testConfig = {
     awsRegion: 'eu-west-2',
     snsEndpoint: 'http://localhost',
-    snsTopicArn:
-      'arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events',
+    snsTopicArn: 'arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events',
     publishAuditEvents: false
   }
   return {
@@ -46,9 +45,7 @@ describe('publish-base', () => {
       jest
         .mocked(config.get)
         .mockImplementation((key) =>
-          key === 'publishAuditEvents'
-            ? false
-            : 'arn:aws:sns:eu-west-2:000000000000:topic'
+          key === 'publishAuditEvents' ? false : 'arn:aws:sns:eu-west-2:000000000000:topic'
         )
       const val = await publishEvent(message)
       expect(val).toBeUndefined()
@@ -59,22 +56,18 @@ describe('publish-base', () => {
       /** @type {Record<string, string | boolean>} */
       const m = {
         publishAuditEvents: true,
-        snsTopicArn:
-          'arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events',
+        snsTopicArn: 'arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events',
         awsRegion: 'eu-west-2',
         snsEndpoint: 'http://localhost'
       }
-      jest
-        .mocked(config.get)
-        .mockImplementation((key) => m[/** @type {string} */ (key)])
+      jest.mocked(config.get).mockImplementation((key) => m[/** @type {string} */ (key)])
       snsMock.on(PublishCommand).resolves({
         MessageId: '00000000-0000-0000-0000-000000000000'
       })
 
       await publishEvent(message)
       expect(snsMock).toHaveReceivedCommandWith(PublishCommand, {
-        TopicArn:
-          'arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events',
+        TopicArn: 'arn:aws:sns:eu-west-2:000000000000:grants_ui_config_api_events',
         Message: JSON.stringify(message)
       })
     })

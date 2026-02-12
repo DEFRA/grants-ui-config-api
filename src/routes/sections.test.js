@@ -1,8 +1,4 @@
-import {
-  FormDefinitionError,
-  FormDefinitionErrorType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
+import { FormDefinitionError, FormDefinitionErrorType, FormDefinitionRequestType } from '@defra/forms-model'
 
 import { assignSectionsToForm } from '~/src/api/forms/service/sections.js'
 import { createServer } from '~/src/api/server.js'
@@ -38,8 +34,8 @@ describe('Sections route', () => {
    * @satisfies {FormMetadataAuthor}
    */
   const expectedAuthor = {
-    id: auth.credentials.user.oid,
-    displayName: `${auth.credentials.user.given_name} ${auth.credentials.user.family_name}`
+    id: auth.credentials.user.id,
+    displayName: auth.credentials.user.displayName
   }
 
   describe('Success responses', () => {
@@ -74,9 +70,7 @@ describe('Sections route', () => {
         }
       ]
 
-      const assignSectionsMock = jest
-        .mocked(assignSectionsToForm)
-        .mockResolvedValue(expectedSections)
+      const assignSectionsMock = jest.mocked(assignSectionsToForm).mockResolvedValue(expectedSections)
 
       const response = await server.inject({
         method: 'PUT',
@@ -96,8 +90,7 @@ describe('Sections route', () => {
         status: 'updated'
       })
 
-      const [calledFormId, calledAssignments, calledAuthor, calledRequestType] =
-        assignSectionsMock.mock.calls[0]
+      const [calledFormId, calledAssignments, calledAuthor, calledRequestType] = assignSectionsMock.mock.calls[0]
       expect(calledFormId).toBe(id)
 
       expect(calledAssignments).toEqual([
@@ -142,9 +135,7 @@ describe('Sections route', () => {
         }
       ]
 
-      const assignSectionsMock = jest
-        .mocked(assignSectionsToForm)
-        .mockResolvedValue(expectedSections)
+      const assignSectionsMock = jest.mocked(assignSectionsToForm).mockResolvedValue(expectedSections)
 
       const response = await server.inject({
         method: 'PUT',
@@ -163,8 +154,7 @@ describe('Sections route', () => {
         status: 'updated'
       })
 
-      const [calledFormId, calledAssignments, calledAuthor, calledRequestType] =
-        assignSectionsMock.mock.calls[0]
+      const [calledFormId, calledAssignments, calledAuthor, calledRequestType] = assignSectionsMock.mock.calls[0]
       expect(calledFormId).toBe(id)
 
       expect(calledAssignments).toEqual([

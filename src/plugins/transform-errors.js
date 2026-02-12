@@ -1,9 +1,6 @@
 import Boom from '@hapi/boom'
 
-import {
-  ApplicationError,
-  InvalidFormDefinitionError
-} from '~/src/api/forms/errors.js'
+import { ApplicationError, InvalidFormDefinitionError } from '~/src/api/forms/errors.js'
 
 /**
  * @satisfies {Plugin<void>}
@@ -21,10 +18,7 @@ export const transformErrors = {
           response.output.payload.message = response.message
           response.output.payload.error = response.name
 
-          if (
-            response.cause &&
-            response instanceof InvalidFormDefinitionError
-          ) {
+          if (response.cause && response instanceof InvalidFormDefinitionError) {
             response.output.payload.cause = response.cause
           }
         } else {

@@ -14,9 +14,6 @@ try {
   await server.listen()
 } catch (err) {
   logger.info('Server failed to start :(')
-  logger.error(
-    err,
-    `[serverStartup] Server failed to start - ${getErrorMessage(err)}`
-  )
+  logger.error(err, `[serverStartup] Server failed to start - ${getErrorMessage(err)}`)
   throw err
 }

@@ -1,0 +1,1065 @@
+openapi: 3.1.0
+info:
+  title: Grants UI Config API
+  description: |
+    API for managing form configurations, including form metadata, definitions, pages, components, and versioning.
+
+    ## Authentication
+
+    Most endpoints require JWT Bearer token authentication. Generate a token using:
+    ```bash
+    npm run generate:token
+    ```
+
+    The token should be included in the Authorization header:
+    ```
+    Authorization: Bearer <your-token>
+    ```
+  version: 1.0.0
+  license:
+    name: OGL-UK-3.0
+    url: http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3
+  contact:
+    name: Defra DDTS
+
+servers:
+  - url: http://localhost:3001
+    description: Local development server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Forms
+    description: Form metadata and lifecycle management
+  - name: Definitions
+    description: Form definition management (draft and live)
+  - name: Versions
+    description: Form version history
+  - name: Pages
+    description: Page management within form definitions
+  - name: Components
+    description: Component management within pages
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Returns the health status of the API
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+
+  /forms:
+    get:
+      tags:
+        - Forms
+      summary: List all forms
+      description: Retrieve a list of all forms with optional filtering
+      operationId: listForms
+      parameters:
+        - name: organisations
+          in: query
+          description: Filter by organisation name
+          schema:
+            type: string
+            examples:
+              - Defra
+      responses:
+        '200':
+          description: List of forms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FormMetadata'
+
+    post:
+      tags:
+        - Forms
+      summary: Create a new form
+      description: Create a new form with metadata
+      operationId: createForm
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFormRequest'
+      responses:
+        '201':
+          description: Form created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormCreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /forms/{id}:
+    get:
+      tags:
+        - Forms
+      summary: Get form by ID
+      description: Retrieve form metadata by ID
+      operationId: getFormById
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      responses:
+        '200':
+          description: Form metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormMetadata'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - Forms
+      summary: Update form metadata
+      description: Update form metadata fields (requires FormPublish scope if form is live)
+      operationId: updateFormMetadata
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFormMetadataRequest'
+      responses:
+        '200':
+          description: Form updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormUpdatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Forms
+      summary: Delete form
+      description: Delete a form and all its data
+      operationId: deleteForm
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      responses:
+        '200':
+          description: Form deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDeletedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/slug/{slug}:
+    get:
+      tags:
+        - Forms
+      summary: Get form by slug
+      description: Retrieve form metadata by slug identifier
+      operationId: getFormBySlug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Form slug identifier
+          schema:
+            type: string
+            examples:
+              - feedback
+      responses:
+        '200':
+          description: Form metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormMetadata'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/draft:
+    delete:
+      tags:
+        - Definitions
+      summary: Delete draft definition only
+      description: Delete only the draft definition, leaving the live definition intact
+      operationId: deleteDraftDefinition
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      responses:
+        '200':
+          description: Draft definition deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDeletedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition/draft:
+    get:
+      tags:
+        - Definitions
+      summary: Get draft form definition
+      description: Retrieve the draft form definition including pages, components, lists, sections, and conditions
+      operationId: getDraftDefinition
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      responses:
+        '200':
+          description: Draft form definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Definitions
+      summary: Update draft form definition
+      description: Replace the entire draft form definition
+      operationId: updateDraftDefinition
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormDefinition'
+      responses:
+        '200':
+          description: Draft definition updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormUpdatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition:
+    get:
+      tags:
+        - Definitions
+      summary: Get live form definition
+      description: Retrieve the live (published) form definition
+      operationId: getLiveDefinition
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      responses:
+        '200':
+          description: Live form definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/create-live:
+    post:
+      tags:
+        - Definitions
+      summary: Create live from draft
+      description: Publish the draft definition as a new live version
+      operationId: createLiveFromDraft
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      responses:
+        '200':
+          description: Live version created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/create-draft:
+    post:
+      tags:
+        - Definitions
+      summary: Create draft from live
+      description: Create a new draft from the current live version
+      operationId: createDraftFromLive
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      responses:
+        '200':
+          description: Draft created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition/draft/migrate/{version}:
+    post:
+      tags:
+        - Definitions
+      summary: Migrate definition to version
+      description: Migrate the draft definition to a specific schema version
+      operationId: migrateDefinition
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - name: version
+          in: path
+          required: true
+          description: Target schema version
+          schema:
+            type: integer
+            examples:
+              - 2
+      responses:
+        '200':
+          description: Definition migrated successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/versions:
+    get:
+      tags:
+        - Versions
+      summary: Get all form versions
+      description: Retrieve a list of all versions for a form
+      operationId: getFormVersions
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      responses:
+        '200':
+          description: List of form versions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  versions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FormVersionSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/versions/{versionNumber}:
+    get:
+      tags:
+        - Versions
+      summary: Get specific form version
+      description: Retrieve metadata for a specific form version
+      operationId: getFormVersion
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - $ref: '#/components/parameters/VersionNumber'
+      responses:
+        '200':
+          description: Form version metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormVersionSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/versions/{versionNumber}/definition:
+    get:
+      tags:
+        - Versions
+      summary: Get form version definition
+      description: Retrieve the complete definition for a specific form version
+      operationId: getFormVersionDefinition
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - $ref: '#/components/parameters/VersionNumber'
+      responses:
+        '200':
+          description: Form version definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition/draft/pages:
+    post:
+      tags:
+        - Pages
+      summary: Create page on draft definition
+      description: Add a new page to the draft form definition
+      operationId: createPage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PagePayload'
+      responses:
+        '201':
+          description: Page created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition/draft/pages/order:
+    post:
+      tags:
+        - Pages
+      summary: Reorder pages on draft definition
+      description: Update the order of pages in the draft definition
+      operationId: reorderPages
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderRequest'
+      responses:
+        '200':
+          description: Pages reordered successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition/draft/pages/{pageId}:
+    patch:
+      tags:
+        - Pages
+      summary: Update page on draft definition
+      description: Update specific fields of a page in the draft definition
+      operationId: updatePage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - $ref: '#/components/parameters/PageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchPageRequest'
+      responses:
+        '200':
+          description: Page updated successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Pages
+      summary: Delete page from draft definition
+      description: Remove a page from the draft definition
+      operationId: deletePage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - $ref: '#/components/parameters/PageId'
+      responses:
+        '200':
+          description: Page deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition/draft/pages/{pageId}/components:
+    post:
+      tags:
+        - Components
+      summary: Create component on draft definition
+      description: Add a new component to a page in the draft definition
+      operationId: createComponent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - $ref: '#/components/parameters/PageId'
+        - name: prepend
+          in: query
+          description: Whether to prepend the component to the beginning of the page
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentPayload'
+      responses:
+        '201':
+          description: Component created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Component'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition/draft/pages/{pageId}/components/order:
+    post:
+      tags:
+        - Components
+      summary: Reorder components on draft definition
+      description: Update the order of components on a page
+      operationId: reorderComponents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - $ref: '#/components/parameters/PageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderRequest'
+      responses:
+        '200':
+          description: Components reordered successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /forms/{id}/definition/draft/pages/{pageId}/components/{componentId}:
+    put:
+      tags:
+        - Components
+      summary: Update component on draft definition
+      description: Replace a component with updated data
+      operationId: updateComponent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - $ref: '#/components/parameters/PageId'
+        - $ref: '#/components/parameters/ComponentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Component'
+      responses:
+        '200':
+          description: Component updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Component'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Components
+      summary: Delete component from draft definition
+      description: Remove a component from a page
+      operationId: deleteComponent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/FormId'
+        - $ref: '#/components/parameters/PageId'
+        - $ref: '#/components/parameters/ComponentId'
+      responses:
+        '200':
+          description: Component deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  componentId:
+                    type: string
+                  status:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token authentication. Generate a token using:
+        ```bash
+        npm run generate:token
+        ```
+
+  parameters:
+    FormId:
+      name: id
+      in: path
+      required: true
+      description: Form identifier (MongoDB ObjectId)
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{24}$'
+        examples:
+          - 6984ae91c5de70e3c5d4401c
+
+    PageId:
+      name: pageId
+      in: path
+      required: true
+      description: Page identifier
+      schema:
+        type: string
+
+    ComponentId:
+      name: componentId
+      in: path
+      required: true
+      description: Component identifier
+      schema:
+        type: string
+
+    VersionNumber:
+      name: versionNumber
+      in: path
+      required: true
+      description: Version number
+      schema:
+        type: integer
+        minimum: 1
+        examples:
+          - 1
+
+  schemas:
+    FormMetadata:
+      type: object
+      required:
+        - id
+        - title
+        - organisation
+        - teamName
+        - teamEmail
+        - slug
+      properties:
+        id:
+          type: string
+          description: Unique form identifier
+        title:
+          type: string
+          description: Form title
+        organisation:
+          type: string
+          description: Organisation name
+        teamName:
+          type: string
+          description: Team name
+        teamEmail:
+          type: string
+          format: email
+          description: Team contact email
+        slug:
+          type: string
+          description: URL-friendly form identifier
+        draft:
+          type: boolean
+          description: Whether form has a draft definition
+        live:
+          type: boolean
+          description: Whether form has a live definition
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '#/components/schemas/Author'
+        updatedBy:
+          $ref: '#/components/schemas/Author'
+
+    CreateFormRequest:
+      type: object
+      required:
+        - title
+        - organisation
+        - teamName
+        - teamEmail
+      properties:
+        title:
+          type: string
+          description: Form title
+          examples:
+            - Sample Form
+        organisation:
+          type: string
+          description: Organisation name
+          examples:
+            - Defra
+        teamName:
+          type: string
+          description: Team name
+          examples:
+            - Test Team
+        teamEmail:
+          type: string
+          format: email
+          description: Team contact email
+          examples:
+            - test.team.email@defra.gov.uk
+
+    UpdateFormMetadataRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        organisation:
+          type: string
+        teamName:
+          type: string
+        teamEmail:
+          type: string
+          format: email
+
+    FormCreatedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          examples:
+            - created
+
+    FormUpdatedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          examples:
+            - updated
+
+    FormDeletedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          examples:
+            - deleted
+
+    FormDefinition:
+      type: object
+      properties:
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Page'
+        lists:
+          type: array
+          items:
+            type: object
+        sections:
+          type: array
+          items:
+            type: object
+        conditions:
+          type: array
+          items:
+            type: object
+
+    Page:
+      type: object
+      required:
+        - id
+        - title
+        - path
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        path:
+          type: string
+          description: URL path for the page
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+        next:
+          type: array
+          items:
+            type: object
+          description: Navigation rules
+
+    PagePayload:
+      type: object
+      required:
+        - title
+        - path
+      properties:
+        title:
+          type: string
+          examples:
+            - New Page
+        path:
+          type: string
+          examples:
+            - /new-page
+        next:
+          type: array
+          items:
+            type: object
+          default: []
+
+    PatchPageRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        path:
+          type: string
+        next:
+          type: array
+          items:
+            type: object
+
+    Component:
+      type: object
+      required:
+        - id
+        - type
+        - name
+        - title
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: Component type (e.g., TextField, DateField, SelectField)
+          examples:
+            - TextField
+        name:
+          type: string
+          description: Component field name
+        title:
+          type: string
+          description: Component label/title
+        options:
+          type: object
+          description: Component-specific options
+
+    ComponentPayload:
+      type: object
+      required:
+        - type
+        - name
+        - title
+      properties:
+        type:
+          type: string
+          examples:
+            - TextField
+        name:
+          type: string
+          examples:
+            - fieldName
+        title:
+          type: string
+          examples:
+            - Field Title
+        options:
+          type: object
+          default: {}
+
+    ReorderRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+          description: Array of IDs in the desired order
+          examples:
+            - ["id1", "id2", "id3"]
+
+    FormVersionSummary:
+      type: object
+      properties:
+        versionNumber:
+          type: integer
+          description: Version number
+        createdAt:
+          type: string
+          format: date-time
+          description: Version creation timestamp
+
+    Author:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Forbidden - Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Not Found - Resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

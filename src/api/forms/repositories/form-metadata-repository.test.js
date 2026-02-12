@@ -2,10 +2,7 @@ import { FormStatus } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 import { MongoServerError, ObjectId } from 'mongodb'
 
-import {
-  buildMetadataDocument,
-  metadataId
-} from '~/src/api/forms/__stubs__/metadata.js'
+import { buildMetadataDocument, metadataId } from '~/src/api/forms/__stubs__/metadata.js'
 import { buildMockCollection } from '~/src/api/forms/__stubs__/mongo.js'
 import { FormAlreadyExistsError } from '~/src/api/forms/errors.js'
 import {
@@ -34,10 +31,9 @@ const mockCollection = buildMockCollection()
 const mockSession = author
 jest.mock('~/src/mongo.js', () => {
   let isPrepared = false
-  const collection =
-    /** @satisfies {Collection<{draft: FormDefinition}>} */ jest
-      .fn()
-      .mockImplementation(() => mockCollection)
+  const collection = /** @satisfies {Collection<{draft: FormDefinition}>} */ jest
+    .fn()
+    .mockImplementation(() => mockCollection)
   return {
     db: {
       collection
@@ -84,9 +80,7 @@ describe('form-metadata-repository', () => {
   })
 
   beforeEach(() => {
-    jest
-      .mocked(db.collection)
-      .mockReturnValue(/** @type {any} */ (mockCollection))
+    jest.mocked(db.collection).mockReturnValue(/** @type {any} */ (mockCollection))
     jest.clearAllMocks()
   })
   describe('update', () => {
@@ -110,11 +104,7 @@ describe('form-metadata-repository', () => {
       })
       mockCollection.findOne.mockResolvedValue(null)
       await expect(
-        update(
-          metadataId,
-          { $set: { title: 'New form title', slug: 'new-form-title' } },
-          mockSession
-        )
+        update(metadataId, { $set: { title: 'New form title', slug: 'new-form-title' } }, mockSession)
       ).rejects.toThrow(`Form with ID ${metadataId} not found.`)
     })
   })
@@ -136,12 +126,7 @@ describe('form-metadata-repository', () => {
           updatedBy: author
         }
       }
-      const updated = await updateAudit(
-        metadataId,
-        author,
-        mockSession,
-        auditDate
-      )
+      const updated = await updateAudit(metadataId, author, mockSession, auditDate)
       expect(mockCollection.updateOne).toHaveBeenCalledWith(
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         { _id: new ObjectId(metadataId) },
@@ -155,9 +140,7 @@ describe('form-metadata-repository', () => {
       const error = 'String error'
       mockCollection.updateOne.mockRejectedValue(error)
 
-      await expect(updateAudit(metadataId, author, mockSession)).rejects.toBe(
-        error
-      )
+      await expect(updateAudit(metadataId, author, mockSession)).rejects.toBe(error)
     })
   })
 
@@ -389,9 +372,7 @@ describe('form-metadata-repository', () => {
         toArray: jest.fn().mockRejectedValue(error)
       })
 
-      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(
-        error
-      )
+      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(error)
     })
 
     it('should log error with correct message format', async () => {
@@ -400,9 +381,7 @@ describe('form-metadata-repository', () => {
         toArray: jest.fn().mockRejectedValue(error)
       })
 
-      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(
-        error
-      )
+      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(error)
 
       // The error should be thrown and logged - we can't easily test the logger call
       // due to the mocking structure, but the error handling is covered
@@ -414,9 +393,7 @@ describe('form-metadata-repository', () => {
         toArray: jest.fn().mockRejectedValue(error)
       })
 
-      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(
-        error
-      )
+      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(error)
     })
 
     it('should handle countDocuments errors', async () => {
@@ -436,9 +413,7 @@ describe('form-metadata-repository', () => {
       const error = new Error('Count documents failed')
       mockCollection.countDocuments.mockRejectedValue(error)
 
-      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(
-        error
-      )
+      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(error)
     })
 
     it('should handle Promise.all rejection', async () => {
@@ -455,9 +430,7 @@ describe('form-metadata-repository', () => {
           .mockRejectedValueOnce(new Error('Promise.all failed'))
       })
 
-      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow(
-        'Promise.all failed'
-      )
+      await expect(listWithVersions({ page: 1, perPage: 10 })).rejects.toThrow('Promise.all failed')
     })
 
     it('should use correct default values when options are not provided', async () => {
@@ -502,9 +475,7 @@ describe('form-metadata-repository', () => {
 
     it('should use default values when properties are undefined', async () => {
       mockCollection.aggregate.mockReturnValue({
-        toArray: jest
-          .fn()
-          .mockResolvedValue([{ authors: [], organisations: [], status: [] }])
+        toArray: jest.fn().mockResolvedValue([{ authors: [], organisations: [], status: [] }])
       })
       mockCollection.countDocuments.mockResolvedValue(0)
 
@@ -539,19 +510,14 @@ describe('form-metadata-repository', () => {
 
       const result = await get(metadataId, mockSession)
 
-      expect(mockCollection.findOne).toHaveBeenCalledWith(
-        { _id: new ObjectId(metadataId) },
-        { session: mockSession }
-      )
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: new ObjectId(metadataId) }, { session: mockSession })
       expect(result).toEqual(metadataBefore)
     })
 
     it('should throw Boom.notFound when form not found', async () => {
       mockCollection.findOne.mockResolvedValue(null)
 
-      await expect(get(metadataId)).rejects.toThrow(
-        Boom.notFound(`Form with ID '${metadataId}' not found`)
-      )
+      await expect(get(metadataId)).rejects.toThrow(Boom.notFound(`Form with ID '${metadataId}' not found`))
     })
 
     it('should rethrow Boom errors', async () => {
@@ -584,19 +550,14 @@ describe('form-metadata-repository', () => {
 
       const result = await getBySlug(slug)
 
-      expect(mockCollection.findOne).toHaveBeenCalledWith(
-        { slug },
-        { session: undefined }
-      )
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ slug }, { session: undefined })
       expect(result).toEqual(metadataBefore)
     })
 
     it('should throw Boom.notFound when form not found', async () => {
       mockCollection.findOne.mockResolvedValue(null)
 
-      await expect(getBySlug(slug)).rejects.toThrow(
-        Boom.notFound(`Form with slug '${slug}' not found`)
-      )
+      await expect(getBySlug(slug)).rejects.toThrow(Boom.notFound(`Form with slug '${slug}' not found`))
     })
 
     it('should rethrow Boom errors', async () => {
@@ -674,10 +635,7 @@ describe('form-metadata-repository', () => {
 
       await remove(metadataId, mockSession)
 
-      expect(mockCollection.deleteOne).toHaveBeenCalledWith(
-        { _id: new ObjectId(metadataId) },
-        { session: mockSession }
-      )
+      expect(mockCollection.deleteOne).toHaveBeenCalledWith({ _id: new ObjectId(metadataId) }, { session: mockSession })
     })
   })
 
@@ -693,11 +651,7 @@ describe('form-metadata-repository', () => {
       })
       mockCollection.findOne.mockResolvedValue(metadataAfter)
 
-      const result = await addVersionMetadata(
-        metadataId,
-        versionMetadata,
-        mockSession
-      )
+      const result = await addVersionMetadata(metadataId, versionMetadata, mockSession)
 
       expect(mockCollection.updateOne).toHaveBeenCalledWith(
         { _id: new ObjectId(metadataId) },
@@ -728,10 +682,7 @@ describe('form-metadata-repository', () => {
 
       const result = await getVersionMetadata(metadataId, mockSession)
 
-      expect(mockCollection.findOne).toHaveBeenCalledWith(
-        { _id: new ObjectId(metadataId) },
-        { session: mockSession }
-      )
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: new ObjectId(metadataId) }, { session: mockSession })
       expect(result).toEqual(versions)
     })
 
@@ -761,12 +712,8 @@ describe('form-metadata-repository', () => {
         modifiedCount: 0
       })
 
-      await expect(
-        update(metadataId, { $set: { title: 'New' } }, mockSession)
-      ).rejects.toThrow(
-        Boom.badRequest(
-          `Form with ID ${metadataId} not updated. Modified count 0`
-        )
+      await expect(update(metadataId, { $set: { title: 'New' } }, mockSession)).rejects.toThrow(
+        Boom.badRequest(`Form with ID ${metadataId} not updated. Modified count 0`)
       )
     })
 
@@ -774,18 +721,14 @@ describe('form-metadata-repository', () => {
       const boomError = Boom.forbidden('Access denied')
       mockCollection.updateOne.mockRejectedValue(boomError)
 
-      await expect(
-        update(metadataId, { $set: { title: 'New' } }, mockSession)
-      ).rejects.toThrow(boomError)
+      await expect(update(metadataId, { $set: { title: 'New' } }, mockSession)).rejects.toThrow(boomError)
     })
 
     it('should throw Boom.internal for generic errors in update', async () => {
       const error = new Error('Database error')
       mockCollection.updateOne.mockRejectedValue(error)
 
-      await expect(
-        update(metadataId, { $set: { title: 'New' } }, mockSession)
-      ).rejects.toThrow(Boom.internal(error))
+      await expect(update(metadataId, { $set: { title: 'New' } }, mockSession)).rejects.toThrow(Boom.internal(error))
     })
   })
 
@@ -795,19 +738,14 @@ describe('form-metadata-repository', () => {
 
       const result = await get(metadataId)
 
-      expect(mockCollection.findOne).toHaveBeenCalledWith(
-        { _id: new ObjectId(metadataId) },
-        { session: undefined }
-      )
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: new ObjectId(metadataId) }, { session: undefined })
       expect(result).toEqual(metadataBefore)
     })
 
     it('should throw Boom.notFound when form not found', async () => {
       mockCollection.findOne.mockResolvedValue(null)
 
-      await expect(get(metadataId)).rejects.toThrow(
-        Boom.notFound(`Form with ID '${metadataId}' not found`)
-      )
+      await expect(get(metadataId)).rejects.toThrow(Boom.notFound(`Form with ID '${metadataId}' not found`))
     })
 
     it('should rethrow Boom errors', async () => {
@@ -900,9 +838,7 @@ describe('form-metadata-repository', () => {
       const nonExistentId = '507f1f77bcf86cd799439011'
       mockCollection.findOneAndUpdate.mockResolvedValue(null)
 
-      await expect(
-        getAndIncrementVersionNumber(nonExistentId, mockSession)
-      ).rejects.toThrow(
+      await expect(getAndIncrementVersionNumber(nonExistentId, mockSession)).rejects.toThrow(
         Boom.notFound(`Form with ID ${nonExistentId} not found`)
       )
     })
@@ -940,10 +876,7 @@ describe('form-metadata-repository', () => {
         lastVersionNumber: 11 // max(1..10) + 1
       })
 
-      const result = await getAndIncrementVersionNumber(
-        '68a88bc836a6de2d100b3509',
-        mockSession
-      )
+      const result = await getAndIncrementVersionNumber('68a88bc836a6de2d100b3509', mockSession)
 
       expect(result).toBe(11)
 

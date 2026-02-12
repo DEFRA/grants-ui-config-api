@@ -1,13 +1,7 @@
-import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
+import { AuditEventMessageType, FormDefinitionRequestType } from '@defra/forms-model'
 import { pino } from 'pino'
 
-import {
-  buildDefinition,
-  buildList
-} from '~/src/api/forms/__stubs__/definition.js'
+import { buildDefinition, buildList } from '~/src/api/forms/__stubs__/definition.js'
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { formMetadataDocument } from '~/src/api/forms/service/__stubs__/service.js'
@@ -56,33 +50,18 @@ describe('options', () => {
 
   beforeEach(() => {
     jest.mocked(formMetadata.get).mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(formMetadata.updateAudit)
-      .mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(versioningService.createFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
-    jest
-      .mocked(versioningService.getLatestFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
+    jest.mocked(versioningService.createFormVersion).mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(versioningService.getLatestFormVersion).mockResolvedValue(mockFormVersionDocument)
   })
 
   describe('updateOptionOnDraftDefinition', () => {
     it('should add a list to the form definition', async () => {
-      jest
-        .mocked(formDefinition.get)
-        .mockResolvedValueOnce(formDefinitionWithList)
-      const updateOptionMock = jest
-        .mocked(formDefinition.updateOption)
-        .mockResolvedValueOnce(formDefinitionWithList)
+      jest.mocked(formDefinition.get).mockResolvedValueOnce(formDefinitionWithList)
+      const updateOptionMock = jest.mocked(formDefinition.updateOption).mockResolvedValueOnce(formDefinitionWithList)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      const result = await updateOptionOnDraftDefinition(
-        id,
-        'showReferenceNumber',
-        'true',
-        defaultAuthor
-      )
+      const result = await updateOptionOnDraftDefinition(id, 'showReferenceNumber', 'true', defaultAuthor)
       const [expectedFormId, optionName] = updateOptionMock.mock.calls[0]
       expect(expectedFormId).toBe(id)
       expect(optionName).toBe('showReferenceNumber')

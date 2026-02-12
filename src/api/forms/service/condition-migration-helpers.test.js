@@ -1,11 +1,4 @@
-import {
-  ComponentType,
-  ConditionType,
-  Coordinator,
-  DateDirections,
-  DateUnits,
-  OperatorName
-} from '@defra/forms-model'
+import { ComponentType, ConditionType, Coordinator, DateDirections, DateUnits, OperatorName } from '@defra/forms-model'
 
 import {
   convertConditionDataToV2,
@@ -346,12 +339,7 @@ describe('convertConditionDataToV2', () => {
       value: { type: 'OtherType', value: 'abc' }
     }
     expect(() =>
-      convertConditionDataToV2(
-        invalidConditionData,
-        fieldNameToComponentId,
-        usedConditions,
-        dummyDefinition
-      )
+      convertConditionDataToV2(invalidConditionData, fieldNameToComponentId, usedConditions, dummyDefinition)
     ).toThrow('Unsupported condition value type found: OtherType')
   })
 
@@ -359,15 +347,8 @@ describe('convertConditionDataToV2', () => {
     const fieldNameToComponentId = new Map()
     const usedConditions = new Set(['field1'])
     expect(() =>
-      convertConditionDataToV2(
-        conditionDataString,
-        fieldNameToComponentId,
-        usedConditions,
-        dummyDefinition
-      )
-    ).toThrow(
-      "Cannot migrate condition: field name 'field1' not found in components but is in use."
-    )
+      convertConditionDataToV2(conditionDataString, fieldNameToComponentId, usedConditions, dummyDefinition)
+    ).toThrow("Cannot migrate condition: field name 'field1' not found in components but is in use.")
   })
 
   it('returns null if componentId does not exist and field is not in use', () => {
@@ -429,9 +410,7 @@ describe('isConditionData', () => {
         unit: 'days',
         direction: 'in the past'
       })
-      expect(relativeDateValueToString(dateObj)).toBe(
-        'period: period unit: days direction: in the past'
-      )
+      expect(relativeDateValueToString(dateObj)).toBe('period: period unit: days direction: in the past')
     })
 
     it('should display object contents when not present', () => {
@@ -441,17 +420,13 @@ describe('isConditionData', () => {
         direction: undefined
       }
       // @ts-expect-error - undeterministic type for test
-      expect(relativeDateValueToString(dateObj)).toBe(
-        'period: undefined unit: undefined direction: undefined'
-      )
+      expect(relativeDateValueToString(dateObj)).toBe('period: undefined unit: undefined direction: undefined')
     })
 
     it('should display object contents when empty object', () => {
       const dateObj = {}
       // @ts-expect-error - undeterministic type for test
-      expect(relativeDateValueToString(dateObj)).toBe(
-        'period:  unit:  direction: '
-      )
+      expect(relativeDateValueToString(dateObj)).toBe('period:  unit:  direction: ')
     })
   })
 
@@ -503,9 +478,9 @@ describe('isConditionData', () => {
     })
 
     it('should throw if not found', () => {
-      expect(() =>
-        findComponentAcrossPages(dummyDefinition, 'unknown')
-      ).toThrow('Component of name unknown not found in definition')
+      expect(() => findComponentAcrossPages(dummyDefinition, 'unknown')).toThrow(
+        'Component of name unknown not found in definition'
+      )
     })
   })
 })

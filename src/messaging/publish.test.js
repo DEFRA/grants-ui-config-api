@@ -5,18 +5,11 @@ import {
   AuditEventMessageType,
   FormDefinitionRequestType
 } from '@defra/forms-model'
-import {
-  buildDefinition,
-  buildMetaData,
-  buildQuestionPage
-} from '@defra/forms-model/stubs'
+import { buildDefinition, buildMetaData, buildQuestionPage } from '@defra/forms-model/stubs'
 import { ValidationError } from 'joi'
 
 import author from '~/src/api/forms/service/__stubs__/author.js'
-import {
-  BASE_CREATED_DATE,
-  formMetadataDocument
-} from '~/src/api/forms/service/__stubs__/service.js'
+import { BASE_CREATED_DATE, formMetadataDocument } from '~/src/api/forms/service/__stubs__/service.js'
 import { buildFormOrganisationUpdatedMessage } from '~/src/messaging/__stubs__/messages.js'
 import { publishEvent } from '~/src/messaging/publish-base.js'
 import {
@@ -166,11 +159,7 @@ describe('publish', () => {
 
   describe('publishLiveCreatedFromDraftEvent', () => {
     it('should publish FORM_LIVE_CREATED_FROM_DRAFT event', async () => {
-      const response = await publishLiveCreatedFromDraftEvent(
-        formId,
-        updatedAt,
-        updatedBy
-      )
+      const response = await publishLiveCreatedFromDraftEvent(formId, updatedAt, updatedBy)
 
       expect(response?.MessageId).toBe(messageId)
       expect(publishEvent).toHaveBeenCalledWith({
@@ -192,11 +181,7 @@ describe('publish', () => {
 
   describe('publishDraftCreatedFromLiveEvent', () => {
     it('should publish FORM_DRAFT_CREATED_FROM_LIVE event', async () => {
-      const response = await publishDraftCreatedFromLiveEvent(
-        formId,
-        updatedAt,
-        updatedBy
-      )
+      const response = await publishDraftCreatedFromLiveEvent(formId, updatedAt, updatedBy)
 
       expect(response?.MessageId).toBe(messageId)
       expect(publishEvent).toHaveBeenCalledWith({
@@ -244,11 +229,7 @@ describe('publish', () => {
 
   describe('publishFormMigratedEvent', () => {
     it('should publish FORM_MIGRATED event', async () => {
-      const response = await publishFormMigratedEvent(
-        formId,
-        updatedAt,
-        updatedBy
-      )
+      const response = await publishFormMigratedEvent(formId, updatedAt, updatedBy)
 
       expect(response?.MessageId).toBe(messageId)
       expect(publishEvent).toHaveBeenCalledWith({

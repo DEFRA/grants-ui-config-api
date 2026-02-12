@@ -3,13 +3,13 @@ import { UserCredentials } from '@hapi/hapi'
 declare module '@hapi/hapi' {
   interface UserCredentials {
     /**
-     * Object ID of the user
+     * ID of the service account
      */
-    oid?: string
+    id?: string
 
     /**
-     * Groups of the user
+     * Name of the service account
      */
-    groups?: string[]
+    displayName?: string
   }
 }

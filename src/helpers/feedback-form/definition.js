@@ -15,8 +15,7 @@ export const feedbackDefinition = /** @type {FormDefinition} */ ({
       components: [
         {
           type: 'RadiosField',
-          title:
-            'Overall, how do you feel about the service you received today?',
+          title: 'Overall, how do you feel about the service you received today?',
           name: 'PMPyjg',
           shortDescription: 'How you feel about the service',
           hint: '',

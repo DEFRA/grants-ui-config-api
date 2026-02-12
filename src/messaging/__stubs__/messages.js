@@ -37,9 +37,7 @@ export function buildFormMessageBase(partialFormMessageBase = {}) {
  * @param {Partial<FormTitleUpdatedMessage>} partialFormTitleUpdatedMessage
  * @returns {FormTitleUpdatedMessage}
  */
-export function buildFormTitleUpdatedMessage(
-  partialFormTitleUpdatedMessage = {}
-) {
+export function buildFormTitleUpdatedMessage(partialFormTitleUpdatedMessage = {}) {
   return {
     ...buildFormMessageBase(),
     entityId,
@@ -66,9 +64,7 @@ export function buildFormTitleUpdatedMessage(
  * @param {Partial<FormOrganisationUpdatedMessage>} partialFormOrganisationUpdatedMessage
  * @returns {FormOrganisationUpdatedMessage}
  */
-export function buildFormOrganisationUpdatedMessage(
-  partialFormOrganisationUpdatedMessage = {}
-) {
+export function buildFormOrganisationUpdatedMessage(partialFormOrganisationUpdatedMessage = {}) {
   return {
     ...buildFormMessageBase(),
     entityId,

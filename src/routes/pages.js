@@ -7,12 +7,7 @@ import {
   patchFieldsOnDraftDefinitionPage
 } from '~/src/api/forms/service/page.js'
 import { getAuthor } from '~/src/helpers/get-author.js'
-import {
-  formByIdSchema,
-  pageByIdSchema,
-  patchPageSchema,
-  sortIdsSchema
-} from '~/src/models/forms.js'
+import { formByIdSchema, pageByIdSchema, patchPageSchema, sortIdsSchema } from '~/src/models/forms.js'
 
 export const ROUTE_PAGES = '/forms/{id}/definition/draft/pages/{pageId}'
 
@@ -74,12 +69,7 @@ export default [
       const { auth, params, payload } = request
       const author = getAuthor(auth.credentials.user)
 
-      return patchFieldsOnDraftDefinitionPage(
-        params.id,
-        params.pageId,
-        /** @type {Partial<Page>} */ (payload),
-        author
-      )
+      return patchFieldsOnDraftDefinitionPage(params.id, params.pageId, /** @type {Partial<Page>} */ (payload), author)
     },
     options: {
       auth: {

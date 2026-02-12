@@ -1,8 +1,4 @@
-import {
-  SchemaVersion,
-  formDefinitionSchema,
-  formDefinitionV2Schema
-} from '@defra/forms-model'
+import { SchemaVersion, formDefinitionSchema, formDefinitionV2Schema } from '@defra/forms-model'
 
 import { InvalidFormDefinitionError } from '~/src/api/forms/errors.js'
 import { logger } from '~/src/api/forms/service/shared.js'
@@ -38,12 +34,9 @@ export function validate(definition, schema) {
   const { error, value } = result
 
   if (error) {
-    const name =
-      !definition.name || definition.name === '' ? 'No name' : definition.name
+    const name = !definition.name || definition.name === '' ? 'No name' : definition.name
 
-    logger.warn(
-      `Form failed validation: '${error.message}'. Form name: '${name}'`
-    )
+    logger.warn(`Form failed validation: '${error.message}'. Form name: '${name}'`)
 
     throw new InvalidFormDefinitionError(error)
   }

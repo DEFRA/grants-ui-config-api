@@ -9,24 +9,11 @@ import {
   isListType
 } from '@defra/forms-model'
 
-const numericValueOperators =
-  /** @type { Record <ComponentType, OperatorName[]> } */ ({
-    [ComponentType.TextField]: [
-      OperatorName.IsShorterThan,
-      OperatorName.IsLongerThan,
-      OperatorName.HasLength
-    ],
-    [ComponentType.MultilineTextField]: [
-      OperatorName.IsShorterThan,
-      OperatorName.IsLongerThan,
-      OperatorName.HasLength
-    ],
-    [ComponentType.EmailAddressField]: [
-      OperatorName.IsShorterThan,
-      OperatorName.IsLongerThan,
-      OperatorName.HasLength
-    ]
-  })
+const numericValueOperators = /** @type { Record <ComponentType, OperatorName[]> } */ ({
+  [ComponentType.TextField]: [OperatorName.IsShorterThan, OperatorName.IsLongerThan, OperatorName.HasLength],
+  [ComponentType.MultilineTextField]: [OperatorName.IsShorterThan, OperatorName.IsLongerThan, OperatorName.HasLength],
+  [ComponentType.EmailAddressField]: [OperatorName.IsShorterThan, OperatorName.IsLongerThan, OperatorName.HasLength]
+})
 
 /**
  *
@@ -35,10 +22,7 @@ const numericValueOperators =
  */
 export function isConditionData(condition) {
   return (
-    typeof condition === 'object' &&
-    'value' in condition &&
-    typeof condition.field === 'object' &&
-    'field' in condition
+    typeof condition === 'object' && 'value' in condition && typeof condition.field === 'object' && 'field' in condition
   )
 }
 
@@ -47,11 +31,7 @@ export function isConditionData(condition) {
  * @returns {conditionValue is ConditionValueData}
  */
 export function isConditionValueData(conditionValue) {
-  return (
-    typeof conditionValue === 'object' &&
-    'type' in conditionValue &&
-    conditionValue.type === ConditionType.Value
-  )
+  return typeof conditionValue === 'object' && 'type' in conditionValue && conditionValue.type === ConditionType.Value
 }
 
 /**
@@ -60,9 +40,7 @@ export function isConditionValueData(conditionValue) {
  */
 export function isConditionRelativeDateData(conditionValue) {
   return (
-    typeof conditionValue === 'object' &&
-    'type' in conditionValue &&
-    conditionValue.type === ConditionType.RelativeDate
+    typeof conditionValue === 'object' && 'type' in conditionValue && conditionValue.type === ConditionType.RelativeDate
   )
 }
 
@@ -94,12 +72,8 @@ export function determineConditionType(conditionData) {
  * @returns {boolean}
  */
 export function overrideAsNumericType(conditionData) {
-  const type = /** @type {ComponentType} */ (
-    'value' in conditionData ? conditionData.field.type : ''
-  )
-  const numericOperators = /** @type { OperatorName[] | undefined } */ (
-    numericValueOperators[type]
-  )
+  const type = /** @type {ComponentType} */ ('value' in conditionData ? conditionData.field.type : '')
+  const numericOperators = /** @type { OperatorName[] | undefined } */ (numericValueOperators[type])
   const found = numericOperators?.find((op) => op === conditionData.operator)
   return found !== undefined
 }
@@ -110,9 +84,7 @@ export function overrideAsNumericType(conditionData) {
  * @returns {ConditionType}
  */
 export function numericTypeOrDefault(conditionData, defaultType) {
-  return overrideAsNumericType(conditionData)
-    ? ConditionType.NumberValue
-    : defaultType
+  return overrideAsNumericType(conditionData) ? ConditionType.NumberValue : defaultType
 }
 
 /**
@@ -129,15 +101,9 @@ export function numericValueOrDefault(conditionData, valueStr) {
  * @returns {string}
  */
 export function relativeDateValueToString(dateObj) {
-  const period = /** @type {string} */ (
-    dateObj && 'period' in dateObj ? dateObj.period : ''
-  )
-  const unit = /** @type {string} */ (
-    dateObj && 'unit' in dateObj ? dateObj.unit : ''
-  )
-  const direction = /** @type {string} */ (
-    dateObj && 'direction' in dateObj ? dateObj.direction : ''
-  )
+  const period = /** @type {string} */ (dateObj && 'period' in dateObj ? dateObj.period : '')
+  const unit = /** @type {string} */ (dateObj && 'unit' in dateObj ? dateObj.unit : '')
+  const direction = /** @type {string} */ (dateObj && 'direction' in dateObj ? dateObj.direction : '')
   return `period: ${period} unit: ${unit} direction: ${direction}`
 }
 
@@ -179,9 +145,7 @@ export function findComponentAcrossPages(definition, componentName) {
     if (!hasComponentsEvenIfNoNext(page)) {
       continue
     }
-    const component = page.components.find(
-      (comp) => comp.name === componentName
-    )
+    const component = page.components.find((comp) => comp.name === componentName)
     if (component) {
       return component
     }
@@ -197,18 +161,13 @@ export function findComponentAcrossPages(definition, componentName) {
  * @returns { ConditionValueDataV2 }
  */
 export function convertToListRef(conditionData, valueStr, definition) {
-  const component = findComponentAcrossPages(
-    definition,
-    conditionData.field.name
-  )
+  const component = findComponentAcrossPages(definition, conditionData.field.name)
   const listId = hasListField(component) ? component.list : 'unknown'
   const list = definition.lists.find((l) => l.id === listId)
   const listItem = list?.items.find((item) => item.value === valueStr)
 
   if (!listItem) {
-    throw new Error(
-      `List item ${valueStr} not found in list id ${listId} for component ${component?.name}`
-    )
+    throw new Error(`List item ${valueStr} not found in list id ${listId} for component ${component?.name}`)
   }
 
   return {
@@ -223,8 +182,7 @@ export function convertToListRef(conditionData, valueStr, definition) {
  * @returns { ConditionValueDataV2 }
  */
 export function determineConditionValue(conditionData, definition) {
-  const valueStr =
-    'value' in conditionData.value ? conditionData.value.value : ''
+  const valueStr = 'value' in conditionData.value ? conditionData.value.value : ''
 
   if (isListType(conditionData.field.type)) {
     return convertToListRef(conditionData, valueStr, definition)
@@ -252,16 +210,8 @@ export function determineConditionValue(conditionData, definition) {
  * @param {FormDefinition} definition
  * @returns {ConditionDataV2 | null}
  */
-export function convertConditionDataToV2(
-  conditionData,
-  fieldNameToComponentId,
-  usedConditions,
-  definition
-) {
-  if (
-    !isConditionValueData(conditionData.value) &&
-    !isConditionRelativeDateData(conditionData.value)
-  ) {
+export function convertConditionDataToV2(conditionData, fieldNameToComponentId, usedConditions, definition) {
+  if (!isConditionValueData(conditionData.value) && !isConditionRelativeDateData(conditionData.value)) {
     throw new Error(
       // @ts-expect-error - cannot determine type since neither ConditionValueData nor ConditionRelativeDateData
       `Unsupported condition value type found: ${conditionData.value.type}`

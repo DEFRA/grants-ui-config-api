@@ -30,10 +30,7 @@ export const checkError = (err) => {
  * @type {Lifecycle.Method}
  */
 export const failAction = (request, _h, err) => {
-  request.logger.error(
-    err,
-    `[validationFailed] Request validation failed - ${getErrorMessage(err)}`
-  )
+  request.logger.error(err, `[validationFailed] Request validation failed - ${getErrorMessage(err)}`)
 
   return checkError(err)
 }

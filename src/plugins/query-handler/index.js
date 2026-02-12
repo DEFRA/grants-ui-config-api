@@ -28,16 +28,7 @@ export const queryHandler = {
             status: defaultConfig.search.status
           }
 
-          const {
-            page,
-            perPage,
-            sortBy,
-            order,
-            title,
-            author,
-            organisations,
-            status
-          } = {
+          const { page, perPage, sortBy, order, title, author, organisations, status } = {
             ...defaults,
             ...options
           }

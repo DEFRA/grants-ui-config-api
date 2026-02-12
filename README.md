@@ -10,24 +10,14 @@ This repository is a fork of [DEFRA/forms-manager](https://github.com/DEFRA/form
     - [Node.js](#nodejs)
   - [Local development](#local-development)
     - [Setup](#setup)
-    - [Development](#development)
-    - [Production](#production)
     - [Npm scripts](#npm-scripts)
     - [Database Migrations](#database-migrations)
-      - [Production](#production-1)
+      - [Production](#production)
       - [Local Development](#local-development-1)
-        - [Option 1: Using Docker (Recommended)](#option-1-using-docker-recommended)
+        - [Option 1: Using Docker Compose (Recommended)](#option-1-using-docker-compose-recommended)
         - [Option 2: Manual Migration Commands](#option-2-manual-migration-commands)
   - [API endpoints](#api-endpoints)
   - [Calling API endpoints](#calling-api-endpoints)
-    - [Postman](#postman)
-  - [Docker](#docker)
-    - [Development image](#development-image)
-    - [Production image](#production-image)
-  - [Integration testing](#integration-testing)
-    - [Local development with the integration test environment](#local-development-with-the-integration-test-environment)
-    - [Running Postman tests locally](#running-postman-tests-locally)
-    - [Adding new API tests](#adding-new-api-tests)
   - [Licence](#licence)
     - [About the licence](#about-the-licence)
 
@@ -48,10 +38,16 @@ nvm use
 
 1. Install Docker
 
-2. Bring up runtime dependencies
+2. Start compose stack
 
 ```bash
 docker compose up
+```
+
+or
+
+```bash
+npm run docker:up
 ```
 
 3. Create a `.env` file with the following mandatory environment variables populated at root level:
@@ -59,10 +55,6 @@ docker compose up
 ```text
 MONGO_URI=""
 MONGO_DATABASE=""
-OIDC_JWKS_URI=""
-OIDC_VERIFY_AUD=""
-OIDC_VERIFY_ISS=""
-ROLE_EDITOR_GROUP_ID=""
 HTTP_PROXY=
 HTTPS_PROXY=
 NO_PROXY=
@@ -73,22 +65,6 @@ AWS_SECRET_ACCESS_KEY=
 Event-based audit publishing to SNS is disabled by default. To enable, set `FEATURE_FLAG_PUBLISH_AUDIT_EVENTS=true`, `SNS_TOPIC_ARN`, and optionally `SNS_ENDPOINT` (e.g. for LocalStack).
 
 For proxy options, see https://www.npmjs.com/package/proxy-from-env which is used by https://github.com/TooTallNate/proxy-agents/tree/main/packages/proxy-agent. It's currently supports Hapi Wreck only, e.g. in the JWKS lookup.
-
-### Development
-
-To run the application in `development` mode run:
-
-```bash
-npm run dev
-```
-
-### Production
-
-To mimic the application running in `production` mode locally run:
-
-```bash
-npm start
-```
 
 ### Npm scripts
 
@@ -117,7 +93,7 @@ In production, migrations run automatically when the Docker container starts via
 
 For local development, you have two options:
 
-##### Option 1: Using Docker (Recommended)
+##### Option 1: Using Docker Compose (Recommended)
 
 Migrations run automatically when using Docker:
 
@@ -155,153 +131,189 @@ npx migrate-mongo create <migration-name> -f migrate-mongo-config.js
 
 ## API endpoints
 
-| Endpoint                       | Description       |
-| :----------------------------- | :---------------- |
-| `GET: /health`                 | Health            |
-| `GET: /v1/entities`            | Entities          |
-| `GET: /v1/entities/<entityId>` | Entity by ID      |
-| `PATCH: /forms/<id>`           | Update Form by ID |
+The API follows the OpenAPI 3.1 specification. View the complete API documentation:
+
+- **[openapi.yaml](openapi.yaml)** - Complete OpenAPI specification
+
+The API provides endpoints for:
+
+- **Health** - Service health checks
+- **Forms** - Form metadata and lifecycle management (create, read, update, delete)
+- **Definitions** - Draft and live form definition management
+- **Versions** - Form version history and retrieval
+- **Pages** - Page management within form definitions
+- **Components** - Component management within pages
+
+Most endpoints require JWT Bearer token authentication. See [Calling API endpoints](#calling-api-endpoints) below for authentication setup.
+
+If you're adding endpoints for new features, update the [openapi.yaml](openapi.yaml) file to include the new endpoints.
+
+The CI pipeline will automatically run your new test along with the existing ones on PRs and merges to main.
 
 ## Calling API endpoints
 
-### Postman
+### Using the HTTP Client (IntelliJ/VS Code)
 
-A [Postman](https://www.postman.com/) collection and environment are available for making calls to the Teams and
-Repositories API. Simply import the collection and environment into Postman.
+The project includes an HTTP client configuration file ([config.http](config.http)) that works with IntelliJ IDEA and VS Code REST Client extensions.
 
-- [CDP Node Backend Template Postman Collection](postman/grants-ui-config-api.postman_collection.json)
-- [CDP Node Backend Template Postman Environment](postman/grants-ui-config-api.postman_environment.json)
+#### Prerequisites
 
-## Docker
+1. **Generate JWT_SECRET** using the npm script:
 
-### Development image
+   ```bash
+   # Print JWT secret to console
+   npm run generate:jwt_secret
+   ```
 
-Build:
+   and paste into `.env` file.
 
-```bash
-docker build --target development --no-cache --tag grants-ui-config-api:development .
-```
+2. **Generate an authentication token** using the npm script:
 
-Run:
+   ```bash
+   # Print token to console
+   npm run generate:token
 
-```bash
-docker run -e GITHUB_API_TOKEN -p 3008:3008 grants-ui-config-api:development
-```
+   # Save token to http-client.private.env.json
+   npm run generate:token:save
+   ```
 
-### Production image
+   The `generate:token:save` command creates/updates `http-client.private.env.json` with your token, which is automatically used by the HTTP client.
 
-Build:
+3. **Set up environment variables**:
+   - The base configuration is in [http-client.env.json](http-client.env.json)
+   - Private/sensitive values (like tokens) are stored in `http-client.private.env.json` (git-ignored)
 
-```bash
-docker build --no-cache --tag grants-ui-config-api .
-```
+4. **Start the API**:
 
-Run:
+   ```bash
+   npm run docker:up
+   ```
 
-```bash
-docker run -e GITHUB_API_TOKEN -p 3001:3001 grants-ui-config-api
-```
+5. **Execute requests**:
+   - Open [config.http](config.http) in your IDE
+   - Select the environment (e.g., "local") from the dropdown
+   - Click "Run" on any request to execute it
 
-## Integration testing
+The HTTP client file includes examples for all API endpoints including form management, pages, components, and versioning.
 
-### Local development with the integration test environment
+## Test coverage
 
-If you want to run the API with the integration test environment (which includes mock OIDC and test MongoDB):
+The project includes unit and integration tests, which are run automatically on CI.
 
-1. Set up the integration test environment:
-
-```bash
-npm run test:integration:setup    # Start OIDC mock server and MongoDB
-npm run test:integration:start    # Start the API service
-npm run test:integration:wait     # Wait for the app to be ready
-```
-
-2. The API will be available at http://localhost:3001
-
-3. When finished, clean up the environment:
+You can also run tests locally (unit and integration):
 
 ```bash
-npm run test:integration:stop
+npm run test
 ```
 
-### Running Postman tests locally
+### Unit tests
 
-To run the integration tests manually in Postman:
+#### Running Unit Tests
 
-1. Set up the integration test environment as described above
-2. Import the test collection and environment into Postman:
+```bash
+npm run test:unit
+```
 
-- Collection: `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`
-- Environment: `test/integration/postman/grants-ui-config-api-ci-mock.postman_environment.json`
+#### Run unit tests in watch mode
 
-3. Ensure the environment variable `root` is set to `http://localhost:3001`
-4. Run the collection or individual requests through the Postman GUI
-5. Clean up the environment when done with `npm run test:integration:stop`
+```bash
+npm run test:unit:watch
+```
 
-### Adding new API tests
+### Integration tests
 
-To extend the integration test suite with new test cases:
+#### Running Integration Tests
 
-1. **Open the collection in Postman**:
+```bash
+npm run test:integration
+```
 
-- Import the collection if you haven't already: `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`
-- Import the environment: `test/integration/postman/grants-ui-config-api-ci-mock.postman_environment.json`
+#### Run integration tests in watch mode
 
-2. **Create a new request**:
+```bash
+npm run test:integration:watch
+```
 
-- Right-click on the appropriate folder in the collection and select "Add Request"
-- Name it clearly, describing what it tests (e.g., "Create Form - Valid Input")
-- Set the HTTP method (GET, POST, PUT, etc.) and URL using environment variables: `{{root}}/forms`
+#### Test Structure
 
-3. **Configure authentication**:
+##### Files
 
-- In the Authorization tab, select "Bearer Token"
-- Use `{{accessToken}}` as the token value (the collection's pre-request scripts will handle token acquisition)
+- `test/integration/api.integration.test.js` - Main integration test suite
 
-4. **Add request body or parameters** if needed:
+##### Test Coverage
 
-- For POST/PUT requests, add your JSON body in the Body tab
-- Use the "raw" format and select JSON
+The integration test suite covers 37 test cases equivalent to the original Postman collection:
 
-5. **Add pre-request scripts** if required:
+1. **Health Check** - API health endpoint
+2. **Forms CRUD** - Create, read, update, delete forms
+3. **Form Definitions** - Draft and live form definitions
+4. **Form Migration** - V1 to V2 engine migration
+5. **Pages** - Create, update, delete, reorder pages
+6. **Components** - Create, update, delete form components
+7. **Lists** - Create, update, delete lists (including large lists with 100 elements)
+8. **Sections** - Add and remove sections
+9. **Form Options** - Configure form options like showReferenceNumber
+10. **Go-Live Flow** - Complete workflow to publish a form
 
-- Use the Pre-request Script tab for setup logic
-- Create test data or variables needed for this specific test
+#### Test Flow
 
-6. **Add test assertions**:
+Tests run sequentially and maintain state between tests using a `testState` object. This mirrors the Postman collection approach where collection variables stored IDs between requests.
 
-- In the Tests tab, write assertions to verify the response
-- Example:
+Example flow:
 
-  ```javascript
-  pm.test('Status code is 200', function () {
-    pm.response.to.have.status(200)
-  })
+1. Create a form → Store `formId`
+2. Add pages to form → Store `pageId`, `pageId2`, `pageId3`
+3. Reorder pages using stored IDs
+4. Clean up by deleting form using stored `formId`
 
-  pm.test('Response has expected data', function () {
-    const responseData = pm.response.json()
-    pm.expect(responseData).to.have.property('id')
-    pm.expect(responseData.name).to.eql('Expected Name')
-  })
-  ```
+#### Configuration
 
-7. **Test locally**:
+##### Jest Configuration
 
-- Start the integration environment with `npm run test:integration:setup && npm run test:integration:start && npm run test:integration:wait`
-- Run your new request and verify it passes
-- Make adjustments as needed
+Integration tests are included in `jest.config.cjs`:
 
-8. **Export and commit**:
+- `testMatch`: Includes `test/**/*.test.{cjs,js,mjs}`
+- `testPathIgnorePatterns`: Excludes the Postman collection directory
 
-- Export the updated collection: File → Export → Collection
-- Save it to `test/integration/postman/grants-ui-config-api-ci-mock.postman_collection.json`, overwriting the existing file
-- Commit the updated collection file to the repository
+#### Debugging
 
-9. **Update documentation** if needed:
+##### Debug a specific test
 
-If you're adding endpoints for new features, update the API endpoints section in this README
+```bash
+npm run test:integration -- -t "should create a new form"
+```
 
-The CI pipeline will automatically run your new test along with the existing ones on PRs and merges to main.
+##### View detailed output
+
+```bash
+npm run test:integration -- --verbose
+```
+
+##### Run with coverage
+
+```bash
+npm run test -- --testPathPattern=integration --coverage
+```
+
+#### Best Practices
+
+1. **Sequential Execution**: Tests in the main suite run sequentially as they depend on state from previous tests
+2. **Cleanup**: Always clean up created resources (forms, pages, etc.)
+3. **Assertions**: Use specific assertions that match the Postman test equivalents
+4. **Token Management**: Tokens are generated once per test suite in `beforeAll`
+5. **State Management**: Use `testState` object to pass data between sequential tests
+
+#### Troubleshooting
+
+##### Tests timing out
+
+- Increase timeout: `jest.setTimeout(60000)` in test file
+- Check server initialization in `beforeAll`
+
+##### State issues between tests
+
+- Ensure tests run sequentially (not in parallel)
+- Verify cleanup in `afterAll` and cleanup tests
 
 ## Licence
 

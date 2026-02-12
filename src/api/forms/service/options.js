@@ -14,12 +14,7 @@ import { client } from '~/src/mongo.js'
  * @param {string} optionValue
  * @param {FormMetadataAuthor} author
  */
-export async function updateOptionOnDraftDefinition(
-  formId,
-  optionName,
-  optionValue,
-  author
-) {
+export async function updateOptionOnDraftDefinition(formId, optionName, optionValue, author) {
   logger.info(`Updating option ${optionName} on Form ID ${formId}`)
 
   const session = client.startSession()
@@ -28,26 +23,13 @@ export async function updateOptionOnDraftDefinition(
 
   try {
     await session.withTransaction(async () => {
-      await formDefinition.updateOption(
-        formId,
-        optionName,
-        optionValue,
-        session
-      )
+      await formDefinition.updateOption(formId, optionName, optionValue, session)
 
-      const metadataDocument = await formMetadata.updateAudit(
-        formId,
-        author,
-        session
-      )
+      const metadataDocument = await formMetadata.updateAudit(formId, author, session)
 
       await createFormVersion(formId, session)
 
-      await publishFormUpdatedEvent(
-        metadataDocument,
-        payload,
-        FormDefinitionRequestType.UPDATE_OPTION
-      )
+      await publishFormUpdatedEvent(metadataDocument, payload, FormDefinitionRequestType.UPDATE_OPTION)
     })
   } catch (err) {
     logger.error(

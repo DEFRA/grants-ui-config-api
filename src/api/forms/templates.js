@@ -1,9 +1,4 @@
-import {
-  ControllerPath,
-  ControllerType,
-  Engine,
-  SchemaVersion
-} from '@defra/forms-model'
+import { ControllerPath, ControllerType, Engine, SchemaVersion } from '@defra/forms-model'
 
 /**
  * Function to return an empty form

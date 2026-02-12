@@ -69,20 +69,13 @@ describe('entitlements service', () => {
       const result = await getUserScopes(testOid, testToken)
 
       expect(result).toEqual(mockScopes)
-      expect(getJson).toHaveBeenCalledWith(
-        new URL(`http://localhost:3003/users/${testOid}`),
-        {
-          headers: {
-            Authorization: `Bearer ${testToken}`
-          }
+      expect(getJson).toHaveBeenCalledWith(new URL(`http://localhost:3003/users/${testOid}`), {
+        headers: {
+          Authorization: `Bearer ${testToken}`
         }
-      )
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        `[entitlementsApi] Fetching scopes for user ${testOid}`
-      )
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        `[entitlementsApi] Retrieved 3 scopes for user ${testOid}`
-      )
+      })
+      expect(mockLogger.info).toHaveBeenCalledWith(`[entitlementsApi] Fetching scopes for user ${testOid}`)
+      expect(mockLogger.info).toHaveBeenCalledWith(`[entitlementsApi] Retrieved 3 scopes for user ${testOid}`)
     })
 
     it('should return empty array when response does not have entity.scopes', async () => {
@@ -165,10 +158,7 @@ describe('entitlements service', () => {
       const result = await getUserScopes(testOid)
 
       expect(result).toEqual(mockScopes)
-      expect(getJson).toHaveBeenCalledWith(
-        new URL(`http://localhost:3003/users/${testOid}`),
-        {}
-      )
+      expect(getJson).toHaveBeenCalledWith(new URL(`http://localhost:3003/users/${testOid}`), {})
     })
   })
 

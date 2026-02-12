@@ -8,8 +8,7 @@ import {
 import { getAuthor } from '~/src/helpers/get-author.js'
 import { conditionByIdSchema, formByIdSchema } from '~/src/models/forms.js'
 
-export const ROUTE_CONDITIONS =
-  '/forms/{id}/definition/draft/conditions/{conditionId}'
+export const ROUTE_CONDITIONS = '/forms/{id}/definition/draft/conditions/{conditionId}'
 
 /**
  * @type {ServerRoute[]}
@@ -26,11 +25,7 @@ export default [
       const { id } = params
       const author = getAuthor(auth.credentials.user)
 
-      const condition = await addConditionToDraftFormDefinition(
-        id,
-        payload,
-        author
-      )
+      const condition = await addConditionToDraftFormDefinition(id, payload, author)
 
       return {
         id: condition.id,
@@ -59,12 +54,7 @@ export default [
       const { id, conditionId } = params
       const author = getAuthor(auth.credentials.user)
 
-      const updatedCondition = await updateConditionOnDraftFormDefinition(
-        id,
-        conditionId,
-        payload,
-        author
-      )
+      const updatedCondition = await updateConditionOnDraftFormDefinition(id, conditionId, payload, author)
 
       return {
         id: updatedCondition.id,

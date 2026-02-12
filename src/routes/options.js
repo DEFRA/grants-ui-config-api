@@ -27,12 +27,7 @@ export default [
       const { id, optionName } = params
 
       const author = getAuthor(auth.credentials.user)
-      const option = await updateOptionOnDraftDefinition(
-        id,
-        optionName,
-        payload.optionValue,
-        author
-      )
+      const option = await updateOptionOnDraftDefinition(id, optionName, payload.optionValue, author)
 
       return option
     },

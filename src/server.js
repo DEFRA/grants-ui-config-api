@@ -7,10 +7,7 @@ import { createLogger } from '~/src/helpers/logging/logger.js'
 const logger = createLogger()
 
 process.on('unhandledRejection', (err) => {
-  logger.error(
-    err,
-    `[unhandledRejection] Unhandled rejection - ${getErrorMessage(err)}`
-  )
+  logger.error(err, `[unhandledRejection] Unhandled rejection - ${getErrorMessage(err)}`)
   throw err
 })
 
@@ -22,7 +19,5 @@ export async function listen() {
   await server.start()
 
   server.logger.info('Server started successfully')
-  server.logger.info(
-    `Access your backend on http://localhost:${config.get('port')}`
-  )
+  server.logger.info(`Access your backend on http://localhost:${config.get('port')}`)
 }

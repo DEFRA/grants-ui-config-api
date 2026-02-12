@@ -75,10 +75,9 @@ const collectionId = '111bd1111222fe1b33333ccc'
 
 jest.mock('~/src/mongo.js', () => {
   let isPrepared = false
-  const collection =
-    /** @satisfies {Collection<{draft: FormDefinition}>} */ jest
-      .fn()
-      .mockImplementation(() => mockCollection)
+  const collection = /** @satisfies {Collection<{draft: FormDefinition}>} */ jest
+    .fn()
+    .mockImplementation(() => mockCollection)
   return {
     db: {
       collection
@@ -297,11 +296,7 @@ describe('repository helpers', () => {
       })
       expect(() => {
         getComponent(definition, summaryPageId, 'def')
-      }).toThrow(
-        Boom.notFound(
-          `Component not found on page '${summaryPageId}' with id 'def' - page has no components`
-        )
-      )
+      }).toThrow(Boom.notFound(`Component not found on page '${summaryPageId}' with id 'def' - page has no components`))
     })
 
     it('should throw Boom.notFound if component is not found', () => {
@@ -310,9 +305,7 @@ describe('repository helpers', () => {
       })
       expect(() => {
         getComponent(definition, pageId, 'def')
-      }).toThrow(
-        Boom.notFound(`Component not found on page '${pageId}' with id 'def'`)
-      )
+      }).toThrow(Boom.notFound(`Component not found on page '${pageId}' with id 'def'`))
     })
 
     it('should return component if component is found', () => {
@@ -439,9 +432,7 @@ describe('repository helpers', () => {
 
   describe('removeById', () => {
     beforeEach(() => {
-      jest
-        .mocked(db.collection)
-        .mockReturnValue(/** @type {any} */ (mockCollection))
+      jest.mocked(db.collection).mockReturnValue(/** @type {any} */ (mockCollection))
     })
 
     it('should remove', async () => {
@@ -455,9 +446,7 @@ describe('repository helpers', () => {
 
     it('should throw if not deleted', async () => {
       mockCollection.deleteOne.mockResolvedValue({ deletedCount: 0 })
-      await expect(
-        removeById(mockSession, 'my-collection', collectionId)
-      ).rejects.toThrow(
+      await expect(removeById(mockSession, 'my-collection', collectionId)).rejects.toThrow(
         "Failed to delete id '111bd1111222fe1b33333ccc' from 'my-collection'. Expected deleted count of 1, received 0"
       )
     })
@@ -517,13 +506,7 @@ describe('repository helpers', () => {
         pages: [pageOne, pageTwo]
       })
       expect(() => {
-        uniquePathGate(
-          definition1,
-          '/page-two',
-          'Duplicate page path found',
-          ApiErrorCode.DuplicatePagePathPage,
-          'p2'
-        )
+        uniquePathGate(definition1, '/page-two', 'Duplicate page path found', ApiErrorCode.DuplicatePagePathPage, 'p2')
       }).not.toThrow()
     })
   })
@@ -563,23 +546,13 @@ describe('repository helpers', () => {
   describe('modifyRemoveMatchingPages', () => {
     it('should remove the summary page', () => {
       const definition = buildDefinition({
-        pages: [
-          questionPageWithComponent,
-          questionPageWithoutComponent,
-          summaryPage
-        ]
+        pages: [questionPageWithComponent, questionPageWithoutComponent, summaryPage]
       })
 
-      const modified = modifyDeletePages(
-        definition,
-        (page) => page.controller === ControllerType.Summary
-      )
+      const modified = modifyDeletePages(definition, (page) => page.controller === ControllerType.Summary)
 
       expect(modified.pages).toHaveLength(2)
-      expect(modified.pages).toEqual([
-        questionPageWithComponent,
-        questionPageWithoutComponent
-      ])
+      expect(modified.pages).toEqual([questionPageWithComponent, questionPageWithoutComponent])
     })
   })
 
@@ -600,11 +573,7 @@ describe('repository helpers', () => {
         pages: [questionPageWithComponent, summaryPage]
       })
 
-      const modified = modifyAddPage(
-        definition,
-        questionPageWithoutComponent,
-        1
-      )
+      const modified = modifyAddPage(definition, questionPageWithoutComponent, 1)
 
       expect(modified.pages).toHaveLength(3)
       expect(modified.pages.at(1)).toBe(questionPageWithoutComponent)
@@ -628,11 +597,7 @@ describe('repository helpers', () => {
         pages: [questionPageWithComponent, summaryPage]
       })
 
-      const modified = modifyUpdatePage(
-        definition,
-        questionPageWithoutComponent,
-        pageId
-      )
+      const modified = modifyUpdatePage(definition, questionPageWithoutComponent, pageId)
 
       expect(modified.pages.at(0)).toEqual(questionPageWithoutComponent)
     })
@@ -644,11 +609,7 @@ describe('repository helpers', () => {
         pages: [questionPageWithComponent, summaryPage, statusPage]
       })
 
-      const modified = modifyReorderPages(definition, [
-        statusPageId,
-        summaryPageId,
-        pageId
-      ])
+      const modified = modifyReorderPages(definition, [statusPageId, summaryPageId, pageId])
 
       expect(modified.pages.at(0)?.id).toEqual(statusPageId)
       expect(modified.pages.at(1)?.id).toEqual(summaryPageId)
@@ -706,9 +667,7 @@ describe('repository helpers', () => {
 
       const modifiedPage = modified.pages[0]
       const modifiedComponents =
-        'components' in modifiedPage && modifiedPage.components?.length
-          ? modifiedPage.components
-          : []
+        'components' in modifiedPage && modifiedPage.components?.length ? modifiedPage.components : []
       expect(modifiedComponents).toHaveLength(4)
       expect(modifiedComponents[0].id).toEqual(componentId4)
       expect(modifiedComponents[1].id).toEqual(componentId2)
@@ -742,12 +701,7 @@ describe('repository helpers', () => {
       })
 
       expect(() => {
-        modifyReorderComponents(definition, pageId, [
-          componentId4,
-          componentId2,
-          componentId1,
-          componentId3
-        ])
+        modifyReorderComponents(definition, pageId, [componentId4, componentId2, componentId1, componentId3])
       }).toThrow(Boom.notFound(`Page not found with id '${pageId}'`))
     })
   })
@@ -766,9 +720,7 @@ describe('repository helpers', () => {
       const page = modified.pages.at(0)
       expect(hasComponentsEvenIfNoNext(page)).toBe(true)
       expect(hasComponentsEvenIfNoNext(page) && page.components).toHaveLength(2)
-      expect(hasComponentsEvenIfNoNext(page) && page.components.at(0)).toBe(
-        newComponent
-      )
+      expect(hasComponentsEvenIfNoNext(page) && page.components.at(0)).toBe(newComponent)
     })
 
     it('should add the component to the page at end', () => {
@@ -784,9 +736,7 @@ describe('repository helpers', () => {
       const page = modified.pages.at(0)
       expect(hasComponentsEvenIfNoNext(page)).toBe(true)
       expect(hasComponentsEvenIfNoNext(page) && page.components).toHaveLength(2)
-      expect(hasComponentsEvenIfNoNext(page) && page.components.at(1)).toBe(
-        newComponent
-      )
+      expect(hasComponentsEvenIfNoNext(page) && page.components.at(1)).toBe(newComponent)
     })
     it('should add the component if summary page and components property doesnt yet exist', () => {
       const definition = buildDefinition({
@@ -796,19 +746,12 @@ describe('repository helpers', () => {
       const newComponent = buildTextFieldComponent({
         name: 'abcdef'
       })
-      const modified = modifyAddComponent(
-        definition,
-        summaryPage.id ?? '',
-        newComponent,
-        0
-      )
+      const modified = modifyAddComponent(definition, summaryPage.id ?? '', newComponent, 0)
 
       const page = modified.pages.at(0)
       expect(hasComponentsEvenIfNoNext(page)).toBe(true)
       expect(hasComponentsEvenIfNoNext(page) && page.components).toHaveLength(1)
-      expect(hasComponentsEvenIfNoNext(page) && page.components.at(0)).toBe(
-        newComponent
-      )
+      expect(hasComponentsEvenIfNoNext(page) && page.components.at(0)).toBe(newComponent)
     })
   })
 
@@ -821,19 +764,12 @@ describe('repository helpers', () => {
       const updatedComponent = buildTextFieldComponent({
         name: 'abcdef'
       })
-      const modified = modifyUpdateComponent(
-        definition,
-        pageId,
-        componentId,
-        updatedComponent
-      )
+      const modified = modifyUpdateComponent(definition, pageId, componentId, updatedComponent)
 
       const page = modified.pages.at(0)
       expect(hasComponentsEvenIfNoNext(page)).toBe(true)
       expect(hasComponentsEvenIfNoNext(page) && page.components.length).toBe(1)
-      expect(hasComponentsEvenIfNoNext(page) && page.components.at(0)).toBe(
-        updatedComponent
-      )
+      expect(hasComponentsEvenIfNoNext(page) && page.components.at(0)).toBe(updatedComponent)
     })
   })
 
@@ -1058,11 +994,7 @@ describe('repository helpers', () => {
       })
 
       const definition = buildDefinition({
-        pages: [
-          pageWithCondition,
-          pageWithDifferentCondition,
-          pageWithoutCondition
-        ],
+        pages: [pageWithCondition, pageWithDifferentCondition, pageWithoutCondition],
         conditions
       })
 
@@ -1194,10 +1126,7 @@ describe('repository helpers', () => {
       const page = buildQuestionPage({
         title: 'Page title',
         controller: ControllerType.Page,
-        components: [
-          buildMarkdownComponent({ content: 'Some markdown text' }),
-          buildTextFieldComponent()
-        ]
+        components: [buildMarkdownComponent({ content: 'Some markdown text' }), buildTextFieldComponent()]
       })
       const controller = ControllerType.FileUpload
 
@@ -1436,19 +1365,11 @@ describe('repository helpers', () => {
         pages: [questionPageWithComponent]
       })
 
-      const modified = modifyUpdateOption(
-        definition,
-        'showReferenceNumber',
-        'true'
-      )
+      const modified = modifyUpdateOption(definition, 'showReferenceNumber', 'true')
 
       expect(modified.options?.showReferenceNumber).toBe(true)
 
-      const updated = modifyUpdateOption(
-        definition,
-        'showReferenceNumber',
-        'false'
-      )
+      const updated = modifyUpdateOption(definition, 'showReferenceNumber', 'false')
 
       expect(updated.options?.showReferenceNumber).toBe(false)
     })

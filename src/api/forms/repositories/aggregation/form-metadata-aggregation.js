@@ -27,9 +27,7 @@ export function buildFilterConditions(options) {
 
   if (status && status.length > 0) {
     conditions.$or = status.map((s) =>
-      s === FormStatus.Live
-        ? { live: { $exists: true } }
-        : { live: { $exists: false } }
+      s === FormStatus.Live ? { live: { $exists: true } } : { live: { $exists: false } }
     )
   }
 
@@ -90,14 +88,7 @@ export function buildFiltersFacet() {
  * @param {FormStatus[]} status - The status values to filter by.
  * @returns {{ pipeline: PipelineStage[], aggOptions: AggregateOptions }}
  */
-export function buildAggregationPipeline(
-  sortBy,
-  order,
-  title,
-  author,
-  organisations,
-  status
-) {
+export function buildAggregationPipeline(sortBy, order, title, author, organisations, status) {
   const pipeline = []
   const filterConditions = buildFilterConditions({
     title,
@@ -132,22 +123,8 @@ export function buildAggregationPipeline(
  * @param {FormStatus[]} status - The status values to filter by.
  * @returns {{ pipeline: PipelineStage[], aggOptions: AggregateOptions }}
  */
-export function buildAggregationPipelineWithVersions(
-  sortBy,
-  order,
-  title,
-  author,
-  organisations,
-  status
-) {
-  const { pipeline, aggOptions } = buildAggregationPipeline(
-    sortBy,
-    order,
-    title,
-    author,
-    organisations,
-    status
-  )
+export function buildAggregationPipelineWithVersions(sortBy, order, title, author, organisations, status) {
+  const { pipeline, aggOptions } = buildAggregationPipeline(sortBy, order, title, author, organisations, status)
 
   addVersionsLookupStage(pipeline)
 
@@ -323,9 +300,7 @@ export function addVersionsLookupStage(pipeline) {
  * changed that now to default to their display name when creating or updating a form
  */
 export function processAuthorNames(authors) {
-  return authors
-    .map((author) => author.name)
-    .filter((name) => name && name !== 'undefined undefined')
+  return authors.map((author) => author.name).filter((name) => name && name !== 'undefined undefined')
 }
 
 /**

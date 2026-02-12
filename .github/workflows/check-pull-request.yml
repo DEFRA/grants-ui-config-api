@@ -69,10 +69,6 @@ jobs:
             run: npm run format:check
             cache: .cache/prettier
 
-          - description: EditorConfig
-            name: lint-editorconfig
-            run: npm run lint:editorconfig
-
           - description: ESLint
             name: lint-js
             run: npm run lint:js
@@ -121,8 +117,8 @@ jobs:
 
       matrix:
         task:
-          - description: Unit tests
-            name: test-unit
+          - description: Unit and integration tests
+            name: tests
             run: npm run test
             cache: coverage
 
@@ -182,12 +178,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore unit test coverage
+      - name: Restore test coverage
         uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
           fail-on-cache-miss: true
-          key: test-unit-${{ runner.os }}-${{ github.sha }}
+          key: tests-${{ runner.os }}-${{ github.sha }}
           path: coverage
 
       - name: SonarCloud Scan

@@ -1,16 +1,9 @@
-import {
-  SchemaVersion,
-  formDefinitionSchema,
-  formDefinitionV2Schema
-} from '@defra/forms-model'
+import { SchemaVersion, formDefinitionSchema, formDefinitionV2Schema } from '@defra/forms-model'
 import Joi from 'joi'
 
 import { buildDefinition } from '~/src/api/forms/__stubs__/definition.js'
 import { InvalidFormDefinitionError } from '~/src/api/forms/errors.js'
-import {
-  getValidationSchema,
-  validate
-} from '~/src/api/forms/service/helpers/definition.js'
+import { getValidationSchema, validate } from '~/src/api/forms/service/helpers/definition.js'
 
 describe('definition helpers', () => {
   describe('getValidationSchema', () => {
@@ -69,20 +62,14 @@ describe('definition helpers', () => {
     it('should throw InvalidFormDefinitionError when validation fails', () => {
       /** @type {any} */
       const definition = { name: 'Test Form' }
-      const validationError = new Joi.ValidationError(
-        'Validation failed',
-        [],
-        {}
-      )
+      const validationError = new Joi.ValidationError('Validation failed', [], {})
 
       mockSchema.validate.mockReturnValue({
         error: validationError,
         value: undefined
       })
 
-      expect(() =>
-        validate(definition, /** @type {any} */ (mockSchema))
-      ).toThrow(InvalidFormDefinitionError)
+      expect(() => validate(definition, /** @type {any} */ (mockSchema))).toThrow(InvalidFormDefinitionError)
       expect(mockSchema.validate).toHaveBeenCalledWith(definition, {
         abortEarly: false
       })

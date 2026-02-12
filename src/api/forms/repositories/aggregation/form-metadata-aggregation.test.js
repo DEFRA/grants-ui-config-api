@@ -107,14 +107,7 @@ describe('Form metadata aggregation', () => {
   describe('buildAggregationPipeline', () => {
     describe('without filters', () => {
       it('should build pipeline with default sorting', () => {
-        const { pipeline, aggOptions } = buildAggregationPipeline(
-          'updatedAt',
-          'desc',
-          '',
-          '',
-          [],
-          []
-        )
+        const { pipeline, aggOptions } = buildAggregationPipeline('updatedAt', 'desc', '', '', [], [])
 
         expect(pipeline).toHaveLength(3) // ranking, date, and sort stages
         expect(aggOptions).toEqual({
@@ -149,14 +142,7 @@ describe('Form metadata aggregation', () => {
   describe('buildAggregationPipelineWithVersions', () => {
     describe('without filters', () => {
       it('should build pipeline with versions lookup and default sorting', () => {
-        const { pipeline, aggOptions } = buildAggregationPipelineWithVersions(
-          'updatedAt',
-          'desc',
-          '',
-          '',
-          [],
-          []
-        )
+        const { pipeline, aggOptions } = buildAggregationPipelineWithVersions('updatedAt', 'desc', '', '', [], [])
 
         expect(pipeline).toHaveLength(4) // ranking, date, sort, and versions lookup stages
         expect(aggOptions).toEqual({
@@ -218,14 +204,7 @@ describe('Form metadata aggregation', () => {
 
     describe('with title sorting', () => {
       it('should build pipeline with title sort and versions lookup', () => {
-        const { pipeline, aggOptions } = buildAggregationPipelineWithVersions(
-          'title',
-          'asc',
-          'Test Form',
-          '',
-          [],
-          []
-        )
+        const { pipeline, aggOptions } = buildAggregationPipelineWithVersions('title', 'asc', 'Test Form', '', [], [])
 
         expect(pipeline).toHaveLength(5) // match, ranking, date, sort, and versions lookup stages
         expect(aggOptions).toEqual({
@@ -341,9 +320,7 @@ describe('Form metadata aggregation', () => {
 
         expect(pipeline).toHaveLength(1)
         const addFields = /** @type {PipelineStage} */ (pipeline[0])
-        const matchScore = /** @type {AddFieldsSwitch} */ (
-          addFields.$addFields?.matchScore
-        )
+        const matchScore = /** @type {AddFieldsSwitch} */ (addFields.$addFields?.matchScore)
         expect(matchScore).toHaveProperty('$switch')
         expect(matchScore.$switch.branches).toHaveLength(3)
       })
@@ -467,10 +444,7 @@ describe('Form metadata aggregation', () => {
 
       const result = processAuthorNames(authors)
 
-      expect(result).toEqual([
-        'Henrique Chase (Defra)',
-        'Sarah Wilson (Natural England)'
-      ])
+      expect(result).toEqual(['Henrique Chase (Defra)', 'Sarah Wilson (Natural England)'])
     })
 
     it('should handle empty array', () => {

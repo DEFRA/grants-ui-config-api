@@ -1,7 +1,4 @@
-import {
-  AuditEventMessageType,
-  FormDefinitionRequestType
-} from '@defra/forms-model'
+import { AuditEventMessageType, FormDefinitionRequestType } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
@@ -77,22 +74,14 @@ describe('sections', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.mocked(formMetadata.get).mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(formMetadata.updateAudit)
-      .mockResolvedValue(formMetadataDocument)
-    jest
-      .mocked(versioningService.createFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
-    jest
-      .mocked(versioningService.getLatestFormVersion)
-      .mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
+    jest.mocked(versioningService.createFormVersion).mockResolvedValue(mockFormVersionDocument)
+    jest.mocked(versioningService.getLatestFormVersion).mockResolvedValue(mockFormVersionDocument)
   })
 
   describe('assignSectionsToForm', () => {
     it('should assign sections to the form definition', async () => {
-      const assignSectionsMock = jest
-        .mocked(formDefinition.assignSections)
-        .mockResolvedValueOnce(expectedSections)
+      const assignSectionsMock = jest.mocked(formDefinition.assignSections).mockResolvedValueOnce(expectedSections)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       const result = await assignSectionsToForm(
@@ -114,10 +103,7 @@ describe('sections', () => {
       expectMetadataUpdate()
 
       // Verify version was created
-      expect(versioningService.createFormVersion).toHaveBeenCalledWith(
-        id,
-        expect.anything()
-      )
+      expect(versioningService.createFormVersion).toHaveBeenCalledWith(id, expect.anything())
 
       // Verify audit event was published
       const [auditMessage] = publishEventSpy.mock.calls[0]
@@ -134,9 +120,7 @@ describe('sections', () => {
       const emptyAssignments = /** @type {SectionAssignmentItem[]} */ ([])
       const emptySections = /** @type {SectionAssignmentItem[]} */ ([])
 
-      jest
-        .mocked(formDefinition.assignSections)
-        .mockResolvedValueOnce(emptySections)
+      jest.mocked(formDefinition.assignSections).mockResolvedValueOnce(emptySections)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
       const result = await assignSectionsToForm(
@@ -158,35 +142,21 @@ describe('sections', () => {
 
     it('should surface errors from repository', async () => {
       const boomNotFound = Boom.notFound('Form not found')
-      jest
-        .mocked(formDefinition.assignSections)
-        .mockRejectedValueOnce(boomNotFound)
+      jest.mocked(formDefinition.assignSections).mockRejectedValueOnce(boomNotFound)
 
       await expect(
-        assignSectionsToForm(
-          id,
-          sectionAssignments,
-          defaultAuthor,
-          FormDefinitionRequestType.ASSIGN_SECTIONS
-        )
+        assignSectionsToForm(id, sectionAssignments, defaultAuthor, FormDefinitionRequestType.ASSIGN_SECTIONS)
       ).rejects.toThrow(boomNotFound)
     })
 
     it('should surface errors from metadata update', async () => {
-      jest
-        .mocked(formDefinition.assignSections)
-        .mockResolvedValueOnce(expectedSections)
+      jest.mocked(formDefinition.assignSections).mockResolvedValueOnce(expectedSections)
 
       const boomInternal = Boom.internal('Database error')
       jest.mocked(formMetadata.updateAudit).mockRejectedValueOnce(boomInternal)
 
       await expect(
-        assignSectionsToForm(
-          id,
-          sectionAssignments,
-          defaultAuthor,
-          FormDefinitionRequestType.ASSIGN_SECTIONS
-        )
+        assignSectionsToForm(id, sectionAssignments, defaultAuthor, FormDefinitionRequestType.ASSIGN_SECTIONS)
       ).rejects.toThrow(boomInternal)
     })
 
@@ -212,9 +182,7 @@ describe('sections', () => {
         }
       ]
 
-      jest
-        .mocked(formDefinition.assignSections)
-        .mockResolvedValueOnce(expectedWithHideTitle)
+      jest.mocked(formDefinition.assignSections).mockResolvedValueOnce(expectedWithHideTitle)
 
       const result = await assignSectionsToForm(
         id,
@@ -227,17 +195,10 @@ describe('sections', () => {
     })
 
     it('should use CREATE_SECTION request type when adding a section', async () => {
-      const assignSectionsMock = jest
-        .mocked(formDefinition.assignSections)
-        .mockResolvedValueOnce(expectedSections)
+      const assignSectionsMock = jest.mocked(formDefinition.assignSections).mockResolvedValueOnce(expectedSections)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      await assignSectionsToForm(
-        id,
-        sectionAssignments,
-        defaultAuthor,
-        FormDefinitionRequestType.CREATE_SECTION
-      )
+      await assignSectionsToForm(id, sectionAssignments, defaultAuthor, FormDefinitionRequestType.CREATE_SECTION)
 
       expect(assignSectionsMock).toHaveBeenCalled()
 
@@ -249,21 +210,12 @@ describe('sections', () => {
     })
 
     it('should use DELETE_SECTION request type when removing a section', async () => {
-      const remainingSections = /** @type {SectionAssignmentItem[]} */ ([
-        expectedSections[0]
-      ])
+      const remainingSections = /** @type {SectionAssignmentItem[]} */ ([expectedSections[0]])
 
-      jest
-        .mocked(formDefinition.assignSections)
-        .mockResolvedValueOnce(remainingSections)
+      jest.mocked(formDefinition.assignSections).mockResolvedValueOnce(remainingSections)
       const publishEventSpy = jest.spyOn(publishBase, 'publishEvent')
 
-      await assignSectionsToForm(
-        id,
-        [sectionAssignments[0]],
-        defaultAuthor,
-        FormDefinitionRequestType.DELETE_SECTION
-      )
+      await assignSectionsToForm(id, [sectionAssignments[0]], defaultAuthor, FormDefinitionRequestType.DELETE_SECTION)
 
       const [auditMessage] = publishEventSpy.mock.calls[0]
       expect(auditMessage.data).toMatchObject({

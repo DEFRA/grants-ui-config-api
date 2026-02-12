@@ -22,10 +22,7 @@ import {
   buildTextFieldComponent
 } from '~/src/api/forms/__stubs__/definition.js'
 import { InvalidFormDefinitionError } from '~/src/api/forms/errors.js'
-import {
-  convertConditionDataToV2,
-  isConditionData
-} from '~/src/api/forms/service/condition-migration-helpers.js'
+import { convertConditionDataToV2, isConditionData } from '~/src/api/forms/service/condition-migration-helpers.js'
 import {
   addComponentIdsToDefinition,
   applyPageTitles,
@@ -48,9 +45,7 @@ jest.mock('@defra/forms-model', () => ({
   isConditionWrapper: jest.fn(() => false)
 }))
 jest.mock('~/src/api/forms/service/condition-migration-helpers.js', () => ({
-  ...jest.requireActual(
-    '~/src/api/forms/service/condition-migration-helpers.js'
-  ),
+  ...jest.requireActual('~/src/api/forms/service/condition-migration-helpers.js'),
   convertConditionDataToV2: jest.fn((x) => x),
   isConditionData: jest.fn(() => true)
 }))
@@ -62,10 +57,9 @@ describe('migration helpers', () => {
     id: summaryPageId
   })
 
-  const summaryPageWithoutComponentsWithConfirmation =
-    buildSummaryPageWithConfirmation({
-      id: summaryPageId
-    })
+  const summaryPageWithoutComponentsWithConfirmation = buildSummaryPageWithConfirmation({
+    id: summaryPageId
+  })
 
   const componentWithoutAnId = buildTextFieldComponent({
     name: 'Ghcbma'
@@ -368,10 +362,7 @@ describe('migration helpers', () => {
   })
 
   describe('migrateComponentFields', () => {
-    const testPages = /** @type {[PageQuestion, Page]} */ ([
-      pageWithTwoComponents,
-      summaryPageWithoutComponents
-    ])
+    const testPages = /** @type {[PageQuestion, Page]} */ ([pageWithTwoComponents, summaryPageWithoutComponents])
 
     const testDefinitionV1 = buildDefinition({
       pages: testPages,
@@ -411,10 +402,7 @@ describe('migration helpers', () => {
   })
 
   describe('convertDeclaration', () => {
-    const testPages = /** @type {[PageQuestion, PageSummary]} */ ([
-      pageWithTwoComponents,
-      summaryPageWithoutComponents
-    ])
+    const testPages = /** @type {[PageQuestion, PageSummary]} */ ([pageWithTwoComponents, summaryPageWithoutComponents])
 
     const testDefinitionV1 = buildDefinition({
       pages: testPages,
@@ -424,9 +412,7 @@ describe('migration helpers', () => {
     })
 
     it('should move declaration to guidance component', () => {
-      const summaryPage = /** @type {PageQuestion} */ (
-        testDefinitionV1.pages[1]
-      )
+      const summaryPage = /** @type {PageQuestion} */ (testDefinitionV1.pages[1])
       expect(summaryPage.components).toBeUndefined()
       expect(testDefinitionV1.declaration).toBe('Some declaration text')
       const res = convertDeclaration(testDefinitionV1)
@@ -451,9 +437,7 @@ describe('migration helpers', () => {
             id: summaryPageId
           })
         ],
-        sections: [
-          { hideTitle: false, name: 'section', title: 'Section title' }
-        ],
+        sections: [{ hideTitle: false, name: 'section', title: 'Section title' }],
         engine: Engine.V1,
         declaration: ''
       })
@@ -476,9 +460,7 @@ describe('migration helpers', () => {
             id: summaryPageId
           })
         ],
-        sections: [
-          { hideTitle: false, name: 'section', title: 'Section title' }
-        ],
+        sections: [{ hideTitle: false, name: 'section', title: 'Section title' }],
         engine: Engine.V1
       })
 
@@ -496,9 +478,7 @@ describe('migration helpers', () => {
     it('should create summary page if missing and move declaration to it', () => {
       const testDefinition3 = buildDefinition({
         pages: [],
-        sections: [
-          { hideTitle: false, name: 'section', title: 'Section title' }
-        ],
+        sections: [{ hideTitle: false, name: 'section', title: 'Section title' }],
         engine: Engine.V1,
         declaration: 'Some declaration'
       })
@@ -509,9 +489,7 @@ describe('migration helpers', () => {
       expect(res.declaration).toBeUndefined()
 
       // Should have a summary page created
-      const summaryPage = res.pages.find(
-        (page) => page.controller === ControllerType.Summary
-      )
+      const summaryPage = res.pages.find((page) => page.controller === ControllerType.Summary)
       expect(summaryPage).toBeDefined()
       expect(summaryPage?.components).toHaveLength(1)
       expect(summaryPage?.components?.[0]).toEqual({
@@ -531,9 +509,7 @@ describe('migration helpers', () => {
       pageTwoNoIds
     ])
 
-    const components = /** @type {[ComponentDef, ComponentDef]} */ (
-      pages[2].components
-    )
+    const components = /** @type {[ComponentDef, ComponentDef]} */ (pages[2].components)
     const countryList = buildList({
       items: [
         buildListItem({
@@ -552,9 +528,7 @@ describe('migration helpers', () => {
 
     const definitionV2WithConfirmation = {
       ...buildDefinition({
-        sections: [
-          { hideTitle: false, name: 'section', title: 'Section title' }
-        ],
+        sections: [{ hideTitle: false, name: 'section', title: 'Section title' }],
         engine: Engine.V2
       }),
       pages: [
@@ -591,9 +565,7 @@ describe('migration helpers', () => {
     }
 
     it('should migrate to version v2', () => {
-      expect(migrateToV2(definitionV1)).toMatchObject(
-        definitionV2WithConfirmation
-      )
+      expect(migrateToV2(definitionV1)).toMatchObject(definitionV2WithConfirmation)
     })
 
     it('migration is an idempotent operation', () => {
@@ -610,31 +582,19 @@ describe('migration helpers', () => {
       // @ts-expect-error unknownProperty is not a valid property of formDefinition
       const invalidDefinition = buildDefinition(partialDefinition)
       expect(() => migrateToV2(invalidDefinition)).toThrow(
-        new InvalidFormDefinitionError(
-          new ValidationError('"unknownProperty" is not allowed', [], undefined)
-        )
+        new InvalidFormDefinitionError(new ValidationError('"unknownProperty" is not allowed', [], undefined))
       )
     })
 
     it('should not perform any changes if component and page ids exist and summary controller has been previously upgraded', () => {
       const definition = buildDefinition({
-        pages: [
-          pageOneUndefinedId,
-          pageTwoNoIds,
-          summaryPageWithoutComponentsWithConfirmation
-        ],
-        sections: [
-          { hideTitle: false, name: 'section', title: 'Section title' }
-        ]
+        pages: [pageOneUndefinedId, pageTwoNoIds, summaryPageWithoutComponentsWithConfirmation],
+        sections: [{ hideTitle: false, name: 'section', title: 'Section title' }]
       })
 
-      const pages = /** @type {[PageQuestion, PageQuestion, Page]} */ (
-        definition.pages
-      )
+      const pages = /** @type {[PageQuestion, PageQuestion, Page]} */ (definition.pages)
 
-      const components = /** @type {[ComponentDef, ComponentDef]} */ (
-        pages[1].components
-      )
+      const components = /** @type {[ComponentDef, ComponentDef]} */ (pages[1].components)
 
       expect(migrateToV2(definition)).toMatchObject({
         ...definition,
@@ -669,18 +629,12 @@ describe('migration helpers', () => {
     it('should perform controller upgrade if summary controller is old', () => {
       const definition = buildDefinition({
         pages: [pageOneUndefinedId, pageTwoNoIds, summaryPageWithoutComponents],
-        sections: [
-          { hideTitle: false, name: 'section', title: 'Section title' }
-        ]
+        sections: [{ hideTitle: false, name: 'section', title: 'Section title' }]
       })
 
-      const pages = /** @type {[PageQuestion, PageQuestion, Page]} */ (
-        definition.pages
-      )
+      const pages = /** @type {[PageQuestion, PageQuestion, Page]} */ (definition.pages)
 
-      const components = /** @type {[ComponentDef, ComponentDef]} */ (
-        pages[1].components
-      )
+      const components = /** @type {[ComponentDef, ComponentDef]} */ (pages[1].components)
 
       expect(migrateToV2(definition)).toMatchObject({
         ...definition,
@@ -883,9 +837,7 @@ describe('convertConditions', () => {
         }
       ]
     })
-    expect(() => convertConditions(definition)).toThrow(
-      'Unsupported condition type found'
-    )
+    expect(() => convertConditions(definition)).toThrow('Unsupported condition type found')
   })
 
   it('throws if multiple unique coordinators found', () => {
@@ -902,9 +854,7 @@ describe('convertConditions', () => {
 
     jest.mocked(isConditionWrapper).mockReturnValue(true)
     jest.mocked(isConditionData).mockReturnValue(true)
-    jest
-      .mocked(convertConditionDataToV2)
-      .mockReturnValueOnce(dummyConditionItem)
+    jest.mocked(convertConditionDataToV2).mockReturnValueOnce(dummyConditionItem)
 
     const definition = buildMinimalDefinition({
       conditions: [
@@ -942,9 +892,7 @@ describe('convertConditions', () => {
 
     jest.mocked(isConditionWrapper).mockReturnValue(true)
     jest.mocked(isConditionData).mockReturnValue(true)
-    jest
-      .mocked(convertConditionDataToV2)
-      .mockReturnValueOnce(dummyConditionItem)
+    jest.mocked(convertConditionDataToV2).mockReturnValueOnce(dummyConditionItem)
 
     const definition = buildMinimalDefinition({
       conditions: [
@@ -982,9 +930,7 @@ describe('convertConditions', () => {
 
     jest.mocked(isConditionWrapper).mockReturnValue(true)
     jest.mocked(isConditionData).mockReturnValue(true)
-    jest
-      .mocked(convertConditionDataToV2)
-      .mockReturnValueOnce(dummyConditionItem)
+    jest.mocked(convertConditionDataToV2).mockReturnValueOnce(dummyConditionItem)
 
     const definition = buildMinimalDefinition({
       conditions: [
@@ -1138,9 +1084,7 @@ describe('convertSectionNamesToIds', () => {
   it('preserves existing section IDs', () => {
     const existingId = '550e8400-e29b-41d4-a716-446655440000'
     const definition = buildMinimalDefinition({
-      sections: [
-        { id: existingId, name: 'personalDetails', title: 'Personal Details' }
-      ],
+      sections: [{ id: existingId, name: 'personalDetails', title: 'Personal Details' }],
       pages: [
         {
           id: 'page1',

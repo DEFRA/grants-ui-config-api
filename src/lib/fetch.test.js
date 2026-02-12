@@ -1,19 +1,7 @@
 import Boom from '@hapi/boom'
 import Wreck from '@hapi/wreck'
 
-import {
-  del,
-  delJson,
-  get,
-  getJson,
-  patch,
-  patchJson,
-  post,
-  postJson,
-  put,
-  putJson,
-  request
-} from '~/src/lib/fetch.js'
+import { del, delJson, get, getJson, patch, patchJson, post, postJson, put, putJson, request } from '~/src/lib/fetch.js'
 
 jest.mock('@hapi/wreck')
 
@@ -35,11 +23,7 @@ describe('fetch utilities', () => {
       const result = await request('get', url, {})
 
       expect(result).toEqual({ response: mockResponse, body: mockBody })
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'get',
-        'http://example.com/api',
-        {}
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('get', 'http://example.com/api', {})
       expect(jest.mocked(Wreck.read)).toHaveBeenCalledWith(mockResponse, {})
     })
 
@@ -114,55 +98,35 @@ describe('fetch utilities', () => {
       const result = await get(url, options)
 
       expect(result).toEqual({ response: mockResponse, body: mockBody })
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'get',
-        url.href,
-        options
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('get', url.href, options)
     })
 
     it('post should call request with correct method', async () => {
       const result = await post(url, options)
 
       expect(result).toEqual({ response: mockResponse, body: mockBody })
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'post',
-        url.href,
-        options
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('post', url.href, options)
     })
 
     it('put should call request with correct method', async () => {
       const result = await put(url, options)
 
       expect(result).toEqual({ response: mockResponse, body: mockBody })
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'put',
-        url.href,
-        options
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('put', url.href, options)
     })
 
     it('patch should call request with correct method', async () => {
       const result = await patch(url, options)
 
       expect(result).toEqual({ response: mockResponse, body: mockBody })
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'patch',
-        url.href,
-        options
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('patch', url.href, options)
     })
 
     it('del should call request with correct method', async () => {
       const result = await del(url, options)
 
       expect(result).toEqual({ response: mockResponse, body: mockBody })
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'delete',
-        url.href,
-        options
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('delete', url.href, options)
     })
   })
 
@@ -189,26 +153,18 @@ describe('fetch utilities', () => {
     it('postJson should add json: true to options', async () => {
       await postJson(url, { payload: { test: 'data' } })
 
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'post',
-        url.href,
-        {
-          json: true,
-          payload: { test: 'data' }
-        }
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('post', url.href, {
+        json: true,
+        payload: { test: 'data' }
+      })
     })
 
     it('postJson should work with no options provided', async () => {
       await postJson(url)
 
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'post',
-        url.href,
-        {
-          json: true
-        }
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('post', url.href, {
+        json: true
+      })
     })
 
     it('putJson should add json: true to options', async () => {
@@ -231,38 +187,26 @@ describe('fetch utilities', () => {
     it('patchJson should add json: true to options', async () => {
       await patchJson(url, { payload: { test: 'data' } })
 
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'patch',
-        url.href,
-        {
-          json: true,
-          payload: { test: 'data' }
-        }
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('patch', url.href, {
+        json: true,
+        payload: { test: 'data' }
+      })
     })
 
     it('patchJson should work with no options provided', async () => {
       await patchJson(url)
 
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'patch',
-        url.href,
-        {
-          json: true
-        }
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('patch', url.href, {
+        json: true
+      })
     })
 
     it('delJson should add json: true to options', async () => {
       await delJson(url)
 
-      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith(
-        'delete',
-        url.href,
-        {
-          json: true
-        }
-      )
+      expect(jest.mocked(Wreck.request)).toHaveBeenCalledWith('delete', url.href, {
+        json: true
+      })
     })
 
     it('getJson should work with empty options', async () => {
