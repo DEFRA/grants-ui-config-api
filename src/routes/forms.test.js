@@ -383,6 +383,103 @@ describe('Forms route', () => {
       })
     })
 
+    test('GET /forms/slugs returns only live form slugs', async () => {
+      const liveForm1 = {
+        id: '661e4ca5039739ef2902b214',
+        slug: 'live-form-1',
+        title: 'Live Form 1',
+        organisation: 'Defra',
+        teamName: 'Defra Forms',
+        teamEmail: 'defraforms@defra.gov.uk',
+        live: {
+          createdAt: now,
+          createdBy: author,
+          updatedAt: now,
+          updatedBy: author
+        },
+        createdAt: now,
+        createdBy: author,
+        updatedAt: now,
+        updatedBy: author
+      }
+
+      const liveForm2 = {
+        id: '661e4ca5039739ef2902b215',
+        slug: 'live-form-2',
+        title: 'Live Form 2',
+        organisation: 'Defra',
+        teamName: 'Defra Forms',
+        teamEmail: 'defraforms@defra.gov.uk',
+        live: {
+          createdAt: now,
+          createdBy: author,
+          updatedAt: now,
+          updatedBy: author
+        },
+        createdAt: now,
+        createdBy: author,
+        updatedAt: now,
+        updatedBy: author
+      }
+
+      // Mock listForms to return only live forms when status filter is applied
+      jest.mocked(listForms).mockResolvedValue({
+        forms: [liveForm1, liveForm2],
+        totalItems: 2,
+        filters: mockFilters
+      })
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/forms/slugs'
+      })
+
+      expect(response.statusCode).toEqual(okStatusCode)
+      expect(response.headers['content-type']).toContain(jsonContentType)
+      expect(response.result).toEqual({
+        slugs: ['live-form-1', 'live-form-2']
+      })
+    })
+
+    test('GET /forms/slugs returns empty array when no live forms exist', async () => {
+      // Mock listForms to return empty array when filtering for live forms
+      jest.mocked(listForms).mockResolvedValue({
+        forms: [],
+        totalItems: 0,
+        filters: mockFilters
+      })
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/forms/slugs'
+      })
+
+      expect(response.statusCode).toEqual(okStatusCode)
+      expect(response.headers['content-type']).toContain(jsonContentType)
+      expect(response.result).toEqual({
+        slugs: []
+      })
+    })
+
+    test('GET /forms/slugs returns empty array when no forms exist', async () => {
+      jest.mocked(listForms).mockResolvedValue({
+        forms: [],
+        totalItems: 0,
+        filters: mockFilters
+      })
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/forms/slugs'
+      })
+
+      expect(response.statusCode).toEqual(okStatusCode)
+      expect(response.headers['content-type']).toContain(jsonContentType)
+      expect(response.result).toEqual({
+        slugs: []
+      })
+    })
+
     test('Testing POST /forms route returns a "created" status', async () => {
       jest.mocked(createForm).mockResolvedValue(stubFormMetadataOutput)
 
@@ -777,6 +874,22 @@ describe('Forms route', () => {
         method: 'GET',
         url: '/forms',
         auth
+      })
+
+      expect(response.statusCode).toEqual(internalErrorStatusCode)
+      expect(response.headers['content-type']).toContain(jsonContentType)
+      expect(response.result).toMatchObject({
+        error: 'Internal Server Error',
+        message: 'An internal server error occurred'
+      })
+    })
+
+    test('Testing GET /forms/slugs route throws unknown error', async () => {
+      jest.mocked(listForms).mockRejectedValueOnce(new Error('Unknown error'))
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/forms/slugs'
       })
 
       expect(response.statusCode).toEqual(internalErrorStatusCode)

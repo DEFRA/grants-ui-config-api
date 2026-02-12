@@ -218,6 +218,68 @@ describe('API Integration Tests', () => {
       expect(Array.isArray(result.data)).toBe(true)
     })
 
+    test('GET /forms/slugs should return list of live form slugs', async () => {
+      const liveForm1 = {
+        ...formMetadata,
+        id: '661e4ca5039739ef2902b220',
+        slug: 'live-form-1',
+        live: {
+          createdAt: now,
+          createdBy: author,
+          updatedAt: now,
+          updatedBy: author
+        }
+      }
+
+      const liveForm2 = {
+        ...formMetadata,
+        id: '661e4ca5039739ef2902b221',
+        slug: 'live-form-2',
+        live: {
+          createdAt: now,
+          createdBy: author,
+          updatedAt: now,
+          updatedBy: author
+        }
+      }
+
+      jest.mocked(listForms).mockResolvedValue({
+        forms: [liveForm1, liveForm2],
+        totalItems: 2,
+        filters: { ...mockFilters, status: [FormStatus.Live] }
+      })
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/forms/slugs'
+      })
+
+      expect(response.statusCode).toBe(okStatusCode)
+      expect(response.headers['content-type']).toContain(jsonContentType)
+      expect(response.result).toHaveProperty('slugs')
+      /** @type {{ slugs: string[] }} */
+      const result = /** @type {any} */ (response.result)
+      expect(Array.isArray(result.slugs)).toBe(true)
+      expect(result.slugs).toEqual(['live-form-1', 'live-form-2'])
+    })
+
+    test('GET /forms/slugs should return empty array when no live forms exist', async () => {
+      jest.mocked(listForms).mockResolvedValue({
+        forms: [],
+        totalItems: 0,
+        filters: { ...mockFilters, status: [FormStatus.Live] }
+      })
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/forms/slugs'
+      })
+
+      expect(response.statusCode).toBe(okStatusCode)
+      expect(response.headers['content-type']).toContain(jsonContentType)
+      expect(response.result).toEqual({ slugs: [] })
+    })
+
     test('POST /forms should create a new form', async () => {
       jest.mocked(createForm).mockResolvedValue(formMetadata)
 

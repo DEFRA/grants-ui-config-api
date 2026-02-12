@@ -6,6 +6,12 @@ GET {{baseUrl}}/health
 
 ###
 
+### List Live Slugs
+# @name ListForms
+GET {{baseUrl}}/forms/slugs
+
+###
+
 ### List Forms
 # @name ListForms
 GET {{baseUrl}}/forms
