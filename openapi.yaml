@@ -110,6 +110,27 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /forms/slugs:
+    get:
+      tags:
+        - Forms
+      summary: Get list of live form slugs
+      description: Retrieve a list of slugs for all live forms
+      operationId: getFormSlugs
+      responses:
+        '200':
+          description: List of form slugs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  slugs:
+                    type: array
+                    items:
+                      type: string
+                    description: Array of form slug identifiers
+
   /forms/{id}:
     get:
       tags:

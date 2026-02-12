@@ -56,6 +56,23 @@ export default [
     }
   },
   {
+    method: 'GET',
+    path: '/forms/slugs',
+    /**
+     * Get a list of slugs for all live forms.
+     */
+    async handler() {
+      const { forms } = await listForms({ page: 1, perPage: 1000, status: [FormStatus.Live] })
+
+      const liveSlugs = forms.map((form) => form.slug)
+
+      return { slugs: liveSlugs }
+    },
+    options: {
+      auth: false
+    }
+  },
+  {
     method: 'POST',
     path: '/forms',
     /**
