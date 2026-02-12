@@ -69,7 +69,7 @@
     "@types/convict": "6.1.6",
     "@types/eslint": "9.6.1",
     "@types/jest": "29.5.14",
-    "@types/node": "24.10.13",
+    "@types/node": "25.2.3",
     "@types/slug": "5.0.9",
     "@typescript-eslint/eslint-plugin": "8.55.0",
     "@typescript-eslint/parser": "8.55.0",
