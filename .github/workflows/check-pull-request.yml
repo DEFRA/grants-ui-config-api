@@ -38,7 +38,7 @@ jobs:
           path: .server
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
 
@@ -100,7 +100,7 @@ jobs:
           path: ${{ matrix.task.cache }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
 
@@ -143,7 +143,7 @@ jobs:
           path: .server
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
 
