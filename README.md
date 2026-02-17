@@ -179,9 +179,11 @@ The project includes an HTTP client configuration file ([config.http](config.htt
 
    The `generate:token:save` command creates/updates `http-client.private.env.json` with your token, which is automatically used by the HTTP client.
 
-3. **Set up environment variables**:
+3. **Set up per environment variables**:
    - The base configuration is in [http-client.env.json](http-client.env.json)
    - Private/sensitive values (like tokens) are stored in `http-client.private.env.json` (git-ignored)
+     - `authToken` - JWT token generated as above
+     - `x-api-key` – obtain this per‑environment value from the CDP portal user profile page: `https://portal.cdp-int.defra.cloud/user-profile`
 
 4. **Start the API**:
 
