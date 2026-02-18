@@ -7,7 +7,7 @@ GET {{baseUrl}}/health
 ###
 
 ### List Live Slugs
-# @name ListForms
+# @name ListLiveSlugs
 GET {{baseUrl}}/forms/slugs
 
 ###
@@ -29,6 +29,7 @@ GET {{baseUrl}}/forms?organisations=Defra
 POST {{baseUrl}}/forms
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "title": "Sample Form",
@@ -62,6 +63,7 @@ GET {{baseUrl}}/forms/slug/feedback
 PATCH {{baseUrl}}/forms/{{formId}}
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "title": "Updated Form Title"
@@ -73,6 +75,7 @@ Authorization: Bearer {{authToken}}
 # @name DeleteForm
 DELETE {{baseUrl}}/forms/{{formId}}
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 ###
 
@@ -87,8 +90,49 @@ GET {{baseUrl}}/forms/{{formId}}/definition/draft
 POST {{baseUrl}}/forms/{{formId}}/definition/draft
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
+  "metadata": {
+    "id": "9f9c5ec4-e237-4e6e-b67c-f232a6377d76",
+    "enabledInProd": false,
+    "referenceNumberPrefix": "EGWA",
+    "cookieConsent": {
+      "enabled": true,
+      "serviceName": "Farm and land service",
+      "cookiePolicyUrl": "/cookies",
+      "expiryDays": 365
+    },
+    "submission": {
+      "grantCode": "example-grant-with-auth-v3",
+      "submissionSchemaPath": "./schemas/example-grant-with-auth-submission.schema.json"
+    },
+    "grantRedirectRules": null,
+    "confirmationContent": {
+      "panelTitle": "Details submitted",
+      "panelText": "Your reference number",
+      "html": "<h2 class=\"govuk-heading-m\">What happens next</h2>\n<p class=\"govuk-body\">Defra will email you when your funding offer is available to review. This will be within 5 working days.</p>\n<p class=\"govuk-body\">You will need to sign in to the service to accept your funding offer.</p>\n<p class=\"govuk-body\">You should not start work on the actions you have applied for until:</p>\n<ul class=\"govuk-list govuk-list--bullet govuk-!-margin-bottom-6\">\n  <li>you have accepted your offer</li>\n  <li>the Rural Payments Agency confirms your start date</li>\n</ul>\n\n<details class=\"govuk-details\" data-module=\"govuk-details\">\n  <summary class=\"govuk-details__summary\">\n    <span class=\"govuk-details__summary-text\">\n      If you have a question\n    </span>\n  </summary>\n  <div class=\"govuk-details__text\">\n    <p class=\"govuk-body\">Contact the Rural Payments Agency if you have a query.</p>\n    <p class=\"govuk-body\">\n      Telephone: 03000 200 301<br>\n      Monday to Friday, 8:30am to 5pm (except bank holidays)</p>\n    <p class=\"govuk-body\"><a class=\"govuk-link\" href=\"https://www.gov.uk/call-charges\" target=\"_blank\">Find out about call charges (opens in new tab)</a></p>\n    <p class=\"govuk-body\">Email: <a class=\"govuk-link\" href=\"mailto:ruralpayments@defra.gov.uk\">ruralpayments@defra.gov.uk</a></p>\n  </div>\n</details>"
+    },
+    "tasklist": {
+      "completeInOrder": true,
+      "returnAfterSection": true,
+      "showCompletionStatus": true,
+      "statuses": {
+        "cannotStart": {
+          "text": "Cannot start yet",
+          "classes": "govuk-tag--grey"
+        },
+        "notStarted": {
+          "text": "Not started",
+          "classes": "govuk-tag--blue"
+        },
+        "completed": {
+          "text": "Completed",
+          "classes": "govuk-tag--green"
+        }
+      }
+    }
+  },
   "pages": [],
   "lists": [],
   "sections": [],
@@ -107,6 +151,7 @@ GET {{baseUrl}}/forms/{{formId}}/definition
 # @name CreateLiveFromDraft
 POST {{baseUrl}}/forms/{{formId}}/create-live
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 ###
 
@@ -114,6 +159,7 @@ Authorization: Bearer {{authToken}}
 # @name CreateDraftFromLive
 POST {{baseUrl}}/forms/{{formId}}/create-draft
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 ###
 
@@ -121,6 +167,7 @@ Authorization: Bearer {{authToken}}
 # @name DeleteDraftDefinition
 DELETE {{baseUrl}}/forms/{{formId}}/draft
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 ###
 
@@ -128,6 +175,7 @@ Authorization: Bearer {{authToken}}
 # @name MigrateDefinitionToV2
 POST {{baseUrl}}/forms/{{formId}}/definition/draft/migrate/2
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 ###
 
@@ -154,6 +202,7 @@ GET {{baseUrl}}/forms/{{formId}}/versions/{{versionNumber}}/definition
 POST {{baseUrl}}/forms/{{formId}}/definition/draft/pages
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "title": "New Page",
@@ -175,6 +224,7 @@ Authorization: Bearer {{authToken}}
 POST {{baseUrl}}/forms/{{formId}}/definition/draft/pages/order
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "ids": ["pageId1", "pageId2", "pageId3"]
@@ -187,6 +237,7 @@ Authorization: Bearer {{authToken}}
 PATCH {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "title": "Updated Page Title"
@@ -198,6 +249,7 @@ Authorization: Bearer {{authToken}}
 # @name DeletePage
 DELETE {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 ###
 
@@ -206,6 +258,7 @@ Authorization: Bearer {{authToken}}
 POST {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}/components
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "type": "TextField",
@@ -228,6 +281,7 @@ Authorization: Bearer {{authToken}}
 POST {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}/components?prepend=true
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "type": "TextField",
@@ -243,6 +297,7 @@ Authorization: Bearer {{authToken}}
 POST {{baseUrl}}/forms/{{formId}}/definition/draft/page/{{pageId}}/components/order
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "ids": ["componentId1", "componentId2", "componentId3"]
@@ -255,6 +310,7 @@ Authorization: Bearer {{authToken}}
 PUT {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}/components/{{componentId}}
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 {
   "id": "{{componentId}}",
@@ -270,5 +326,6 @@ Authorization: Bearer {{authToken}}
 # @name DeleteComponent
 DELETE {{baseUrl}}/forms/{{formId}}/definition/draft/pages/{{pageId}}/components/{{componentId}}
 Authorization: Bearer {{authToken}}
+x-api-key: {{x-api-key}}
 
 ###

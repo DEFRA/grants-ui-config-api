@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "id": "string (UUID) - Unique identifier for the grant definition",
+    "enabledInProd": "boolean - Whether this grant is enabled in production",
+    "referenceNumberPrefix": "string - Prefix for generated reference numbers",
+    "cookieConsent": {
+      "enabled": "boolean - Whether cookie consent is enabled",
+      "serviceName": "string - Name of the service for cookie consent",
+      "cookiePolicyUrl": "string - URL to cookie policy page",
+      "expiryDays": "number - Number of days before cookies expire"
+    },
+    "submission": {
+      "grantCode": "string - Unique code identifying this grant",
+      "submissionSchemaPath": "string - Path to JSON schema for submission validation"
+    },
+    "grantRedirectRules": {
+      "preSubmission": "array - Rules for redirecting before submission",
+      "postSubmission": "array - Rules for redirecting after submission based on grant and GAS status",
+      "excludedPaths": "array - Paths excluded from redirect rules"
+    },
+    "confirmationContent": {
+      "panelTitle": "string - Title for confirmation panel",
+      "panelText": "string - Text for confirmation panel",
+      "html": "string - HTML content for confirmation page"
+    },
+    "whitelistCrnEnvVar": "string - Environment variable name for CRN whitelist",
+    "whitelistSbiEnvVar": "string - Environment variable name for SBI whitelist",
+    "detailsPage": {
+      "query": {
+        "name": "string - Name of the query",
+        "entities": "array - Entities to query with variable mappings"
+      },
+      "responseMapping": "object - Maps response data to internal structure",
+      "displaySections": "array - Sections to display on details page with fields"
+    },
+    "tasklist": {
+      "completeInOrder": "boolean - Whether tasks must be completed in order",
+      "returnAfterSection": "boolean - Whether to return to task list after each section",
+      "showCompletionStatus": "boolean - Whether to show completion status",
+      "statuses": {
+        "cannotStart": {
+          "text": "string - Display text for cannot start status",
+          "classes": "string - CSS classes for cannot start status"
+        },
+        "notStarted": {
+          "text": "string - Display text for not started status",
+          "classes": "string - CSS classes for not started status"
+        },
+        "completed": {
+          "text": "string - Display text for completed status",
+          "classes": "string - CSS classes for completed status"
+        }
+      }
+    }
+  }
+}

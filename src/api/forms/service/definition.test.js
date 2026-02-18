@@ -1237,6 +1237,173 @@ describe('Forms service', () => {
       expect(true).toBe(true)
     })
   })
+
+  describe('metadata validation', () => {
+    describe('createLiveFromDraft with metadata', () => {
+      beforeEach(() => {
+        jest.mocked(formDefinition.createLiveFromDraft).mockResolvedValue()
+        jest.mocked(formMetadata.update).mockResolvedValue(buildMetadataDocument())
+      })
+
+      it('should create live form with valid metadata', async () => {
+        const definitionWithMetadata = {
+          ...definitionV2,
+          metadata: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            enabledInProd: true,
+            referenceNumberPrefix: 'TEST',
+            submission: {
+              grantCode: 'test-grant',
+              submissionSchemaPath: './schemas/test.schema.json'
+            }
+          }
+        }
+
+        jest.mocked(formDefinition.get).mockResolvedValueOnce(definitionWithMetadata)
+
+        await expect(createLiveFromDraft(id, author)).resolves.toBeUndefined()
+      })
+
+      it('should reject form with invalid metadata structure', async () => {
+        const definitionWithInvalidMetadata = {
+          ...definitionV2,
+          metadata: {
+            cookieConsent: {
+              enabled: true
+              // Missing required fields
+            }
+          }
+        }
+
+        jest.mocked(formDefinition.get).mockResolvedValueOnce(definitionWithInvalidMetadata)
+
+        await expect(createLiveFromDraft(id, author)).rejects.toThrow('Form metadata validation failed')
+      })
+
+      it('should reject form with invalid whitelist configuration', async () => {
+        const definitionWithInvalidWhitelist = {
+          ...definitionV2,
+          metadata: {
+            whitelistCrnEnvVar: 'TEST_CRNS'
+            // Missing whitelistSbiEnvVar
+          }
+        }
+
+        jest.mocked(formDefinition.get).mockResolvedValueOnce(definitionWithInvalidWhitelist)
+
+        await expect(createLiveFromDraft(id, author)).rejects.toThrow('Form metadata validation failed')
+      })
+
+      it('should reject form with invalid grant redirect rules', async () => {
+        const definitionWithInvalidRedirectRules = {
+          ...definitionV2,
+          metadata: {
+            grantRedirectRules: {
+              preSubmission: [{ toPath: '/tasks' }],
+              postSubmission: []
+            }
+          }
+        }
+
+        jest.mocked(formDefinition.get).mockResolvedValueOnce(definitionWithInvalidRedirectRules)
+
+        await expect(createLiveFromDraft(id, author)).rejects.toThrow('Form metadata validation failed')
+      })
+
+      it('should accept form with valid complete metadata configuration', async () => {
+        const definitionWithCompleteMetadata = {
+          ...definitionV2,
+          metadata: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            enabledInProd: true,
+            referenceNumberPrefix: 'TEST',
+            cookieConsent: {
+              enabled: true,
+              serviceName: 'Test service',
+              cookiePolicyUrl: '/cookies',
+              expiryDays: 365
+            },
+            submission: {
+              grantCode: 'test-grant',
+              submissionSchemaPath: './schemas/test.schema.json'
+            },
+            grantRedirectRules: {
+              preSubmission: [{ toPath: '/tasks' }],
+              postSubmission: [
+                {
+                  fromGrantsStatus: 'SUBMITTED',
+                  gasStatus: 'APPLICATION_RECEIVED',
+                  toGrantsStatus: 'SUBMITTED',
+                  toPath: '/confirmation'
+                },
+                {
+                  fromGrantsStatus: 'default',
+                  gasStatus: 'default',
+                  toGrantsStatus: 'SUBMITTED',
+                  toPath: '/confirmation'
+                }
+              ]
+            },
+            whitelistCrnEnvVar: 'TEST_CRNS',
+            whitelistSbiEnvVar: 'TEST_SBIS',
+            confirmationContent: {
+              panelTitle: 'Details submitted',
+              panelText: 'Your reference number'
+            },
+            tasklist: {
+              completeInOrder: true,
+              returnAfterSection: true,
+              showCompletionStatus: true
+            }
+          }
+        }
+
+        jest.mocked(formDefinition.get).mockResolvedValueOnce(definitionWithCompleteMetadata)
+
+        await expect(createLiveFromDraft(id, author)).resolves.toBeUndefined()
+      })
+    })
+
+    describe('updateDraftFormDefinition with metadata', () => {
+      beforeEach(() => {
+        jest.mocked(formMetadata.updateAudit).mockResolvedValue(formMetadataDocument)
+      })
+
+      it('should update draft form with valid metadata', async () => {
+        const definitionWithMetadata = {
+          ...definitionV2,
+          metadata: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            enabledInProd: false
+          }
+        }
+
+        jest.mocked(formDefinition.update).mockResolvedValue(definitionWithMetadata)
+
+        await expect(updateDraftFormDefinition(id, definitionWithMetadata, author)).resolves.toBeUndefined()
+      })
+
+      it('should reject draft form with invalid metadata in repository layer', async () => {
+        const definitionWithInvalidMetadata = {
+          ...definitionV2,
+          metadata: {
+            whitelistCrnEnvVar: 'TEST_CRNS'
+            // Missing whitelistSbiEnvVar - this should fail business logic validation
+          }
+        }
+
+        // Mock the repository to throw a generic error as it would when validation fails
+        const mockError = new Error(
+          'Metadata validation error: Both whitelistCrnEnvVar and whitelistSbiEnvVar must be configured together'
+        )
+        jest.mocked(formDefinition.update).mockRejectedValue(mockError)
+
+        await expect(updateDraftFormDefinition(id, definitionWithInvalidMetadata, author)).rejects.toThrow(
+          'Metadata validation error'
+        )
+      })
+    })
+  })
 })
 
 /**

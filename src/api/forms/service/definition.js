@@ -7,6 +7,7 @@ import { deleteDraft } from '~/src/api/forms/repositories/form-definition-reposi
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { getValidationSchema } from '~/src/api/forms/service/helpers/definition.js'
 import { getForm } from '~/src/api/forms/service/index.js'
+import { validateMetadataForPublishing } from '~/src/api/forms/service/metadata-validation.js'
 import { logger, mapForm, partialAuditFields } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
 import {
@@ -180,6 +181,19 @@ function validateFormForPublishing(formId, form, draftFormDefinition) {
 
   if (!form.notificationEmail) {
     throw Boom.badRequest(makeFormLiveErrorMessages.missingOutputEmail)
+  }
+
+  // Validate form definition metadata if present
+  if (draftFormDefinition.metadata) {
+    try {
+      validateMetadataForPublishing(draftFormDefinition.metadata)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.info(
+        `[invalidMetadata] Form ${formId} has invalid metadata - validation failed, cannot publish: ${errorMessage}`
+      )
+      throw Boom.badRequest(`Form metadata validation failed: ${errorMessage}`)
+    }
   }
 }
 
