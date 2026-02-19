@@ -12,7 +12,7 @@ import { logger } from '~/src/api/forms/service/shared.js'
 export function getValidationSchema(definition) {
   const { schema } = definition
 
-  // If schema is explicitly V2, use V2 validation
+  // If the schema is explicitly V2, use V2 validation
   if (schema === SchemaVersion.V2) {
     return formDefinitionV2Schema
   }
