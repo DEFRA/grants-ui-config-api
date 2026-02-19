@@ -3,24 +3,30 @@
 ### Health Check
 # @name HealthCheck
 GET {{baseUrl}}/health
+x-api-key: {{x-api-key}}
 
 ###
 
 ### List Live Slugs
 # @name ListLiveSlugs
 GET {{baseUrl}}/forms/slugs
+x-api-key: {{x-api-key}}
 
 ###
 
 ### List Forms
 # @name ListForms
 GET {{baseUrl}}/forms
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
 ### List Forms with Query Parameters
 # @name ListFormsWithQuery
 GET {{baseUrl}}/forms?organisations=Defra
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
@@ -49,12 +55,16 @@ x-api-key: {{x-api-key}}
 ### Get Form by ID
 # @name GetFormById
 GET {{baseUrl}}/forms/{{formId}}
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
 ### Get Form by Slug
 # @name GetFormBySlug
 GET {{baseUrl}}/forms/slug/feedback
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
@@ -82,6 +92,8 @@ x-api-key: {{x-api-key}}
 ### Get Draft Form Definition
 # @name GetDraftDefinition
 GET {{baseUrl}}/forms/{{formId}}/definition/draft
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
@@ -144,6 +156,8 @@ x-api-key: {{x-api-key}}
 ### Get Live Form Definition
 # @name GetLiveDefinition
 GET {{baseUrl}}/forms/{{formId}}/definition
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
@@ -182,18 +196,24 @@ x-api-key: {{x-api-key}}
 ### Get Form Versions
 # @name GetFormVersions
 GET {{baseUrl}}/forms/{{formId}}/versions
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
 ### Get Specific Form Version
 # @name GetFormVersion
 GET {{baseUrl}}/forms/{{formId}}/versions/{{versionNumber}}
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
 ### Get Specific Form Version Definition
 # @name GetFormVersionDefinition
 GET {{baseUrl}}/forms/{{formId}}/versions/{{versionNumber}}/definition
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
 
 ###
 
