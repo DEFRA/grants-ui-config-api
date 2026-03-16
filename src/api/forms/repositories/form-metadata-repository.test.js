@@ -128,7 +128,6 @@ describe('form-metadata-repository', () => {
       }
       const updated = await updateAudit(metadataId, author, mockSession, auditDate)
       expect(mockCollection.updateOne).toHaveBeenCalledWith(
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         { _id: new ObjectId(metadataId) },
         expectedUpdate,
         expect.anything()

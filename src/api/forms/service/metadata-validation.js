@@ -321,7 +321,6 @@ export function validateGrantRedirectRules(metadata) {
   }
 
   // Validate postSubmission has at least 1 rule
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!postSubmission || postSubmission.length < 1) {
     throw new Error('Grant redirect rules error: postSubmission must have at least 1 rule')
   }

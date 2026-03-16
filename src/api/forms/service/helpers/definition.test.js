@@ -165,7 +165,7 @@ describe('definition helpers', () => {
         })
 
         jest.spyOn(metadataValidation, 'validateMetadata').mockImplementation(() => {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
+          // eslint-disable-next-line no-throw-literal
           throw 'String error message'
         })
 

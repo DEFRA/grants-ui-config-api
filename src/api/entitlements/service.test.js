@@ -173,7 +173,8 @@ describe('entitlements service', () => {
         'form-publish',
         'user-create',
         'user-delete',
-        'user-edit'
+        'user-edit',
+        'forms-feedback'
       ])
     })
 

@@ -1,4 +1,4 @@
-/* eslint-env jest */
+/* global jest */
 import { ObjectId } from 'mongodb'
 
 /**

@@ -1,4 +1,3 @@
-/* eslint-env jest */
 import { FormStatus } from '@defra/forms-model'
 import { ObjectId } from 'mongodb'
 

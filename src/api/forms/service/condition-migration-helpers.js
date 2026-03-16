@@ -120,7 +120,6 @@ export function extractRelativeDateValue(conditionData) {
 
   const dateValue = /** @type {RelativeDateValueData } */ (conditionData.value)
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if ((dateValue?.period ?? '') === '') {
     throw new Error(
       `Missing period value in condition value for relative date: ${relativeDateValueToString(conditionData.value)}`

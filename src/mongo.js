@@ -33,7 +33,6 @@ export async function prepareDb(logger) {
     /** @type {any} */ ({
       retryWrites: false,
       readPreference: 'primary',
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- secureContext can be undefined in non-production
       ...(isSecureContextEnabled && secureContext && { secureContext })
     })
   )
