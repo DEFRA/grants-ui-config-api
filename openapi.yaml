@@ -23,7 +23,7 @@ info:
     name: Defra DDTS
 
 servers:
-  - url: http://localhost:3001
+  - url: http://localhost:3011
     description: Local development server
 
 tags:
@@ -229,6 +229,36 @@ paths:
                 $ref: '#/components/schemas/FormMetadata'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /forms/slug/{slug}/definition:
+    get:
+      tags:
+        - Definitions
+      summary: Get live form definition by slug
+      description: Retrieve the live (published) form definition using the form's slug identifier. This is a convenience endpoint that combines form lookup by slug and retrieval of the live definition in a single call.
+      operationId: getLiveDefinitionBySlug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Form slug identifier
+          schema:
+            type: string
+            examples:
+              - feedback
+      responses:
+        '200':
+          description: Live form definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDefinition'
+        '404':
+          description: Form not found or has no live definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /forms/{id}/draft:
     delete:

@@ -1,6 +1,6 @@
 import { FormStatus } from '@defra/forms-model'
-import { buildDefinition } from '@defra/forms-model/stubs'
 
+import { buildDefinition } from '~/src/api/forms/__stubs__/definition.js'
 import * as formDefinitionRepository from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadataRepository from '~/src/api/forms/repositories/form-metadata-repository.js'
 import * as formVersionsRepository from '~/src/api/forms/repositories/form-versions-repository.js'

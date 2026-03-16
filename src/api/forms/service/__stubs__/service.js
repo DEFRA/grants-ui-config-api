@@ -9,13 +9,14 @@ const slug = 'test-form'
 export const DRAFT = 'draft'
 export const BASE_CREATED_DATE = new Date('2020-01-01')
 /**
- * @satisfies {FormMetadataInput}
+ * @type {FormMetadataInputWithSlug}
  */
 export const formMetadataInput = {
   title: 'Test form',
   organisation: 'Defra',
   teamName: 'Defra Forms',
   teamEmail: 'defraforms@defra.gov.uk',
+  slug: 'test-form',
   contact: {
     phone: '0800 000 1234'
   },
@@ -112,4 +113,5 @@ export const mockFilters = {
 /**
  * @import { FormMetadataDocument, FormMetadataInput, FormMetadata, FilterOptions } from '@defra/forms-model'
  * @import { WithId } from 'mongodb'
+ * @import { FormMetadataInputWithSlug } from '~/src/api/types.js'
  */

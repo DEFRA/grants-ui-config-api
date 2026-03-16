@@ -44,7 +44,7 @@ export async function getFormDefinition(formId, state = FormStatus.Draft, sessio
 
 /**
  * @param {string} formId - ID of the form
- * @param {FormDefinition} definition - full form definition
+ * @param {FormDefinitionWithMetadata} definition - full form definition
  * @param {FormMetadataAuthor} author - the author details
  */
 export async function updateDraftFormDefinition(formId, definition, author) {
@@ -162,25 +162,26 @@ function validateFormForPublishing(formId, form, draftFormDefinition) {
     throw Boom.badRequest(makeFormLiveErrorMessages.missingDraft)
   }
 
-  if (!form.contact) {
-    throw Boom.badRequest(makeFormLiveErrorMessages.missingContact)
-  }
-
-  if (!form.submissionGuidance) {
-    throw Boom.badRequest(makeFormLiveErrorMessages.missingSubmissionGuidance)
-  }
-
-  if (!form.privacyNoticeUrl) {
-    logger.info(`[missingPrivacyNotice] Form ${formId} missing privacy notice URL - validation failed, cannot publish`)
-    throw Boom.badRequest(makeFormLiveErrorMessages.missingPrivacyNotice)
-  }
+  // TODO integrate with grants-ui default components or remove
+  // if (!form.contact) {
+  //   throw Boom.badRequest(makeFormLiveErrorMessages.missingContact)
+  // }
+  //
+  // if (!form.submissionGuidance) {
+  //   throw Boom.badRequest(makeFormLiveErrorMessages.missingSubmissionGuidance)
+  // }
+  //
+  // if (!form.privacyNoticeUrl) {
+  //   logger.info(`[missingPrivacyNotice] Form ${formId} missing privacy notice URL - validation failed, cannot publish`)
+  //   throw Boom.badRequest(makeFormLiveErrorMessages.missingPrivacyNotice)
+  // }
+  //
+  // if (!form.notificationEmail) {
+  //   throw Boom.badRequest(makeFormLiveErrorMessages.missingOutputEmail)
+  // }
 
   if (draftFormDefinition.engine !== Engine.V2 && !draftFormDefinition.startPage) {
     throw Boom.badRequest(makeFormLiveErrorMessages.missingStartPage)
-  }
-
-  if (!form.notificationEmail) {
-    throw Boom.badRequest(makeFormLiveErrorMessages.missingOutputEmail)
   }
 
   // Validate form definition metadata if present
@@ -425,4 +426,5 @@ export async function reorderDraftFormDefinitionComponents(formId, pageId, order
 /**
  * @import { FormDefinition, FormMetadataAuthor, FormMetadata, FilterOptions, QueryOptions } from '@defra/forms-model'
  * @import { ClientSession } from 'mongodb'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

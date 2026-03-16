@@ -19,8 +19,9 @@ import {
 
 import { convertConditionDataToV2, isConditionData } from '~/src/api/forms/service/condition-migration-helpers.js'
 import { validate } from '~/src/api/forms/service/helpers/definition.js'
+
 /**
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @returns {{
  *  readonly summary: PageSummary | undefined;
  *  shouldRepositionSummary: boolean;
@@ -56,7 +57,7 @@ function removeSummary(pages, indexOf) {
 
 /**
  * Repositions summary to the end of the pages
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  */
 export function repositionSummary(definition) {
   const summaryHelperOutput = summaryHelper(definition)
@@ -78,7 +79,7 @@ export function repositionSummary(definition) {
 
 /**
  * Repositions summary to the end of the pages
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  */
 export function upgradeSummary(definition) {
   const summaryHelperOutput = summaryHelper(definition)
@@ -89,7 +90,7 @@ export function upgradeSummary(definition) {
   if (summary.controller === ControllerType.Summary) {
     const pagesWithoutSummary = removeSummary(definition.pages, indexOf)
 
-    return /** @type {FormDefinition} */ ({
+    return /** @type {FormDefinitionWithMetadata} */ ({
       ...definition,
       pages: [
         ...pagesWithoutSummary,
@@ -106,7 +107,7 @@ export function upgradeSummary(definition) {
 
 /**
  * Applies page titles if they are missing
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  */
 export function applyPageTitles(definition) {
   const changedPages = definition.pages.map((page) => {
@@ -127,7 +128,7 @@ export function applyPageTitles(definition) {
 }
 
 /**
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {ComponentDef} component - ** fn may mutate component **
  */
 export function mapComponent(definition, component) {
@@ -154,7 +155,7 @@ export function mapComponent(definition, component) {
 
 /**
  * Migrates component fields
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  */
 export function migrateComponentFields(definition) {
   const changedPages = definition.pages.map((page) => {
@@ -180,7 +181,7 @@ export function migrateComponentFields(definition) {
 
 /**
  * Converts declaration text to a guidance component
- * @param {FormDefinition} originalDefinition
+ * @param {FormDefinitionWithMetadata} originalDefinition
  */
 export function convertDeclaration(originalDefinition) {
   const definition = structuredClone(originalDefinition)
@@ -245,8 +246,8 @@ export function populateComponentIds(pageWithoutComponentIds) {
 /**
  * Populates component ids for all pages in the form definition.
  * If a component does not have an id, it generates a new one.
- * @param {FormDefinition} definition
- * @returns {FormDefinition}
+ * @param {FormDefinitionWithMetadata} definition
+ * @returns {FormDefinitionWithMetadata}
  */
 export function addComponentIdsToDefinition(definition) {
   const pagesWithIds = definition.pages.map((page) => populateComponentIds(page))
@@ -261,8 +262,8 @@ export function addComponentIdsToDefinition(definition) {
  * Converts a form from using list names to using list ids.
  * For each component on each page, if the component has a "list" property referencing a list by name,
  * it replaces it with the corresponding list's id.
- * @param {FormDefinition} definition
- * @returns {FormDefinition}
+ * @param {FormDefinitionWithMetadata} definition
+ * @returns {FormDefinitionWithMetadata}
  */
 export function convertListNamesToIds(definition) {
   // Ensure all lists have an id
@@ -318,8 +319,8 @@ export function convertListNamesToIds(definition) {
  * Converts a form from using section names to using section ids.
  * For each page, if it has a "section" property referencing a section by name,
  * it replaces it with the corresponding section's id.
- * @param {FormDefinition} definition
- * @returns {FormDefinition}
+ * @param {FormDefinitionWithMetadata} definition
+ * @returns {FormDefinitionWithMetadata}
  */
 export function convertSectionNamesToIds(definition) {
   // Ensure all sections have an id
@@ -368,7 +369,7 @@ export function convertSectionNamesToIds(definition) {
 
 /**
  * Build a map from component name (old) to component id (new) for all components in all pages
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @returns {Map<string, string>}
  */
 function getComponentNameToIdMap(definition) {
@@ -388,7 +389,7 @@ function getComponentNameToIdMap(definition) {
 
 /**
  * Gets a set of condition names that are in use across all pages.
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  */
 function getConditionNamesInUse(definition) {
   return new Set(
@@ -406,7 +407,7 @@ function getConditionNamesInUse(definition) {
  * @param {ConditionWrapper} conditionWrapper
  * @param {Map<string, string>} fieldNameToComponentId
  * @param {Set<string>} conditionsInUse
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  */
 function convertConditionWrapperToV2(conditionWrapper, fieldNameToComponentId, conditionsInUse, definition) {
   const coordinators = new Set()
@@ -447,7 +448,7 @@ function convertConditionWrapperToV2(conditionWrapper, fieldNameToComponentId, c
 
 /**
  * Converts conditions in the condition from schema v1 to v2.
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  */
 export function convertConditions(definition) {
   const fieldNameToComponentId = getComponentNameToIdMap(definition)
@@ -495,8 +496,8 @@ export function convertConditions(definition) {
 
 /**
  * Converts any controller paths to names
- * @param {FormDefinition} definition
- * @returns {FormDefinition}
+ * @param {FormDefinitionWithMetadata} definition
+ * @returns {FormDefinitionWithMetadata}
  */
 export function convertControllerPathsToNames(definition) {
   const pages = definition.pages.map((page) => {
@@ -534,8 +535,8 @@ const migrationSteps = [
 
 /**
  * Apply transformations to FormDefinition
- * @param {FormDefinition} definition
- * @returns {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
+ * @returns {FormDefinitionWithMetadata} definition
  */
 function applyMigrationSteps(definition) {
   return migrationSteps.reduce((acc, transformation) => {
@@ -545,8 +546,8 @@ function applyMigrationSteps(definition) {
 
 /**
  * Migrates a v1 definition to v2
- * @param {FormDefinition} definition
- * @returns {FormDefinition}
+ * @param {FormDefinitionWithMetadata} definition
+ * @returns {FormDefinitionWithMetadata}
  */
 export function migrateToV2(definition) {
   const migratedDefinition = applyMigrationSteps(definition)
@@ -554,9 +555,7 @@ export function migrateToV2(definition) {
   migratedDefinition.engine = Engine.V2
   migratedDefinition.schema = SchemaVersion.V2
 
-  const value = validate(migratedDefinition, formDefinitionV2Schema)
-
-  return value
+  return /** @type {FormDefinitionWithMetadata} */ (validate(migratedDefinition, formDefinitionV2Schema))
 }
 
 /**
@@ -570,4 +569,5 @@ export function migrateToV2(definition) {
 
 /**
  * @import { ComponentDef, FormDefinition, MarkdownComponent, Page, PageSummary, PageSummaryWithConfirmationEmail, ConditionWrapper, ConditionWrapperV2 } from '@defra/forms-model'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

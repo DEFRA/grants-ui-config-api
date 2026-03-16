@@ -1,4 +1,4 @@
-import { FormStatus, formDefinitionV2Schema, getErrorMessage, slugify } from '@defra/forms-model'
+import { FormStatus, formDefinitionV2Schema, getErrorMessage } from '@defra/forms-model'
 import Boom from '@hapi/boom'
 import { MongoServerError } from 'mongodb'
 
@@ -33,7 +33,7 @@ export function validateLiveFormTitleUpdate(form, formId, formUpdate) {
 
 /**
  * Prepares the updated form metadata with audit fields
- * @param {Partial<FormMetadataInput>} formUpdate - The update payload
+ * @param {Partial<FormMetadataInputWithSlug>} formUpdate - The update payload
  * @param {FormMetadataAuthor} author - The author details
  * @returns {PartialFormMetadataDocument}
  */
@@ -47,10 +47,9 @@ export function prepareUpdatedFormMetadata(formUpdate, author) {
     updatedBy
   }
 
-  if (formUpdate.title) {
+  if (formUpdate.title || formUpdate.slug) {
     updatedForm = {
       ...updatedForm,
-      slug: slugify(formUpdate.title),
       ...draftAuditFields
     }
   }
@@ -97,11 +96,11 @@ export async function handleMetadataVersioning(formId, formUpdate, session) {
 
 /**
  * Creates a new empty form
- * @param {FormMetadataInput} metadataInput - the form metadata to save
+ * @param {FormMetadataInputWithSlug} metadataInput - the form metadata to save
  * @param {FormMetadataAuthor} author - the author details
  */
 export async function createForm(metadataInput, author) {
-  const { title } = metadataInput
+  const { title, slug } = metadataInput
 
   // Create a blank form definition with the title set
   const definition = { ...formTemplates.emptyV2(), name: title }
@@ -109,8 +108,6 @@ export async function createForm(metadataInput, author) {
   // Validate the form definition
   validate(definition, formDefinitionV2Schema)
 
-  // Create the slug
-  const slug = slugify(title)
   const now = new Date()
 
   /**
@@ -275,4 +272,5 @@ export async function removeForm(formId, author) {
  * @import { FormMetadataAuthor, FormMetadataDocument, FormMetadataInput, FormMetadata } from '@defra/forms-model'
  * @import { PartialFormMetadataDocument } from '~/src/api/types.js'
  * @import { ClientSession } from 'mongodb'
+ * @import { FormMetadataInputWithSlug } from '~/src/api/types.js'
  */

@@ -668,7 +668,7 @@ describe('migration helpers', () => {
 
     describe('convertListNamesToIds', () => {
       it('should convert component list names to ids', () => {
-        const definition = /** @type {FormDefinition} */ ({
+        const definition = /** @type {FormDefinitionWithMetadata} */ ({
           lists: [{ name: 'countries' }],
           pages: [
             {
@@ -687,7 +687,7 @@ describe('migration helpers', () => {
       })
 
       it('should leave components unchanged if no list property', () => {
-        const definition = /** @type {FormDefinition} */ ({
+        const definition = /** @type {FormDefinitionWithMetadata} */ ({
           lists: [{ name: 'countries', id: 'id1' }],
           pages: [
             {
@@ -702,7 +702,7 @@ describe('migration helpers', () => {
       })
 
       it('should throw if component list name does not exist in lists', () => {
-        const definition = /** @type {FormDefinition} */ ({
+        const definition = /** @type {FormDefinitionWithMetadata} */ ({
           lists: [{ name: 'countries', id: 'id1' }],
           pages: [
             {
@@ -717,7 +717,7 @@ describe('migration helpers', () => {
       })
 
       it('should leave pages unchanged if no components', () => {
-        const definition = /** @type {FormDefinition} */ ({
+        const definition = /** @type {FormDefinitionWithMetadata} */ ({
           lists: [{ name: 'countries', id: 'id1' }],
           pages: [{ title: 'No components' }]
         })
@@ -1238,7 +1238,7 @@ describe('convertControllerPathsToNames', () => {
 /**
  * Build a minimal form definition for testing.
  * @param {object} [overrides]
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 function buildMinimalDefinition(overrides = {}) {
   return buildDefinition({
@@ -1251,5 +1251,6 @@ function buildMinimalDefinition(overrides = {}) {
 }
 
 /**
- * @import { FormDefinition, List, PageQuestion, Page, PageSummary, ComponentDef, ConditionDataV2, PageSummaryWithConfirmationEmail } from '@defra/forms-model'
+ * @import { List, PageQuestion, Page, PageSummary, ComponentDef, ConditionDataV2, PageSummaryWithConfirmationEmail } from '@defra/forms-model'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

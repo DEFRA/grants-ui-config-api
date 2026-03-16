@@ -8,6 +8,7 @@ export function empty() {
     name: '',
     engine: undefined,
     startPage: ControllerPath.Summary,
+    metadata: {},
     pages: [
       {
         title: 'Summary',
@@ -30,19 +31,13 @@ export function empty() {
  * Function to return an empty V2 form
  */
 export function emptyV2() {
-  return /** @satisfies {FormDefinition} */ ({
+  return /** @satisfies {FormDefinitionWithMetadata} */ ({
     name: '',
     engine: Engine.V2,
     schema: SchemaVersion.V2,
-    startPage: ControllerPath.Summary,
-    pages: [
-      {
-        id: '449a45f6-4541-4a46-91bd-8b8931b07b50',
-        title: '',
-        path: ControllerPath.Summary,
-        controller: ControllerType.SummaryWithConfirmationEmail
-      }
-    ],
+    startPage: ControllerPath.Start,
+    metadata: {},
+    pages: [],
     conditions: [],
     sections: [],
     lists: []
@@ -51,4 +46,5 @@ export function emptyV2() {
 
 /**
  * @import { FormDefinition } from '@defra/forms-model'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

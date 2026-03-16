@@ -70,12 +70,12 @@ export function buildStatusPage(partialStatusPage = {}) {
 
 /**
  * Builds a form definition
- * @param {Partial<FormDefinition>} partialDefinition
- * @returns {FormDefinition}
+ * @param {Partial<FormDefinitionWithMetadata>} partialDefinition
+ * @returns {FormDefinitionWithMetadata}
  */
-export function buildDefinition(partialDefinition) {
+export function buildDefinition(partialDefinition = {}) {
   const emptyDefinition = empty()
-  return /** @type {FormDefinition} */ (
+  return /** @type {FormDefinitionWithMetadata} */ (
     structuredClone({
       ...emptyDefinition,
       ...partialDefinition
@@ -162,4 +162,5 @@ export function buildTextFieldComponent(partialTextField = {}) {
 }
 /**
  * @import { FormDefinition, PageSummary, PageSummaryWithConfirmationEmail, PageQuestion, PageStatus, TextFieldComponent, Item, List, ConditionWrapperV2 } from '@defra/forms-model'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

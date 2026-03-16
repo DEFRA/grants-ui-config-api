@@ -1,7 +1,6 @@
 import { MongoClient } from 'mongodb'
 
 import { config } from '~/src/config/index.js'
-import { reinstateFeedbackForm } from '~/src/helpers/feedback-form/reinstate.js'
 import { secureContext } from '~/src/secure-context.js'
 
 /**
@@ -53,9 +52,6 @@ export async function prepareDb(logger) {
   await versionsCollection.createIndex({ formId: 1, versionNumber: 1 }, { unique: true })
   await versionsCollection.createIndex({ formId: 1, versionNumber: -1 })
   await versionsCollection.createIndex({ createdAt: -1 })
-
-  // Ensure feedback form exists, and is same as the JSON in the codebase
-  await reinstateFeedbackForm(client, logger)
 
   logger.info(`Mongodb connected to ${databaseName}`)
 

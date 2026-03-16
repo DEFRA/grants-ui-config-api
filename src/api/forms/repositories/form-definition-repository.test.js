@@ -11,7 +11,6 @@ import {
   hasComponentsEvenIfNoNext
 } from '@defra/forms-model'
 import {
-  buildDefinition,
   buildFileUploadComponent,
   buildList,
   buildListItem,
@@ -22,7 +21,7 @@ import {
 import Boom from '@hapi/boom'
 import { ObjectId } from 'mongodb'
 
-import { buildCondition } from '~/src/api/forms/__stubs__/definition.js'
+import { buildCondition, buildDefinition } from '~/src/api/forms/__stubs__/definition.js'
 import { buildMockCollection } from '~/src/api/forms/__stubs__/mongo.js'
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import {
@@ -116,10 +115,10 @@ jest.mock('~/src/mongo.js', () => {
 })
 
 describe('form-definition-repository', () => {
-  /** @type {FormDefinition} */
+  /** @type {FormDefinitionWithMetadata} */
   let mockDefinition
 
-  /** @type {FormDefinition} */
+  /** @type {FormDefinitionWithMetadata} */
   let draft
 
   /** @type {Page} */
@@ -896,7 +895,7 @@ describe('form-definition-repository', () => {
           await update(formId, newV2Definition, mockSession, formDefinitionV2Schema)
         },
         (definition) => {
-          expect(definition.pages).toHaveLength(1)
+          expect(definition.pages).toHaveLength(0)
           expect(definition.lists).toHaveLength(0)
         }
       )
@@ -1072,4 +1071,5 @@ describe('form-definition-repository', () => {
 /**
  * @import { FormDefinition, PatchPageFields, Page, ComponentDef, List, ConditionWrapperV2, SectionAssignmentItem } from '@defra/forms-model'
  * @import { UpdateFilter } from 'mongodb'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

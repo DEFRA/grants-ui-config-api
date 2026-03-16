@@ -95,7 +95,9 @@ export const createFormSchema = Joi.object().keys({
   title: formMetadataInputSchema.extract('title'),
   organisation: formMetadataInputSchema.extract('organisation'),
   teamName: formMetadataInputSchema.extract('teamName'),
-  teamEmail: formMetadataInputSchema.extract('teamEmail')
+  teamEmail: formMetadataInputSchema.extract('teamEmail'),
+  notificationEmail: formMetadataInputSchema.extract('notificationEmail'),
+  slug: Joi.string().required()
 })
 
 export const updateFormDefinitionSchema = Joi.alternatives().try(

@@ -41,13 +41,17 @@ x-api-key: {{x-api-key}}
   "title": "Sample Form",
   "organisation": "Defra",
   "teamName": "Test Team",
-  "teamEmail": "test.team.email@defra.gov.uk"
+  "teamEmail": "test.team.email@defra.gov.uk",
+  "slug": "sample"
 }
+
+> {%
+  client.global.set("formId", response.body.id);
+%}
 
 ###
 
-### Default IDs for the pre-seeded feedback form
-@formId=691db72966b1bdc98fa3e72a
+### Default versionNumber
 @versionNumber=1
 
 ###
@@ -62,7 +66,15 @@ Accept-Encoding: identity
 
 ### Get Form by Slug
 # @name GetFormBySlug
-GET {{baseUrl}}/forms/slug/feedback
+GET {{baseUrl}}/forms/slug/sample
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
+
+###
+
+### Get Live Form Definition by Slug
+# @name GetLiveDefinitionBySlug
+GET {{baseUrl}}/forms/slug/methane/definition
 x-api-key: {{x-api-key}}
 Accept-Encoding: identity
 
@@ -91,7 +103,7 @@ x-api-key: {{x-api-key}}
 
 ### Get Draft Form Definition
 # @name GetDraftDefinition
-GET {{baseUrl}}/forms/{{formId}}/definition/draft
+GET {{baseUrl}}/forms/699d7c2a7cb195d9b0733ac2/definition/draft
 x-api-key: {{x-api-key}}
 Accept-Encoding: identity
 
@@ -105,6 +117,8 @@ Authorization: Bearer {{authToken}}
 x-api-key: {{x-api-key}}
 
 {
+  "engine": "V2",
+  "schema": 2,
   "metadata": {
     "id": "9f9c5ec4-e237-4e6e-b67c-f232a6377d76",
     "enabledInProd": false,
@@ -163,7 +177,7 @@ Accept-Encoding: identity
 
 ### Create Live from Draft (requires auth)
 # @name CreateLiveFromDraft
-POST {{baseUrl}}/forms/{{formId}}/create-live
+POST {{baseUrl}}/forms/699d7f667cb195d9b0733ac6/create-live
 Authorization: Bearer {{authToken}}
 x-api-key: {{x-api-key}}
 
@@ -171,7 +185,7 @@ x-api-key: {{x-api-key}}
 
 ### Create Draft from Live (requires auth)
 # @name CreateDraftFromLive
-POST {{baseUrl}}/forms/{{formId}}/create-draft
+POST {{baseUrl}}/forms/699d7f667cb195d9b0733ac6/create-draft
 Authorization: Bearer {{authToken}}
 x-api-key: {{x-api-key}}
 

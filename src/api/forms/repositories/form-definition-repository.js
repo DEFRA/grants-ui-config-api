@@ -41,7 +41,7 @@ const logger = createLogger()
 /**
  * Adds a form to the Form Store
  * @param {string} id - id
- * @param {FormDefinition} formDefinition - form definition (JSON object)
+ * @param {FormDefinitionWithMetadata} formDefinition - form definition (JSON object)
  * @param {ClientSession} session - mongo transaction session
  * @param {ObjectSchema<FormDefinition>} schema - the schema to use
  */
@@ -56,7 +56,7 @@ export async function insert(id, formDefinition, session, schema) {
 /**
  * Update a form in the Form Store
  * @param {string} id - id
- * @param {FormDefinition} formDefinition - form definition (JSON object)
+ * @param {FormDefinitionWithMetadata} formDefinition - form definition (JSON object)
  * @param {ClientSession} session - mongo transaction session
  * @param {ObjectSchema<FormDefinition>} schema - the schema to use
  * @returns {Promise<FormDefinition>}
@@ -119,13 +119,13 @@ export async function createDraftFromLive(id, session) {
  * @param {string} formId - the ID of the form
  * @param {FormStatus} state - the form state
  * @param {ClientSession | undefined} [session]
- * @returns {Promise<FormDefinition>}
+ * @returns {Promise<FormDefinitionWithMetadata>}
  */
 // eslint-disable-next-line @typescript-eslint/no-useless-default-assignment
 export async function get(formId, state = FormStatus.Draft, session = undefined) {
   logger.info(`Getting form definition (${state}) for form ID ${formId}`)
 
-  const coll = /** @satisfies {Collection<{draft?: FormDefinition, live?: FormDefinition}>} */ (
+  const coll = /** @satisfies {Collection<{draft?: FormDefinitionWithMetadata, live?: FormDefinitionWithMetadata}>} */ (
     db.collection(DEFINITION_COLLECTION_NAME)
   )
   const sessionOptions = /** @type {FindOptions} */ session && { session }
@@ -141,7 +141,7 @@ export async function get(formId, state = FormStatus.Draft, session = undefined)
       throw Boom.notFound(`Form definition with ID '${formId}' not found`)
     }
 
-    const definition = /** @type {FormDefinition} */ result[state]
+    const definition = /** @type {FormDefinitionWithMetadata} */ result[state]
 
     logger.info(`Got form definition (${state}) for form ID ${formId}`)
 
@@ -383,7 +383,7 @@ export async function deleteComponent(formId, pageId, componentId, session) {
  * @param {string} pageId
  * @param {PatchPageFields} pageFields
  * @param {ClientSession} session
- * @returns {Promise<FormDefinition>}
+ * @returns {Promise<FormDefinitionWithMetadata>}
  */
 export async function updatePageFields(formId, pageId, pageFields, session) {
   const pageFieldKeys = Object.keys(pageFields)
@@ -527,7 +527,7 @@ export async function updateCondition(formId, conditionId, condition, session) {
  * @param {string} formId
  * @param {string} conditionId
  * @param {ClientSession} session
- * @returns {Promise<FormDefinition>}
+ * @returns {Promise<FormDefinitionWithMetadata>}
  */
 export async function deleteCondition(formId, conditionId, session) {
   logger.info(`Deleting condition ID ${conditionId} on form ID ${formId}`)
@@ -636,4 +636,5 @@ export async function updateOption(formId, optionName, optionValue, session) {
  * @import { ClientSession, Collection, FindOptions } from 'mongodb'
  * @import { ObjectSchema } from 'joi'
  * @import { UpdateCallback, RemovePagePredicate } from '~/src/api/forms/repositories/helpers.js'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */
