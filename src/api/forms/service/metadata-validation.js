@@ -126,7 +126,7 @@ const cookieConsentSchema = Joi.object({
  */
 const submissionSchema = Joi.object({
   grantCode: Joi.string().trim().required(),
-  submissionSchemaPath: Joi.string().trim().required()
+  submissionSchemaPath: Joi.string().trim().optional()
 })
   .description('Submission configuration for Grant Administration Service')
   .optional()

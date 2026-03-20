@@ -47,6 +47,7 @@ x-api-key: {{x-api-key}}
 
 > {%
   client.global.set("formId", response.body.id);
+  client.global.set("slug", "sample");
 %}
 
 ###
@@ -66,7 +67,7 @@ Accept-Encoding: identity
 
 ### Get Form by Slug
 # @name GetFormBySlug
-GET {{baseUrl}}/forms/slug/sample
+GET {{baseUrl}}/forms/slug/{{slug}}
 x-api-key: {{x-api-key}}
 Accept-Encoding: identity
 
@@ -74,7 +75,7 @@ Accept-Encoding: identity
 
 ### Get Live Form Definition by Slug
 # @name GetLiveDefinitionBySlug
-GET {{baseUrl}}/forms/slug/methane/definition
+GET {{baseUrl}}/forms/slug/{{slug}}/definition
 x-api-key: {{x-api-key}}
 Accept-Encoding: identity
 
@@ -103,7 +104,7 @@ x-api-key: {{x-api-key}}
 
 ### Get Draft Form Definition
 # @name GetDraftDefinition
-GET {{baseUrl}}/forms/699d7c2a7cb195d9b0733ac2/definition/draft
+GET {{baseUrl}}/forms/{{formId}}/definition/draft
 x-api-key: {{x-api-key}}
 Accept-Encoding: identity
 
@@ -177,7 +178,7 @@ Accept-Encoding: identity
 
 ### Create Live from Draft (requires auth)
 # @name CreateLiveFromDraft
-POST {{baseUrl}}/forms/699d7f667cb195d9b0733ac6/create-live
+POST {{baseUrl}}/forms/{{formId}}/create-live
 Authorization: Bearer {{authToken}}
 x-api-key: {{x-api-key}}
 
@@ -185,7 +186,7 @@ x-api-key: {{x-api-key}}
 
 ### Create Draft from Live (requires auth)
 # @name CreateDraftFromLive
-POST {{baseUrl}}/forms/699d7f667cb195d9b0733ac6/create-draft
+POST {{baseUrl}}/forms/{{formId}}/create-draft
 Authorization: Bearer {{authToken}}
 x-api-key: {{x-api-key}}
 
