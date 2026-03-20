@@ -287,7 +287,8 @@ describe('API Integration Tests', () => {
         title: 'API test form',
         organisation: 'Defra',
         teamName: 'Forms Team',
-        teamEmail: 'name@example.gov.uk'
+        teamEmail: 'name@example.gov.uk',
+        slug: 'live-form-1'
       }
 
       const response = await server.inject({
@@ -1050,7 +1051,8 @@ describe('API Integration Tests', () => {
         title: 'Form to go live',
         organisation: 'Defra',
         teamName: 'Forms Team',
-        teamEmail: 'name@example.gov.uk'
+        teamEmail: 'name@example.gov.uk',
+        slug: 'form-to-go-live'
       }
 
       const response = await server.inject({

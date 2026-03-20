@@ -76,17 +76,6 @@ describe('Forms service', () => {
     jest.mocked(versioningService.getLatestFormVersion).mockResolvedValue(mockFormVersionDocument)
   })
 
-  const slugExamples = [
-    {
-      input: 'Test form',
-      output: 'test-form'
-    },
-    {
-      input: 'A !Super! Duper Form -    from Defra...',
-      output: 'a-super-duper-form-from-defra'
-    }
-  ]
-
   const changeLogs = [
     {
       input: {
@@ -127,15 +116,6 @@ describe('Forms service', () => {
       expect(dbMetadataOperationArgs.createdBy).toEqual(author)
       expect(dbMetadataOperationArgs.updatedBy).toEqual(author)
       expect(dbMetadataOperationArgs.updatedAt).toEqual(dateUsedInFakeTime)
-    })
-
-    test.each(slugExamples)(`should return slug '$output'`, async (slugIn) => {
-      const input = {
-        ...formMetadataInput,
-        title: slugIn.input
-      }
-
-      expect((await createForm(input, author)).slug).toBe(slugIn.output)
     })
 
     it('should throw an error when schema validation fails', async () => {
@@ -313,16 +293,7 @@ describe('Forms service', () => {
       jest.mocked(formDefinition.get).mockResolvedValue(definition)
     })
 
-    it.each(slugExamples)(`should return slug '$output'`, async (slugIn) => {
-      const input = {
-        ...formMetadataInput,
-        title: slugIn.input
-      }
-
-      await expect(updateFormMetadata(id, input, author)).resolves.toEqual(slugIn.output)
-    })
-
-    it('should update slug, draft.updatedAt/draft.updatedBy and publish FormTitleUpdatedMessage when title is updated', async () => {
+    it('should update draft.updatedAt/draft.updatedBy and publish FormTitleUpdatedMessage when title is updated', async () => {
       const input = {
         title: 'new title'
       }
@@ -332,8 +303,7 @@ describe('Forms service', () => {
       const dbMetadataSpy = jest.spyOn(formMetadata, 'update')
       const dbDefinitionSpy = jest.spyOn(formDefinition, 'updateName')
 
-      const updatedSlug = await updateFormMetadata(id, input, author)
-      expect(updatedSlug).toBe('new-title')
+      await updateFormMetadata(id, input, author)
 
       const dbMetadataOperationArgs = dbMetadataSpy.mock.calls[0]
       const dbDefinitionOperationArgs = dbDefinitionSpy.mock.calls[0]
@@ -344,7 +314,6 @@ describe('Forms service', () => {
       expect(dbMetadataOperationArgs[0]).toBe(id)
       expect(dbMetadataOperationArgs[1]).toMatchObject({
         $set: {
-          slug: 'new-title',
           title: input.title,
           updatedAt: dateUsedInFakeTime,
           updatedBy: author,
@@ -451,16 +420,7 @@ describe('Forms service', () => {
       jest.mocked(formDefinition.get).mockResolvedValue(definitionV2)
     })
 
-    it.each(slugExamples)(`should return slug '$output'`, async (slugIn) => {
-      const input = {
-        ...formMetadataInput,
-        title: slugIn.input
-      }
-
-      await expect(updateFormMetadata(id, input, author)).resolves.toEqual(slugIn.output)
-    })
-
-    it('should update slug and draft.updatedAt/draft.updatedBy when title is updated', async () => {
+    it('should update draft.updatedAt/draft.updatedBy when title is updated', async () => {
       const input = {
         title: 'new title'
       }
@@ -470,8 +430,7 @@ describe('Forms service', () => {
       const dbMetadataSpy = jest.spyOn(formMetadata, 'update')
       const dbDefinitionSpy = jest.spyOn(formDefinition, 'updateName')
 
-      const updatedSlug = await updateFormMetadata(id, input, author)
-      expect(updatedSlug).toBe('new-title')
+      await updateFormMetadata(id, input, author)
 
       const dbMetadataOperationArgs = dbMetadataSpy.mock.calls[0]
       const dbDefinitionOperationArgs = dbDefinitionSpy.mock.calls[0]
@@ -481,7 +440,6 @@ describe('Forms service', () => {
       expect(dbMetadataOperationArgs[0]).toBe(id)
       expect(dbMetadataOperationArgs[1]).toMatchObject({
         $set: {
-          slug: 'new-title',
           title: input.title,
           updatedAt: dateUsedInFakeTime,
           updatedBy: author,
@@ -610,20 +568,6 @@ describe('Forms service', () => {
       expect(result).toEqual(
         expect.objectContaining({
           organisation: 'New Org',
-          updatedBy: author,
-          updatedAt: expect.any(Date)
-        })
-      )
-    })
-
-    it('should add slug when title is provided', () => {
-      const formUpdate = { title: 'New Title' }
-      const result = prepareUpdatedFormMetadata(formUpdate, author)
-
-      expect(result).toEqual(
-        expect.objectContaining({
-          title: 'New Title',
-          slug: 'new-title',
           updatedBy: author,
           updatedAt: expect.any(Date)
         })

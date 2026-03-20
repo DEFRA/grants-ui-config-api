@@ -109,18 +109,6 @@ describe('metadata-validation', () => {
       expect(error).toBeDefined()
     })
 
-    it('should reject invalid submission structure', () => {
-      const metadata = {
-        submission: {
-          grantCode: 'test'
-          // Missing submissionSchemaPath
-        }
-      }
-
-      const { error } = formDefinitionMetadataSchema.validate(metadata)
-      expect(error).toBeDefined()
-    })
-
     it('should allow unknown properties in metadata', () => {
       const metadata = {
         id: '550e8400-e29b-41d4-a716-446655440000',

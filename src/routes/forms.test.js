@@ -56,13 +56,14 @@ describe('Forms route', () => {
   const author = { id: authorId, displayName: authorDisplayName }
 
   /**
-   * @satisfies {FormMetadataInput}
+   * @satisfies {FormMetadataInputWithSlug}
    */
   const stubFormMetadataInput = {
     title: 'Test form',
     organisation: 'Defra',
     teamName: 'Defra Forms',
-    teamEmail: 'defraforms@defra.gov.uk'
+    teamEmail: 'defraforms@defra.gov.uk',
+    slug: 'test-form'
   }
 
   /**
@@ -506,7 +507,12 @@ describe('Forms route', () => {
       const response = await server.inject({
         method: 'PATCH',
         url: '/forms/661e4ca5039739ef2902b214',
-        payload: stubFormMetadataInput,
+        payload: {
+          title: stubFormMetadataInput.title,
+          organisation: stubFormMetadataInput.organisation,
+          teamName: stubFormMetadataInput.teamName,
+          teamEmail: stubFormMetadataInput.teamEmail
+        },
         auth
       })
 
@@ -939,7 +945,8 @@ describe('Forms route', () => {
           title: '',
           organisation: '',
           teamName: '',
-          teamEmail: ''
+          teamEmail: '',
+          slug: 'slug'
         },
         error: {
           keys: ['title', 'organisation', 'organisation', 'teamName', 'teamEmail'],
@@ -957,7 +964,8 @@ describe('Forms route', () => {
           title: 'x'.repeat(251),
           organisation: 'Defra',
           teamName: 'teamname',
-          teamEmail: 'defraforms@defra.gov.uk'
+          teamEmail: 'defraforms@defra.gov.uk',
+          slug: 'slug'
         },
         error: {
           keys: ['title'],
@@ -969,7 +977,8 @@ describe('Forms route', () => {
           title: 'title',
           organisation: 'Cyberdyne Systems',
           teamName: 'teamname',
-          teamEmail: 'defraforms@defra.gov.uk'
+          teamEmail: 'defraforms@defra.gov.uk',
+          slug: 'slug'
         },
         error: {
           keys: ['organisation'],
@@ -981,7 +990,8 @@ describe('Forms route', () => {
           title: 'title',
           organisation: 'Defra',
           teamName: 'x'.repeat(101),
-          teamEmail: 'defraforms@defra.gov.uk'
+          teamEmail: 'defraforms@defra.gov.uk',
+          slug: 'slug'
         },
         error: {
           keys: ['teamName'],
@@ -993,24 +1003,12 @@ describe('Forms route', () => {
           title: 'title',
           organisation: 'Defra',
           teamName: 'teamname',
-          teamEmail: `x`
+          teamEmail: `x`,
+          slug: 'slug'
         },
         error: {
           keys: ['teamEmail'],
           messages: ['"teamEmail" must be a valid email']
-        }
-      },
-      {
-        payload: {
-          title: 'title',
-          organisation: 'Defra',
-          teamName: 'teamname',
-          teamEmail: 'defraforms@defra.gov.uk',
-          slug: 'test-title'
-        },
-        error: {
-          keys: ['slug'],
-          messages: ['"slug" is not allowed']
         }
       }
     ]
@@ -1019,26 +1017,14 @@ describe('Forms route', () => {
       {
         payload: {},
         error: {
-          keys: ['title', 'organisation', 'teamName', 'teamEmail'],
+          keys: ['title', 'organisation', 'teamName', 'teamEmail', 'slug'],
           messages: [
             '"title" is required.',
             '"organisation" is required.',
             '"teamName" is required.',
-            '"teamEmail" is required'
+            '"teamEmail" is required.',
+            '"slug" is required'
           ]
-        }
-      },
-      {
-        payload: {
-          title: 'title',
-          organisation: 'Defra',
-          teamName: 'teamname',
-          teamEmail: 'defraforms@defra.gov.uk',
-          privacyNoticeUrl: 'https://www.gov.uk/help/privacy-notice'
-        },
-        error: {
-          keys: ['privacyNoticeUrl'],
-          messages: ['"privacyNoticeUrl" is not allowed']
         }
       },
       ...invalidPayloadErrorsTestData
@@ -1068,6 +1054,19 @@ describe('Forms route', () => {
     test.each([
       {
         payload: {
+          title: 'title',
+          organisation: 'Defra',
+          teamName: 'teamname',
+          teamEmail: 'defraforms@defra.gov.uk',
+          slug: 'title'
+        },
+        error: {
+          keys: ['slug'],
+          messages: ['"slug" is not allowed']
+        }
+      },
+      {
+        payload: {
           privacyNoticeUrl: '/privacy-notice'
         },
         error: {
@@ -1083,8 +1082,7 @@ describe('Forms route', () => {
           keys: ['privacyNoticeUrl'],
           messages: ['"privacyNoticeUrl" must be a valid uri with a scheme matching the http|https pattern']
         }
-      },
-      ...invalidPayloadErrorsTestData
+      }
     ])(
       'Testing PATCH /forms/id route with an invalid payload returns validation errors',
       async ({ payload: metadata, error }) => {
@@ -1217,7 +1215,8 @@ describe('Forms route', () => {
           title: 'My Title',
           organisation: 'Defra',
           teamName: 'teamname',
-          teamEmail: 'defraforms@defra.gov.uk'
+          teamEmail: 'defraforms@defra.gov.uk',
+          slug: 'my-title'
         },
         auth
       })
@@ -1830,6 +1829,56 @@ describe('Forms route', () => {
         message: 'Form not found'
       })
     })
+
+    test('GET /forms/slug/{slug}/definition returns live form definition by slug', async () => {
+      jest.mocked(getFormBySlug).mockResolvedValue(stubFormMetadataOutput)
+      jest.mocked(getFormDefinition).mockResolvedValue(stubFormDefinition)
+
+      const response = await server.inject({
+        method: 'GET',
+        url: `/forms/slug/${slug}/definition`,
+        auth
+      })
+
+      expect(response.statusCode).toEqual(okStatusCode)
+      expect(response.headers['content-type']).toContain(jsonContentType)
+      expect(response.result).toEqual(stubFormDefinition)
+      expect(getFormBySlug).toHaveBeenCalledWith(slug)
+      expect(getFormDefinition).toHaveBeenCalledWith(id, FormStatus.Live)
+    })
+
+    test('GET /forms/slug/{slug}/definition handles slug not found', async () => {
+      jest.mocked(getFormBySlug).mockRejectedValue(Boom.notFound(`Form with slug '${slug}' not found`))
+
+      const response = await server.inject({
+        method: 'GET',
+        url: `/forms/slug/${slug}/definition`,
+        auth
+      })
+
+      expect(response.statusCode).toEqual(notFoundStatusCode)
+      expect(response.result).toMatchObject({
+        error: 'Not Found',
+        message: `Form with slug '${slug}' not found`
+      })
+    })
+
+    test('GET /forms/slug/{slug}/definition handles no live definition', async () => {
+      jest.mocked(getFormBySlug).mockResolvedValue(stubFormMetadataOutput)
+      jest.mocked(getFormDefinition).mockRejectedValue(Boom.notFound(`Form definition with ID '${id}' not found`))
+
+      const response = await server.inject({
+        method: 'GET',
+        url: `/forms/slug/${slug}/definition`,
+        auth
+      })
+
+      expect(response.statusCode).toEqual(notFoundStatusCode)
+      expect(response.result).toMatchObject({
+        error: 'Not Found',
+        message: `Form definition with ID '${id}' not found`
+      })
+    })
   })
 
   describe('PATCH endpoint with permissions', () => {
@@ -1922,6 +1971,7 @@ describe('Forms route', () => {
 })
 
 /**
- * @import { FormDefinition, FormMetadata, FormMetadataAuthor, FormMetadataInput, FilterOptions } from '@defra/forms-model'
+ * @import { FormDefinition, FormMetadata, FormMetadataAuthor, FilterOptions } from '@defra/forms-model'
  * @import { Server } from '@hapi/hapi'
+ * @import { FormMetadataInputWithSlug } from '~/src/api/types.js'
  */

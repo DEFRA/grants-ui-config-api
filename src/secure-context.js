@@ -1,8 +1,3 @@
-/*
-  WARNING: this file is imported by migrate-mongo which does not use babel. Avoid importing assets from the wider project as they'll use tilde imports.
-  This file is copied verbatim into the production Docker image at src/secure-context.js. Imports will not be copied.
-  If this grows in complexity and needs external dependencies, it will need to be folded into babel.
-*/
 import tls from 'node:tls'
 
 /**
@@ -28,7 +23,6 @@ export function prepareSecureContext(loggerFn) {
     const originalSecureContext = originalCreateSecureContext(options)
 
     trustStoreCerts.forEach((cert) => {
-      // eslint-disable-next-line -- Node.js API not documented
       originalSecureContext.context.addCACert(cert)
     })
 

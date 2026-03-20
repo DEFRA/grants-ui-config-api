@@ -1,4 +1,4 @@
-/* eslint-env jest/globals */
+/* global jest */
 export const buildMockCollection = () => {
   return {
     bulkWrite: jest.fn(),

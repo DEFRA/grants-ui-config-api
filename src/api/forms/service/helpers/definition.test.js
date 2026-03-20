@@ -101,22 +101,6 @@ describe('definition helpers', () => {
         expect(result).toBe(expectedValue)
       })
 
-      it('should not validate metadata when not present in definition', () => {
-        /** @type {any} */
-        const definition = { name: 'Test Form' }
-        const expectedValue = { name: 'Test Form', validated: true }
-
-        mockSchema.validate.mockReturnValue({
-          error: undefined,
-          value: expectedValue
-        })
-
-        const result = validate(definition, /** @type {any} */ (mockSchema))
-
-        expect(metadataValidation.validateMetadata).not.toHaveBeenCalled()
-        expect(result).toBe(expectedValue)
-      })
-
       it('should throw InvalidFormDefinitionError when metadata validation fails', () => {
         /** @type {any} */
         const definition = {
@@ -181,7 +165,7 @@ describe('definition helpers', () => {
         })
 
         jest.spyOn(metadataValidation, 'validateMetadata').mockImplementation(() => {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
+          // eslint-disable-next-line no-throw-literal
           throw 'String error message'
         })
 

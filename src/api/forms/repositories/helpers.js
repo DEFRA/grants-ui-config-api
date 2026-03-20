@@ -42,7 +42,7 @@ export async function removeById(session, collectionName, id) {
 }
 
 /**
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  */
 export function findPage(definition, pageId) {
@@ -51,7 +51,7 @@ export function findPage(definition, pageId) {
 
 /**
  * Gets the position a new page should be inserted
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  */
 export function getPageInsertPosition(definition) {
   const pages = definition.pages
@@ -61,7 +61,7 @@ export function getPageInsertPosition(definition) {
 
 /**
  * Get a page by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @throws {Boom}
  */
@@ -77,7 +77,7 @@ export function getPage(definition, pageId) {
 
 /**
  * Finds a component by pageId & componentId
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @param {string} componentId
  * @returns {ComponentDef | undefined}
@@ -94,7 +94,7 @@ export function findComponent(definition, pageId, componentId) {
 
 /**
  * Get a component by pageId & componentId
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @param {string} componentId
  * @throws {Boom}
@@ -113,7 +113,7 @@ export function getComponent(definition, pageId, componentId) {
 
 /**
  * Find page index by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @returns {number}
  */
@@ -123,7 +123,7 @@ export function findPageIndex(definition, pageId) {
 
 /**
  * Get page index by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @returns {number}
  * @throws {Boom}
@@ -167,7 +167,7 @@ export function getComponentIndex(page, componentId) {
 
 /**
  * Find list index by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} listId
  * @returns {number}
  */
@@ -177,7 +177,7 @@ export function findListIndex(definition, listId) {
 
 /**
  * Get list index by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} listId
  * @returns {number}
  * @throws {Boom}
@@ -194,7 +194,7 @@ export function getListIndex(definition, listId) {
 
 /**
  * Get list index by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} listId
  * @returns {List}
  * @throws {Boom}
@@ -207,7 +207,7 @@ export function getList(definition, listId) {
 
 /**
  * Find condition index by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} conditionId
  * @returns {number}
  */
@@ -217,7 +217,7 @@ export function findConditionIndex(definition, conditionId) {
 
 /**
  * Get condition index by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} conditionId
  * @returns {number}
  * @throws {Boom}
@@ -234,7 +234,7 @@ export function getConditionIndex(definition, conditionId) {
 
 /**
  * Get condition index by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} conditionId
  * @returns {ConditionWrapperV2}
  * @throws {Boom}
@@ -251,7 +251,7 @@ export function getCondition(definition, conditionId) {
 }
 
 /**
- * @param {FormDefinition} formDraftDefinition
+ * @param {FormDefinitionWithMetadata} formDraftDefinition
  * @param {string} path
  * @param {string} message
  * @param {ApiErrorCode} [errorCode]
@@ -272,7 +272,7 @@ export function uniquePathGate(
 /**
  * Inserts a draft form definition
  * @param {string} formId - the form id
- * @param {FormDefinition} definition - the form definitiom
+ * @param {FormDefinitionWithMetadata} definition - the form definitiom
  * @param {ClientSession} session - the mongo transaction session
  * @param {ObjectSchema<FormDefinition>} schema - the schema to use (defaults to V2)
  */
@@ -310,7 +310,9 @@ export async function insertDraft(formId, definition, session, schema = formDefi
  * @param {ObjectSchema<FormDefinition>} schema - the schema to use (defaults to V2)
  */
 export async function modifyDraft(formId, updateCallback, session, schema = formDefinitionV2Schema) {
-  const coll = /** @satisfies {Collection<{draft?: FormDefinition}>} */ (db.collection(DEFINITION_COLLECTION_NAME))
+  const coll = /** @satisfies {Collection<{draft?: FormDefinitionWithMetadata}>} */ (
+    db.collection(DEFINITION_COLLECTION_NAME)
+  )
 
   const id = { _id: new ObjectId(formId) }
   const document = await coll.findOne(id)
@@ -327,10 +329,12 @@ export async function modifyDraft(formId, updateCallback, session, schema = form
   const updated = updateCallback(document.draft)
 
   // Validate form definition
-  const draft = validate(updated, schema)
+  const draft = /** @type {FormDefinitionWithMetadata} */ (validate(updated, schema))
 
   // Persist the updated draft
-  const coll2 = /** @satisfies {Collection<{draft: FormDefinition}>} */ (db.collection(DEFINITION_COLLECTION_NAME))
+  const coll2 = /** @satisfies {Collection<{draft: FormDefinitionWithMetadata}>} */ (
+    db.collection(DEFINITION_COLLECTION_NAME)
+  )
 
   const updateResult = await coll2.findOneAndUpdate(
     id,
@@ -350,9 +354,9 @@ export async function modifyDraft(formId, updateCallback, session, schema = form
 
 /**
  * Updates the engine version of a form definition
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {Engine} engineVersion
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyEngineVersion(definition, engineVersion) {
   definition.engine = engineVersion
@@ -362,9 +366,9 @@ export function modifyEngineVersion(definition, engineVersion) {
 
 /**
  * Updates the name of a form definition
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} name - new name for the form
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyName(definition, name) {
   definition.name = name
@@ -374,9 +378,9 @@ export function modifyName(definition, name) {
 
 /**
  * Delete matching pages from a form definition
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {RemovePagePredicate} predicate
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyDeletePages(definition, predicate) {
   definition.pages = definition.pages.filter((page) => !predicate(page))
@@ -386,10 +390,10 @@ export function modifyDeletePages(definition, predicate) {
 
 /**
  * Add a page at the position number - defaults to the last page
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {Page} page
  * @param {number | undefined} [position]
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyAddPage(definition, page, position) {
   if (position === undefined) {
@@ -403,10 +407,10 @@ export function modifyAddPage(definition, page, position) {
 
 /**
  * Updates a page with specific page id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {Page} page
  * @param {string} pageId
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyUpdatePage(definition, page, pageId) {
   const idx = getPageIndex(definition, pageId)
@@ -418,9 +422,9 @@ export function modifyUpdatePage(definition, page, pageId) {
 
 /**
  * Reorders the pages
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string[]} order
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyReorderPages(definition, order) {
   const MAX = Number.MAX_SAFE_INTEGER
@@ -437,10 +441,10 @@ export function modifyReorderPages(definition, order) {
 
 /**
  * Reorders the pages
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @param {string[]} order
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyReorderComponents(definition, pageId, order) {
   const MAX = Number.MAX_SAFE_INTEGER
@@ -461,11 +465,11 @@ export function modifyReorderComponents(definition, pageId, order) {
 
 /**
  * Adds a new component to the end of a page components array
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @param {ComponentDef} component
  * @param {number | undefined} [position]
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyAddComponent(definition, pageId, component, position) {
   const idx = getPageIndex(definition, pageId)
@@ -489,11 +493,11 @@ export function modifyAddComponent(definition, pageId, component, position) {
 
 /**
  * Updates a component with component id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @param {string} componentId
  * @param {ComponentDef} component
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyUpdateComponent(definition, pageId, componentId, component) {
   const pageIdx = getPageIndex(definition, pageId)
@@ -509,10 +513,10 @@ export function modifyUpdateComponent(definition, pageId, componentId, component
 
 /**
  * Deletes a component with component id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @param {string} componentId
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyDeleteComponent(definition, pageId, componentId) {
   const page = getPage(definition, pageId)
@@ -548,10 +552,10 @@ export function handleControllerPatch(page, controller) {
 
 /**
  * Deletes a component with component id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
  * @param {PatchPageFields} pageFields
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyUpdatePageFields(definition, pageId, pageFields) {
   const page = getPage(definition, pageId)
@@ -586,9 +590,9 @@ export function modifyUpdatePageFields(definition, pageId, pageFields) {
 
 /**
  * Deletes a page with page id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} pageId
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyDeletePage(definition, pageId) {
   const idx = getPageIndex(definition, pageId)
@@ -600,9 +604,9 @@ export function modifyDeletePage(definition, pageId) {
 
 /**
  * Adds a new list
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {List} list
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyAddList(definition, list) {
   definition.lists.push(list)
@@ -612,10 +616,10 @@ export function modifyAddList(definition, list) {
 
 /**
  * Updates a form list by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} listId
  * @param {List} list
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyUpdateList(definition, listId, list) {
   const idx = getListIndex(definition, listId)
@@ -627,9 +631,9 @@ export function modifyUpdateList(definition, listId, list) {
 
 /**
  * Removes a list by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} listId
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyDeleteList(definition, listId) {
   const idx = getListIndex(definition, listId)
@@ -641,9 +645,9 @@ export function modifyDeleteList(definition, listId) {
 
 /**
  * Adds a new condition
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {ConditionWrapperV2} condition
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyAddCondition(definition, condition) {
   definition.conditions.push(condition)
@@ -653,10 +657,10 @@ export function modifyAddCondition(definition, condition) {
 
 /**
  * Updates a condition by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} conditionId
  * @param {ConditionWrapperV2} condition
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyUpdateCondition(definition, conditionId, condition) {
   const idx = getConditionIndex(definition, conditionId)
@@ -668,9 +672,9 @@ export function modifyUpdateCondition(definition, conditionId, condition) {
 
 /**
  * Removes a condition by id
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} conditionId
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyDeleteCondition(definition, conditionId) {
   const idx = getConditionIndex(definition, conditionId)
@@ -682,9 +686,9 @@ export function modifyDeleteCondition(definition, conditionId) {
 
 /**
  * Unassigns a condition from all pages that reference it
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} conditionId
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyUnassignCondition(definition, conditionId) {
   definition.pages.forEach((page) => {
@@ -700,9 +704,9 @@ export function modifyUnassignCondition(definition, conditionId) {
 /**
  * Assigns sections to pages in the form definition.
  * Replaces the sections array and updates page section assignments.
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {SectionAssignmentItem[]} sectionAssignments
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyAssignSections(definition, sectionAssignments) {
   const sectionsWithIds = sectionAssignments.map((assignment) => ({
@@ -745,7 +749,7 @@ export function modifyAssignSections(definition, sectionAssignments) {
 
 /**
  * Builds sections response with pageIds from the definition
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @returns {SectionAssignmentItem[]}
  */
 export function buildSectionsResponse(definition) {
@@ -773,10 +777,10 @@ export function buildSectionsResponse(definition) {
 
 /**
  * Updates an option
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {string} optionName
  * @param {string} optionValue
- * @returns {FormDefinition}
+ * @returns {FormDefinitionWithMetadata}
  */
 export function modifyUpdateOption(definition, optionName, optionValue) {
   // Set defaults if 'options' is missing
@@ -797,8 +801,8 @@ export function modifyUpdateOption(definition, optionName, optionValue) {
 /**
  * The update callback method
  * @callback UpdateCallback
- * @param {FormDefinition} definition
- * @returns {FormDefinition}
+ * @param {FormDefinitionWithMetadata} definition
+ * @returns {FormDefinitionWithMetadata}
  */
 
 /**
@@ -812,4 +816,5 @@ export function modifyUpdateOption(definition, optionName, optionValue) {
  * @import { FormDefinition, FormOptions, Page, ComponentDef, List, PatchPageFields, Engine, ConditionWrapperV2, PageSummary, PageSummaryWithConfirmationEmail, SectionAssignmentItem } from '@defra/forms-model'
  * @import { ClientSession, Collection } from 'mongodb'
  * @import { ObjectSchema } from 'joi'
+ * @import { FormDefinitionWithMetadata, FormMetadataInputWithSlug } from '~/src/api/types.js'
  */

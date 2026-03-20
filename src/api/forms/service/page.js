@@ -46,7 +46,7 @@ export async function createPageOnDraftDefinition(formId, page, author) {
 
   const session = client.startSession()
 
-  /** @type {FormDefinition} */
+  /** @type {FormDefinitionWithMetadata} */
   const formDraftDefinition = await getFormDefinition(formId, FormStatus.Draft)
 
   uniquePathGate(
@@ -93,7 +93,7 @@ export async function patchFieldsOnDraftDefinitionPage(formId, pageId, pageField
     await getFormDefinitionPage(formId, pageId, session)
 
     if (pageFieldsToUpdate.path) {
-      /** @type {FormDefinition} */
+      /** @type {FormDefinitionWithMetadata} */
       const formDraftDefinition = await getFormDefinition(formId, FormStatus.Draft)
 
       uniquePathGate(
@@ -166,4 +166,5 @@ export async function deletePageOnDraftDefinition(formId, pageId, author) {
 /**
  * @import { FormDefinition, Page, FormMetadataAuthor, PageSummary } from '@defra/forms-model'
  * @import { ClientSession } from 'mongodb'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

@@ -1,4 +1,4 @@
-/* eslint-env jest */
+/* global jest */
 
 /**
  * @type {Mocked<MongoClient>}

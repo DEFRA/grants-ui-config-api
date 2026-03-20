@@ -1,7 +1,6 @@
 import { MongoClient } from 'mongodb'
 
 import { config } from '~/src/config/index.js'
-import { reinstateFeedbackForm } from '~/src/helpers/feedback-form/reinstate.js'
 import { secureContext } from '~/src/secure-context.js'
 
 /**
@@ -34,7 +33,6 @@ export async function prepareDb(logger) {
     /** @type {any} */ ({
       retryWrites: false,
       readPreference: 'primary',
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- secureContext can be undefined in non-production
       ...(isSecureContextEnabled && secureContext && { secureContext })
     })
   )
@@ -53,9 +51,6 @@ export async function prepareDb(logger) {
   await versionsCollection.createIndex({ formId: 1, versionNumber: 1 }, { unique: true })
   await versionsCollection.createIndex({ formId: 1, versionNumber: -1 })
   await versionsCollection.createIndex({ createdAt: -1 })
-
-  // Ensure feedback form exists, and is same as the JSON in the codebase
-  await reinstateFeedbackForm(client, logger)
 
   logger.info(`Mongodb connected to ${databaseName}`)
 

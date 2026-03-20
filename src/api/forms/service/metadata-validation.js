@@ -126,7 +126,7 @@ const cookieConsentSchema = Joi.object({
  */
 const submissionSchema = Joi.object({
   grantCode: Joi.string().trim().required(),
-  submissionSchemaPath: Joi.string().trim().required()
+  submissionSchemaPath: Joi.string().trim().optional()
 })
   .description('Submission configuration for Grant Administration Service')
   .optional()
@@ -321,7 +321,6 @@ export function validateGrantRedirectRules(metadata) {
   }
 
   // Validate postSubmission has at least 1 rule
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!postSubmission || postSubmission.length < 1) {
     throw new Error('Grant redirect rules error: postSubmission must have at least 1 rule')
   }

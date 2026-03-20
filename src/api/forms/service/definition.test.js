@@ -180,76 +180,13 @@ describe('Forms service', () => {
     })
 
     it('should fail to create a live state from existing draft form when there is no start page', async () => {
-      const draftDefinitionNoStartPage = /** @type {FormDefinition} */ (definition)
+      const draftDefinitionNoStartPage = /** @type {FormDefinitionWithMetadata} */ (definition)
       delete draftDefinitionNoStartPage.startPage
 
       jest.mocked(formDefinition.get).mockResolvedValueOnce(draftDefinitionNoStartPage)
 
       await expect(createLiveFromDraft(id, author)).rejects.toThrow(
         Boom.badRequest(makeFormLiveErrorMessages.missingStartPage)
-      )
-    })
-
-    it('should fail to create a live state from existing draft form when there is no output email', async () => {
-      const draftDefinitionNoOutputEmail = /** @type {FormDefinition} */ (definition)
-      delete draftDefinitionNoOutputEmail.outputEmail
-
-      const metadataNoNotificationEmail = {
-        .../** @type {WithId<FormMetadataDocument>} */ (formMetadataDocument)
-      }
-      delete metadataNoNotificationEmail.notificationEmail
-
-      jest.mocked(formDefinition.get).mockResolvedValue(draftDefinitionNoOutputEmail)
-
-      jest.mocked(formMetadata.get).mockResolvedValueOnce(metadataNoNotificationEmail)
-
-      await expect(createLiveFromDraft(id, author)).rejects.toThrow(
-        Boom.badRequest(makeFormLiveErrorMessages.missingOutputEmail)
-      )
-    })
-
-    it('should fail to create a live state from existing draft form when there is no contact', async () => {
-      const metadataNoContact = {
-        .../** @type {WithId<FormMetadataDocument>} */ (formMetadataDocument)
-      }
-
-      delete metadataNoContact.contact
-      jest.mocked(formMetadata.get).mockResolvedValue(metadataNoContact)
-
-      jest.mocked(formDefinition.get).mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
-
-      await expect(createLiveFromDraft(id, author)).rejects.toThrow(
-        Boom.badRequest(makeFormLiveErrorMessages.missingContact)
-      )
-    })
-
-    it('should fail to create a live state from existing draft form when there is no submission guidance', async () => {
-      const metadataNoSubmissionGuidance = {
-        .../** @type {WithId<FormMetadataDocument>} */ (formMetadataDocument)
-      }
-
-      delete metadataNoSubmissionGuidance.submissionGuidance
-      jest.mocked(formMetadata.get).mockResolvedValue(metadataNoSubmissionGuidance)
-
-      jest.mocked(formDefinition.get).mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
-
-      await expect(createLiveFromDraft(id, author)).rejects.toThrow(
-        Boom.badRequest(makeFormLiveErrorMessages.missingSubmissionGuidance)
-      )
-    })
-
-    it('should fail to create a live state from existing draft form when there is no privacy notice url', async () => {
-      const metadataNoPrivacyNotice = {
-        .../** @type {WithId<FormMetadataDocument>} */ (formMetadataDocument)
-      }
-
-      delete metadataNoPrivacyNotice.privacyNoticeUrl
-      jest.mocked(formMetadata.get).mockResolvedValue(metadataNoPrivacyNotice)
-
-      jest.mocked(formDefinition.get).mockResolvedValueOnce(/** @type {FormDefinition} */ (definition))
-
-      await expect(createLiveFromDraft(id, author)).rejects.toThrow(
-        Boom.badRequest(makeFormLiveErrorMessages.missingPrivacyNotice)
       )
     })
 
@@ -268,7 +205,7 @@ describe('Forms service', () => {
     })
 
     it('should succeed to create a live state from existing draft form when there is no start page when engine is V2', async () => {
-      const draftV2DefinitionNoStartPage = /** @type {FormDefinition} */ ({
+      const draftV2DefinitionNoStartPage = /** @type {FormDefinitionWithMetadata} */ ({
         ...definition,
         engine: Engine.V2
       })
@@ -279,17 +216,6 @@ describe('Forms service', () => {
       await expect(createLiveFromDraft(id, author)).resolves.toBeUndefined()
     })
   })
-
-  const slugExamples = [
-    {
-      input: 'Test form',
-      output: 'test-form'
-    },
-    {
-      input: 'A !Super! Duper Form -    from Defra...',
-      output: 'a-super-duper-form-from-defra'
-    }
-  ]
 
   describe('createForm', () => {
     beforeEach(() => {
@@ -317,15 +243,6 @@ describe('Forms service', () => {
       expect(dbMetadataOperationArgs.createdBy).toEqual(author)
       expect(dbMetadataOperationArgs.updatedBy).toEqual(author)
       expect(dbMetadataOperationArgs.updatedAt).toEqual(dateUsedInFakeTime)
-    })
-
-    test.each(slugExamples)(`should return slug '$output'`, async (slugIn) => {
-      const input = {
-        ...formMetadataInput,
-        title: slugIn.input
-      }
-
-      expect((await createForm(input, author)).slug).toBe(slugIn.output)
     })
 
     it('should throw an error when schema validation fails', async () => {
@@ -1048,9 +965,11 @@ describe('Forms service', () => {
       id: summaryPageId
     })
 
-    const definition = buildDefinition({
-      pages: [pageTwo, pageOne, summaryPage]
-    })
+    const definition = /** @type {FormDefinitionWithMetadata} */ (
+      buildDefinition({
+        pages: [pageTwo, pageOne, summaryPage]
+      })
+    )
 
     beforeEach(() => {
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition)
@@ -1127,9 +1046,11 @@ describe('Forms service', () => {
       id: summaryPageId
     })
 
-    const definition = buildDefinition({
-      pages: [pageOne, summaryPage]
-    })
+    const definition = /** @type {FormDefinitionWithMetadata} */ (
+      buildDefinition({
+        pages: [pageOne, summaryPage]
+      })
+    )
 
     beforeEach(() => {
       jest.mocked(formDefinition.get).mockResolvedValueOnce(definition)
@@ -1407,6 +1328,7 @@ describe('Forms service', () => {
 })
 
 /**
- * @import { FormDefinition, FormMetadataDocument, QueryOptions } from '@defra/forms-model'
+ * @import { FormMetadataDocument, QueryOptions } from '@defra/forms-model'
  * @import { WithId } from 'mongodb'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

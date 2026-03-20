@@ -5,7 +5,7 @@ services:
       - '4566:4566' # LocalStack Gateway
       - '4510-4559:4510-4559' # external services port range
     env_file:
-      - 'compose/aws.env'
+      - 'localstack/aws.env'
     environment:
       DEBUG: ${DEBUG:-1}
       LS_LOG: WARN # Localstack DEBUG Level
@@ -13,7 +13,7 @@ services:
       LOCALSTACK_HOST: 127.0.0.1
     volumes:
       - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
-      - ./compose/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
+      - ./localstack/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
     healthcheck:
       test: ['CMD', 'curl', 'localhost:4566']
       interval: 5s
@@ -68,7 +68,7 @@ services:
       context: .
       target: development
     ports:
-      - '3001:3001'
+      - '3011:3011'
     links:
       - 'localstack:localstack'
       - 'mongodb:mongodb'
@@ -78,13 +78,13 @@ services:
       mongodb:
         condition: service_started
     env_file:
-      - 'compose/aws.env'
+      - 'localstack/aws.env'
     environment:
-      PORT: 3001
+      PORT: 3011
       NODE_ENV: development
       LOCALSTACK_ENDPOINT: http://localstack:4566
-      MONGO_URI: mongodb://mongodb:27017/
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/}
+      JWT_SECRET: ${JWT_SECRET:-config-api-jwt-secret}
     networks:
       - grants-ui-config-api-net
     volumes:

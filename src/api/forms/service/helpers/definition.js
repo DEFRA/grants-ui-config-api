@@ -6,7 +6,7 @@ import { logger } from '~/src/api/forms/service/shared.js'
 
 /**
  * Determines the correct validation schema based on the form definition's schema property
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @returns {ObjectSchema<FormDefinition>}
  */
 export function getValidationSchema(definition) {
@@ -23,7 +23,7 @@ export function getValidationSchema(definition) {
 
 /**
  * Validates the form definition
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {ObjectSchema<FormDefinition>} schema
  */
 export function validate(definition, schema) {
@@ -42,38 +42,36 @@ export function validate(definition, schema) {
     throw new InvalidFormDefinitionError(error)
   }
 
-  // Validate metadata if present
-  if (definition.metadata) {
-    try {
-      validateMetadata(definition.metadata)
-    } catch (metadataError) {
-      const name = !definition.name || definition.name === '' ? 'No name' : definition.name
-      const errorMessage = metadataError instanceof Error ? metadataError.message : String(metadataError)
-      logger.warn(`Form metadata failed validation: '${errorMessage}'. Form name: '${name}'`)
+  // Validate metadata
+  try {
+    validateMetadata(definition.metadata)
+  } catch (metadataError) {
+    const name = !definition.name || definition.name === '' ? 'No name' : definition.name
+    const errorMessage = metadataError instanceof Error ? metadataError.message : String(metadataError)
+    logger.warn(`Form metadata failed validation: '${errorMessage}'. Form name: '${name}'`)
 
-      // Convert metadata error to Joi ValidationError for consistent error handling
-      const joiError = /** @type {import('joi').ValidationError} */ ({
-        message: errorMessage,
-        name: 'ValidationError',
-        isJoi: true,
-        details: [
-          {
-            message: errorMessage,
-            path: ['metadata'],
-            type: 'metadata.invalid',
-            context: {
-              key: 'metadata',
-              label: 'metadata',
-              value: definition.metadata
-            }
+    // Convert metadata error to Joi ValidationError for consistent error handling
+    const joiError = /** @type {import('joi').ValidationError} */ ({
+      message: errorMessage,
+      name: 'ValidationError',
+      isJoi: true,
+      details: [
+        {
+          message: errorMessage,
+          path: ['metadata'],
+          type: 'metadata.invalid',
+          context: {
+            key: 'metadata',
+            label: 'metadata',
+            value: definition.metadata
           }
-        ],
-        annotate: () => errorMessage,
-        _original: definition.metadata
-      })
+        }
+      ],
+      annotate: () => errorMessage,
+      _original: definition.metadata
+    })
 
-      throw new InvalidFormDefinitionError(joiError)
-    }
+    throw new InvalidFormDefinitionError(joiError)
   }
 
   return value
@@ -82,4 +80,5 @@ export function validate(definition, schema) {
 /**
  * @import { FormDefinition } from '@defra/forms-model'
  * @import { ObjectSchema, ValidationError } from 'joi'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

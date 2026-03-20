@@ -8,7 +8,7 @@ LABEL uk.gov.defra.ffc.parent-image=defradigital/node-development:${PARENT_VERSI
 
 ARG PORT
 ARG PORT_DEBUG
-ENV PORT ${PORT}
+ENV PORT=${PORT}
 EXPOSE ${PORT} ${PORT_DEBUG}
 
 COPY --chown=node:node packag*.json ./
@@ -33,22 +33,11 @@ USER node
 
 COPY --from=development /home/node/package*.json ./
 COPY --from=development /home/node/.server ./.server/
-COPY --from=development /home/node/migrate-mongo-config.js ./
-# config/index.js and secure-context.js are dependencies for migrate-mongo-config.js
-COPY --from=development /home/node/src/secure-context.js ./src/secure-context.js
-COPY --from=development /home/node/src/config/index.js ./src/config/index.js
-COPY --from=development /home/node/migrations ./migrations/
-COPY --from=development /home/node/scripts ./scripts/
 
-RUN npm ci --omit=dev && \
-    chmod +x scripts/run-migrations-and-start.sh
-
-# temporary location for forms
-# TODO remove after MongoDB implementation
-RUN mkdir /home/node/forms
+RUN npm ci --omit=dev
 
 ARG PORT
-ENV PORT ${PORT}
+ENV PORT=${PORT}
 EXPOSE ${PORT}
 
-CMD [ "./scripts/run-migrations-and-start.sh" ]
+CMD [ "npm", "start", "--ignore-scripts" ]

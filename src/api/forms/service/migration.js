@@ -19,7 +19,7 @@ import { client } from '~/src/mongo.js'
 /**
  * Repositions the summary page if it's not the last index of pages
  * @param {string} formId
- * @param {FormDefinition} definition
+ * @param {FormDefinitionWithMetadata} definition
  * @param {FormMetadataAuthor} author
  */
 export async function repositionSummaryPipeline(formId, definition, author) {
@@ -116,5 +116,6 @@ export async function migrateDefinitionToV2(formId, author) {
 // TODO: add migrate to V1
 
 /**
- * @import { FormDefinition, FormMetadataAuthor, PageSummary } from '@defra/forms-model'
+ * @import { FormMetadataAuthor, PageSummary } from '@defra/forms-model'
+ * @import { FormDefinitionWithMetadata } from '~/src/api/types.js'
  */

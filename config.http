@@ -41,13 +41,18 @@ x-api-key: {{x-api-key}}
   "title": "Sample Form",
   "organisation": "Defra",
   "teamName": "Test Team",
-  "teamEmail": "test.team.email@defra.gov.uk"
+  "teamEmail": "test.team.email@defra.gov.uk",
+  "slug": "sample"
 }
+
+> {%
+  client.global.set("formId", response.body.id);
+  client.global.set("slug", "sample");
+%}
 
 ###
 
-### Default IDs for the pre-seeded feedback form
-@formId=691db72966b1bdc98fa3e72a
+### Default versionNumber
 @versionNumber=1
 
 ###
@@ -62,7 +67,15 @@ Accept-Encoding: identity
 
 ### Get Form by Slug
 # @name GetFormBySlug
-GET {{baseUrl}}/forms/slug/feedback
+GET {{baseUrl}}/forms/slug/{{slug}}
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
+
+###
+
+### Get Live Form Definition by Slug
+# @name GetLiveDefinitionBySlug
+GET {{baseUrl}}/forms/slug/{{slug}}/definition
 x-api-key: {{x-api-key}}
 Accept-Encoding: identity
 
@@ -105,6 +118,8 @@ Authorization: Bearer {{authToken}}
 x-api-key: {{x-api-key}}
 
 {
+  "engine": "V2",
+  "schema": 2,
   "metadata": {
     "id": "9f9c5ec4-e237-4e6e-b67c-f232a6377d76",
     "enabledInProd": false,

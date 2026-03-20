@@ -1,8 +1,9 @@
 import { Engine, FormDefinitionRequestType, SchemaVersion } from '@defra/forms-model'
-import { buildDefinition, buildQuestionPage, buildSummaryPage, buildTextFieldComponent } from '@defra/forms-model/stubs'
+import { buildQuestionPage, buildSummaryPage, buildTextFieldComponent } from '@defra/forms-model/stubs'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
+import { buildDefinition } from '~/src/api/forms/__stubs__/definition.js'
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import { formMetadataDocument } from '~/src/api/forms/service/__stubs__/service.js'

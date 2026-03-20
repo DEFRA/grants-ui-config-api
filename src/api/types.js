@@ -2,14 +2,14 @@
  * Form API request types
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput }>} RequestFormById
  * @typedef {Request<{ Server: { db: Db }, Params: FormBySlugInput }>} RequestFormBySlug
- * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput, Payload: FormDefinition }>} RequestFormDefinition
+ * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput, Payload: FormDefinitionWithMetadata }>} RequestFormDefinition
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput, Payload: Page }>} RequestPage
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIDAndPageByIdInput, Payload: PatchPageFields }>} PatchPageRequest
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIDAndPageByIdInput, Payload: ComponentDef; Query: AddComponentQueryOptions }>} RequestComponent
  * @typedef {Request<{ Server: { db: Db }, Params: {id: string, optionName: string}, Payload: { optionValue: string } }>} RequestOption
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIDAndPageByIdInput, Payload: string[] }>} SortDraftFormComponentsRequest
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIDAndPageByIdAndComponentByIdInput, Payload: ComponentDef }>} RequestUpdateComponent
- * @typedef {Request<{ Server: { db: Db }, Payload: FormMetadataInput }>} RequestFormMetadataCreate
+ * @typedef {Request<{ Server: { db: Db }, Payload: FormMetadataInputWithSlug }>} RequestFormMetadataCreate
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput, Payload: Partial<FormMetadataInput> }>} RequestFormMetadataUpdateById
  * @typedef {Request<{ Server: { db: Db }, Query: QueryOptions }>} RequestListForms
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput & {version: 'v1'|'v2'}, }>} MigrateDraftFormRequest
@@ -46,6 +46,14 @@
 
 /**
  * @typedef {FormMetadataDocument & { versions?: FormVersionMetadata[] }} FormMetadataWithVersions
+ */
+
+/**
+ * @typedef {FormDefinition & { metadata: NonNullable<FormDefinition['metadata']> }} FormDefinitionWithMetadata
+ */
+
+/**
+ * @typedef {FormMetadataInput & { slug: string }} FormMetadataInputWithSlug
  */
 
 /**

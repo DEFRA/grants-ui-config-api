@@ -11,13 +11,15 @@ This repository is a fork of [DEFRA/forms-manager](https://github.com/DEFRA/form
   - [Local development](#local-development)
     - [Setup](#setup)
     - [Npm scripts](#npm-scripts)
-    - [Database Migrations](#database-migrations)
-      - [Production](#production)
-      - [Local Development](#local-development-1)
-        - [Option 1: Using Docker Compose (Recommended)](#option-1-using-docker-compose-recommended)
-        - [Option 2: Manual Migration Commands](#option-2-manual-migration-commands)
+    - [Port Configuration](#port-configuration)
+    - [Form Definition Metadata](#form-definition-metadata)
+    - [Type Definitions](#type-definitions)
+    - [Deployment](#deployment)
   - [API endpoints](#api-endpoints)
   - [Calling API endpoints](#calling-api-endpoints)
+  - [Test coverage](#test-coverage)
+    - [Unit tests](#unit-tests)
+    - [Integration tests](#integration-tests)
   - [Licence](#licence)
     - [About the licence](#about-the-licence)
 
@@ -50,21 +52,27 @@ or
 npm run docker:up
 ```
 
-3. Create a `.env` file with the following mandatory environment variables populated at root level:
+3. Optionally create a `.env` file with the following environment variables populated at root level:
 
 ```text
-MONGO_URI=""
-MONGO_DATABASE=""
-HTTP_PROXY=
-HTTPS_PROXY=
-NO_PROXY=
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
+PORT=3011
+MONGO_URI=mongodb://mongodb:27017/
+JWT_SECRET= <JWT secret for JWT signing>
 ```
 
-Event-based audit publishing to SNS is disabled by default. To enable, set `FEATURE_FLAG_PUBLISH_AUDIT_EVENTS=true`, `SNS_TOPIC_ARN`, and optionally `SNS_ENDPOINT` (e.g. for LocalStack).
+If not provided, default values will be used so the application can be started.
 
-For proxy options, see https://www.npmjs.com/package/proxy-from-env which is used by https://github.com/TooTallNate/proxy-agents/tree/main/packages/proxy-agent. It's currently supports Hapi Wreck only, e.g. in the JWKS lookup.
+The API will be available at `http://localhost:3011` once started.
+
+**AWS Services**: The Docker Compose setup includes LocalStack for local AWS service emulation (S3 and SNS). AWS credentials and config in the `/localstack/aws.env` is used for local development.
+
+**Audit Events**: Event-based audit publishing to SNS is disabled by default. To enable, set:
+
+- `FEATURE_FLAG_PUBLISH_AUDIT_EVENTS=true`
+- `SNS_TOPIC_ARN=<your-topic-arn>`
+- `SNS_ENDPOINT=http://localstack:4566` (for local development)
+
+**Proxy Configuration**: For proxy support, see https://www.npmjs.com/package/proxy-from-env which is used by https://github.com/TooTallNate/proxy-agents/tree/main/packages/proxy-agent.
 
 ### Npm scripts
 
@@ -75,59 +83,38 @@ To view them in your command line run:
 npm run
 ```
 
-### Database Migrations
+### Port Configuration
 
-This project uses [migrate-mongo](https://www.npmjs.com/package/migrate-mongo) to manage database migrations.
+The API runs on **port 3011** by default. This can be configured via the `PORT` environment variable.
 
-#### Production
+### Form Definition Metadata
 
-In production, migrations run automatically when the Docker container starts via the `scripts/run-migrations-and-start.sh` shell script. This script:
+Form definitions support an optional `metadata` field for storing structured form metadata. Metadata validation is performed automatically when publishing forms to ensure data integrity.
 
-1. Runs all pending migrations (`migrate-mongo up`)
-2. Starts the application server
-3. Logs migration progress to the container output
+For detailed information on metadata structure, validation rules, and examples, see [docs/metadata-guide.md](docs/metadata-guide.md).
 
-**No manual intervention is required** - migrations execute automatically on container startup.
+### Type Definitions
 
-#### Local Development
+The codebase uses JSDoc type annotations for TypeScript-style type safety without requiring TypeScript compilation. Custom type definitions are maintained in:
 
-For local development, you have two options:
+- **`src/api/types.js`** - API-specific types including request types and document schemas
+- Form model types are imported from `@defra/forms-model`
 
-##### Option 1: Using Docker Compose (Recommended)
+Key custom types include:
 
-Migrations run automatically when using Docker:
+- `FormDefinitionWithMetadata` - Form definition with required metadata field
+- `FormMetadataWithVersions` - Form metadata including version history
+- Various request types for API endpoints
 
-```bash
-docker compose up --build grants-ui-config-api
-```
+### Deployment
 
-This mimics the production environment and runs migrations via the same shell script.
-
-##### Option 2: Manual Migration Commands
-
-To work with migrations manually, you can install migrate-mongo globally:
+The application is containerised using Docker. To build the Docker image locally, e.g. for testing with `grants-ui` compose stack:
 
 ```bash
-npm install -g migrate-mongo
+npm run docker:build
 ```
 
-Available migration commands:
-
-```bash
-# Check migration status
-npm run migrate:status
-
-# Run all pending migrations
-npm run migrate:up
-
-# Rollback the last migration
-npm run migrate:down
-
-# Create a new migration
-npx migrate-mongo create <migration-name> -f migrate-mongo-config.js
-```
-
-**Important**: When running migrations manually, ensure your `.env` file contains the correct `MONGO_URI` and `MONGO_DATABASE` values that match your local MongoDB instance.
+This build is for local use only and is tagged with `local`.
 
 ## API endpoints
 
@@ -147,8 +134,6 @@ The API provides endpoints for:
 Most endpoints require JWT Bearer token authentication. See [Calling API endpoints](#calling-api-endpoints) below for authentication setup.
 
 If you're adding endpoints for new features, update the [openapi.yaml](openapi.yaml) file to include the new endpoints.
-
-The CI pipeline will automatically run your new test along with the existing ones on PRs and merges to main.
 
 ## Calling API endpoints
 

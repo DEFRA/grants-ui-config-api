@@ -5,11 +5,11 @@ import {
   FormDefinitionRequestType,
   OperatorName
 } from '@defra/forms-model'
-import { buildDefinition, buildQuestionPage, buildTextFieldComponent } from '@defra/forms-model/stubs'
+import { buildQuestionPage, buildTextFieldComponent } from '@defra/forms-model/stubs'
 import Boom from '@hapi/boom'
 import { pino } from 'pino'
 
-import { buildCondition } from '~/src/api/forms/__stubs__/definition.js'
+import { buildCondition, buildDefinition } from '~/src/api/forms/__stubs__/definition.js'
 import { InvalidFormDefinitionError } from '~/src/api/forms/errors.js'
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'

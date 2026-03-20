@@ -176,6 +176,27 @@ export default [
     }
   },
   {
+    method: 'GET',
+    path: '/forms/slug/{slug}/definition',
+    /**
+     * @param {RequestFormBySlug} request
+     */
+    async handler(request) {
+      const { params } = request
+      const { slug } = params
+
+      const form = await getFormBySlug(slug)
+
+      return getFormDefinition(form.id, FormStatus.Live)
+    },
+    options: {
+      auth: false,
+      validate: {
+        params: formBySlugSchema
+      }
+    }
+  },
+  {
     method: 'DELETE',
     path: ROUTE_FORMS,
     /**
