@@ -186,6 +186,42 @@ export const config = convict({
     format: Boolean,
     default: false,
     env: 'FEATURE_FLAG_USE_ENTITLEMENT_API'
+  },
+  formsConfigBucket: {
+    doc: 'S3 bucket name containing YAML form definition config files for seeding on startup',
+    format: String,
+    default: '',
+    env: 'FORMS_CONFIG_BUCKET_NAME'
+  },
+  formsApiSlugs: {
+    doc: 'Comma-separated list of form slugs to seed from S3 on startup (e.g. "example-grant,farm-payments")',
+    format: String,
+    default: '',
+    env: 'FORMS_API_SLUGS'
+  },
+  defaultFormOrganisation: {
+    doc: 'Default organisation for forms seeded from S3 (used when not set in the form definition metadata)',
+    format: String,
+    default: 'Defra',
+    env: 'DEFAULT_FORM_ORGANISATION'
+  },
+  defaultFormTeamName: {
+    doc: 'Default team name for forms seeded from S3 (used when not set in the form definition metadata)',
+    format: String,
+    default: 'Digital Delivery',
+    env: 'DEFAULT_FORM_TEAM_NAME'
+  },
+  defaultFormTeamEmail: {
+    doc: 'Default team email for forms seeded from S3 (used when not set in the form definition metadata)',
+    format: String,
+    default: 'digitaldelivery@defra.gov.uk',
+    env: 'DEFAULT_FORM_TEAM_EMAIL'
+  },
+  defaultFormNotificationEmail: {
+    doc: 'Default notification email for forms seeded from S3 (used when not set in the form definition metadata)',
+    format: String,
+    default: 'digitaldelivery@defra.gov.uk',
+    env: 'DEFAULT_FORM_NOTIFICATION_EMAIL'
   }
 })
 
