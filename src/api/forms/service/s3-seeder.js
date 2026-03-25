@@ -10,6 +10,8 @@ import { createLiveFromDraft, updateDraftFormDefinition } from '~/src/api/forms/
 
 const logger = createLogger()
 
+const HTTP_NOT_FOUND = 404
+
 /** @type {FormMetadataAuthor} */
 const systemAuthor = {
   id: 'system',
@@ -140,7 +142,7 @@ async function slugExistsInMongo(slug) {
     await formMetadataRepo.getBySlug(slug)
     return true
   } catch (err) {
-    if (Boom.isBoom(err) && err.output.statusCode === 404) {
+    if (Boom.isBoom(err) && err.output.statusCode === HTTP_NOT_FOUND) {
       return false
     }
     throw err
