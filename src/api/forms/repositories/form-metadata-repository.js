@@ -199,9 +199,12 @@ export async function getBySlug(slug, session) {
 
     return document
   } catch (err) {
-    logger.error(err, `[getFormBySlug] Getting form with slug ${slug} failed - ${getErrorMessage(err)}`)
+    if (Boom.isBoom(err)) {
+      throw err
+    }
 
-    if (err instanceof Error && !Boom.isBoom(err)) {
+    if (err instanceof Error) {
+      logger.error(err, `[getFormBySlug] Getting form with slug ${slug} failed - ${getErrorMessage(err)}`)
       throw Boom.internal(err)
     }
 

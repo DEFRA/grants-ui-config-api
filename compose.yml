@@ -2,18 +2,19 @@ services:
   localstack:
     image: localstack/localstack:3.0.2
     ports:
-      - '4566:4566' # LocalStack Gateway
-      - '4510-4559:4510-4559' # external services port range
+      - '4566:4566'
+      - '4510-4559:4510-4559'
     env_file:
       - 'localstack/aws.env'
     environment:
       DEBUG: ${DEBUG:-1}
-      LS_LOG: WARN # Localstack DEBUG Level
+      LS_LOG: WARN
       SERVICES: s3,sqs,sns,firehose
       LOCALSTACK_HOST: 127.0.0.1
     volumes:
       - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
       - ./localstack/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
+      - ./localstack/forms:/etc/localstack/forms:ro
     healthcheck:
       test: ['CMD', 'curl', 'localhost:4566']
       interval: 5s
@@ -85,6 +86,12 @@ services:
       LOCALSTACK_ENDPOINT: http://localstack:4566
       MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/}
       JWT_SECRET: ${JWT_SECRET:-config-api-jwt-secret}
+      FORMS_CONFIG_BUCKET_NAME: ${FORMS_CONFIG_BUCKET_NAME:-forms-config}
+      FORMS_API_SLUGS: ${FORMS_API_SLUGS:-example-grant-with-auth}
+      DEFAULT_FORM_ORGANISATION: ${DEFAULT_FORM_ORGANISATION:-Defra}
+      DEFAULT_FORM_TEAM_NAME: ${DEFAULT_FORM_TEAM_NAME:-Digital Delivery}
+      DEFAULT_FORM_TEAM_EMAIL: '${DEFAULT_FORM_TEAM_EMAIL:-digitaldelivery@defra.gov.uk}'
+      DEFAULT_FORM_NOTIFICATION_EMAIL: '${DEFAULT_FORM_NOTIFICATION_EMAIL:-digitaldelivery@defra.gov.uk}'
     networks:
       - grants-ui-config-api-net
     volumes:
