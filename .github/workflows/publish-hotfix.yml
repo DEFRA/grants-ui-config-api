@@ -36,7 +36,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-#     - run: npm install && npm test
+#     - run: npm ci && npm test
 #     - name: SonarCloud Scan
 #       uses: SonarSource/sonarqube-scan-action@v7 #  (or check latest version on https://github.com/marketplace/actions/official-sonarqube-scan)
 #       env:
