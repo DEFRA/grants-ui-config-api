@@ -45,6 +45,7 @@ aws --endpoint-url=http://localhost:4566 s3api put-bucket-notification-configura
 aws --endpoint-url=http://localhost:4566 sns create-topic --name grants_ui_config_api_events
 aws --endpoint-url=http://localhost:4566 sns create-topic --name forms_entitlement_events
 aws --endpoint-url=http://localhost:4566 sns create-topic --name forms_designer_events
+aws --endpoint-url=http://localhost:4566 sns create-topic --name gfr__sns___config_update
 
 # queues
 aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name forms_audit_events
