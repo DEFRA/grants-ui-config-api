@@ -8,10 +8,13 @@ import { buildFormVersionDocument } from '~/src/api/forms/service/__stubs__/vers
 import {
   createFormVersion,
   createFormVersionAndSession,
+  getActiveFormVersions,
   getFormVersion,
+  getFormVersionBySemver,
   getFormVersions,
   getLatestFormVersion,
-  removeFormVersions
+  removeFormVersions,
+  updateFormVersionStatus
 } from '~/src/api/forms/service/versioning.js'
 import { client } from '~/src/mongo.js'
 
@@ -89,6 +92,13 @@ describe('versioning service', () => {
 
       await expect(createFormVersion(formId, mockSession)).rejects.toThrow(error)
       expect(mockSession.endSession).not.toHaveBeenCalled()
+    })
+
+    it('should propagate errors thrown by createVersion', async () => {
+      const error = new Error('createVersion failed')
+      jest.mocked(formVersionsRepository.createVersion).mockRejectedValueOnce(error)
+
+      await expect(createFormVersion(formId, mockSession)).rejects.toThrow(error)
     })
 
     it('should use atomic increment for version number', async () => {
@@ -273,6 +283,74 @@ describe('versioning service', () => {
       jest.mocked(formVersionsRepository.removeVersionsForForm).mockRejectedValue(error)
 
       await expect(removeFormVersions(formId, mockSession)).rejects.toThrow(error)
+    })
+  })
+
+  describe('getFormVersionBySemver', () => {
+    const semver = '1.0.0'
+    const mockVersionDocument = buildFormVersionDocument({ formId, versionNumber: semver })
+
+    it('should return a version document when found', async () => {
+      jest.mocked(formVersionsRepository.getVersionBySemver).mockResolvedValue(mockVersionDocument)
+
+      const result = await getFormVersionBySemver(formId, semver)
+
+      expect(result).toEqual(mockVersionDocument)
+      expect(formVersionsRepository.getVersionBySemver).toHaveBeenCalledWith(formId, semver)
+    })
+
+    it('should return null when the version does not exist', async () => {
+      jest.mocked(formVersionsRepository.getVersionBySemver).mockResolvedValue(null)
+
+      const result = await getFormVersionBySemver(formId, semver)
+
+      expect(result).toBeNull()
+    })
+
+    it('should propagate errors', async () => {
+      const error = new Error('db error')
+      jest.mocked(formVersionsRepository.getVersionBySemver).mockRejectedValue(error)
+
+      await expect(getFormVersionBySemver(formId, semver)).rejects.toThrow(error)
+    })
+  })
+
+  describe('getActiveFormVersions', () => {
+    it('should return active version documents', async () => {
+      const versions = [
+        buildFormVersionDocument({ formId, versionNumber: '1.0.0' }),
+        buildFormVersionDocument({ formId, versionNumber: '2.0.0' })
+      ]
+      jest.mocked(formVersionsRepository.getActiveVersions).mockResolvedValue(versions)
+
+      const result = await getActiveFormVersions(formId)
+
+      expect(result).toEqual(versions)
+      expect(formVersionsRepository.getActiveVersions).toHaveBeenCalledWith(formId)
+    })
+
+    it('should propagate errors', async () => {
+      const error = new Error('db error')
+      jest.mocked(formVersionsRepository.getActiveVersions).mockRejectedValue(error)
+
+      await expect(getActiveFormVersions(formId)).rejects.toThrow(error)
+    })
+  })
+
+  describe('updateFormVersionStatus', () => {
+    it('should call repo with correct arguments', async () => {
+      jest.mocked(formVersionsRepository.updateVersionStatus).mockResolvedValue(undefined)
+
+      await updateFormVersionStatus(formId, '1.0.0', 'draft')
+
+      expect(formVersionsRepository.updateVersionStatus).toHaveBeenCalledWith(formId, '1.0.0', 'draft')
+    })
+
+    it('should propagate errors', async () => {
+      const error = new Error('db error')
+      jest.mocked(formVersionsRepository.updateVersionStatus).mockRejectedValue(error)
+
+      await expect(updateFormVersionStatus(formId, '1.0.0', 'active')).rejects.toThrow(error)
     })
   })
 })

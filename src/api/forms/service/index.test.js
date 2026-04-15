@@ -222,8 +222,8 @@ describe('Forms service', () => {
   describe('getFormBySlug', () => {
     it('should return form metadata with versions when form exists', async () => {
       const mockVersions = [
-        { versionNumber: 1, createdAt: new Date('2023-01-01') },
-        { versionNumber: 2, createdAt: new Date('2023-02-01') }
+        { versionNumber: '1', createdAt: new Date('2023-01-01') },
+        { versionNumber: '2', createdAt: new Date('2023-02-01') }
       ]
 
       jest.mocked(formMetadata.getBySlug).mockResolvedValue(formMetadataDocument)
@@ -250,8 +250,8 @@ describe('Forms service', () => {
   describe('getForm', () => {
     it('should return form metadata with versions when form exists', async () => {
       const mockVersions = [
-        { versionNumber: 1, createdAt: new Date('2023-01-01') },
-        { versionNumber: 2, createdAt: new Date('2023-02-01') }
+        { versionNumber: '1', createdAt: new Date('2023-01-01') },
+        { versionNumber: '2', createdAt: new Date('2023-02-01') }
       ]
 
       jest.mocked(formMetadata.get).mockResolvedValue(formMetadataDocument)
@@ -683,6 +683,24 @@ describe('Forms service', () => {
       jest.mocked(formVersions.createVersion).mockRejectedValueOnce(new Error('db error'))
 
       await expect(createFormWithVersion(formMetadataInput, mockDefinition, semver, 'active', author)).rejects.toThrow()
+    })
+
+    it('rethrows non-404 errors from getBySlug pre-check', async () => {
+      const error = new Error('unexpected db error')
+      jest.mocked(formMetadata.getBySlug).mockRejectedValueOnce(error)
+
+      await expect(createFormWithVersion(formMetadataInput, mockDefinition, semver, 'active', author)).rejects.toThrow(
+        error
+      )
+    })
+
+    it('rethrows non-404 Boom errors from getBySlug pre-check', async () => {
+      const error = Boom.internal('server error')
+      jest.mocked(formMetadata.getBySlug).mockRejectedValueOnce(error)
+
+      await expect(createFormWithVersion(formMetadataInput, mockDefinition, semver, 'active', author)).rejects.toThrow(
+        error
+      )
     })
   })
 })

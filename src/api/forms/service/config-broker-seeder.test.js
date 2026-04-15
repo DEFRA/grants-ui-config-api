@@ -63,17 +63,19 @@ const mockFormDef = {
 
 const mockYaml = stringify(mockFormDef)
 
+/** @type {import('~/src/api/forms/service/config-broker-client.js').ConfigBrokerGrant[]} */
 const mockGrantsResponse = [
   {
     grant: slug,
-    versions: [{ version, status: 'active', lastUpdated: '2026-01-01T00:00:00.000Z' }]
+    versions: [{ version, status: /** @type {'active'} */ ('active'), lastUpdated: '2026-01-01T00:00:00.000Z' }]
   }
 ]
 
+/** @type {import('~/src/api/forms/service/config-broker-client.js').ConfigBrokerVersionDetail} */
 const mockVersionDetail = {
   grant: slug,
   version,
-  status: 'active',
+  status: /** @type {'active'} */ ('active'),
   path: 'my-s3-bucket',
   manifest: [`${slug}/${version}/${slug}.yaml`, `${slug}/${version}/metadata.json`],
   lastUpdated: '2026-01-01T00:00:00.000Z'
@@ -81,7 +83,7 @@ const mockVersionDetail = {
 
 /** @param {string} yaml */
 function mockS3Response(yaml) {
-  return { Body: { transformToString: jest.fn().mockResolvedValue(yaml) } }
+  return /** @type {any} */ ({ Body: { transformToString: jest.fn().mockResolvedValue(yaml) } })
 }
 
 describe('config-broker-seeder', () => {
@@ -99,7 +101,7 @@ describe('config-broker-seeder', () => {
     jest.mocked(formVersionsRepo.getVersionBySemver).mockResolvedValue(null)
     jest
       .mocked(createFormWithVersion)
-      .mockResolvedValue({ id: 'form-id', slug, title: 'Example Grant' } /** @type {any} */)
+      .mockResolvedValue(/** @type {any} */ ({ id: 'form-id', slug, title: 'Example Grant' }))
 
     s3Mock.on(GetObjectCommand).resolves(mockS3Response(mockYaml))
   })
@@ -112,6 +114,12 @@ describe('config-broker-seeder', () => {
 
   it('skips seeding when FORMS_API_SLUGS is not set', async () => {
     mockConfigGet({ formsApiSlugs: '' })
+    await seedFormsFromConfigBroker()
+    expect(configBrokerClient.getAllGrants).not.toHaveBeenCalled()
+  })
+
+  it('skips seeding when FORMS_API_SLUGS contains only whitespace entries', async () => {
+    mockConfigGet({ formsApiSlugs: '  ,  ,  ' })
     await seedFormsFromConfigBroker()
     expect(configBrokerClient.getAllGrants).not.toHaveBeenCalled()
   })
@@ -207,7 +215,7 @@ describe('config-broker-seeder', () => {
         ]
       }
     ]
-    jest.mocked(configBrokerClient.getAllGrants).mockResolvedValue(grantWithTwoVersions)
+    jest.mocked(configBrokerClient.getAllGrants).mockResolvedValue(/** @type {any} */ (grantWithTwoVersions))
     jest
       .mocked(configBrokerClient.getGrantVersion)
       .mockResolvedValueOnce(mockVersionDetail)
@@ -232,5 +240,47 @@ describe('config-broker-seeder', () => {
 
     await expect(seedFormsFromConfigBroker()).resolves.not.toThrow()
     expect(createFormWithVersion).not.toHaveBeenCalled()
+  })
+
+  it('continues when S3 returns an empty response body', async () => {
+    s3Mock.on(GetObjectCommand).resolves({})
+
+    await expect(seedFormsFromConfigBroker()).resolves.not.toThrow()
+    expect(createFormWithVersion).not.toHaveBeenCalled()
+  })
+
+  it('continues when S3 YAML parses to a non-object value', async () => {
+    s3Mock.on(GetObjectCommand).resolves(mockS3Response('null'))
+
+    await expect(seedFormsFromConfigBroker()).resolves.not.toThrow()
+    expect(createFormWithVersion).not.toHaveBeenCalled()
+  })
+
+  it('uses s3Endpoint and forcePathStyle when s3Endpoint is configured', async () => {
+    mockConfigGet({ s3Endpoint: 'http://localhost:4566' })
+
+    await seedFormsFromConfigBroker()
+
+    expect(createFormWithVersion).toHaveBeenCalled()
+  })
+
+  it('falls back to config defaults when form YAML has no metadata fields', async () => {
+    const defWithNoMeta = { name: 'Minimal Form', pages: [] }
+    s3Mock.on(GetObjectCommand).resolves(mockS3Response(stringify(defWithNoMeta)))
+
+    await seedFormsFromConfigBroker()
+
+    expect(createFormWithVersion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organisation: testConfig.defaultFormOrganisation,
+        teamName: testConfig.defaultFormTeamName,
+        teamEmail: testConfig.defaultFormTeamEmail,
+        notificationEmail: testConfig.defaultFormNotificationEmail
+      }),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything()
+    )
   })
 })

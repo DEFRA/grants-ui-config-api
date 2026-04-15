@@ -28,6 +28,13 @@ describe('compareSemver', () => {
     expect(compareSemver('1.10.0', '1.9.0')).toBeGreaterThan(0)
     expect(compareSemver('1.0.10', '1.0.9')).toBeGreaterThan(0)
   })
+
+  it('treats missing parts as 0 when versions have different part counts', () => {
+    expect(compareSemver('1.0', '1.0.0')).toBe(0)
+    expect(compareSemver('1.0.0', '1.0')).toBe(0)
+    expect(compareSemver('1.1', '1.0.9')).toBeGreaterThan(0)
+    expect(compareSemver('1.0.9', '1.1')).toBeLessThan(0)
+  })
 })
 
 describe('getLatestSemver', () => {

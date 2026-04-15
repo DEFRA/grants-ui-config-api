@@ -15,11 +15,11 @@ global.fetch = mockFetch
 
 /** @param {object} body */
 function mockJsonResponse(body, status = 200) {
-  return {
+  return /** @type {any} */ ({
     ok: status >= 200 && status < 300,
     status,
     json: jest.fn().mockResolvedValue(body)
-  }
+  })
 }
 
 describe('config-broker-client', () => {

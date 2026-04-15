@@ -47,7 +47,13 @@
  */
 
 /**
- * @typedef {FormMetadataDocument & { versions?: FormVersionMetadata[] }} FormMetadataWithVersions
+ * @typedef {object} FormVersionSummary
+ * @property {string | number} versionNumber
+ * @property {Date} createdAt
+ */
+
+/**
+ * @typedef {Omit<FormMetadataDocument, 'versions'> & { versions?: FormVersionSummary[] }} FormMetadataWithVersions
  */
 
 /**

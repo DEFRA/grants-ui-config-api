@@ -470,6 +470,6 @@ export default [
 /**
  * @import { FormMetadata } from '@defra/forms-model'
  * @import { ServerRoute } from '@hapi/hapi'
- * @import { RequestFormById, RequestFormBySlug, RequestFormDefinition, RequestFormMetadataCreate, RequestFormMetadataUpdateById, RequestListForms, MigrateDraftFormRequest, RequestFormVersionById } from '~/src/api/types.js'
+ * @import { RequestFormById, RequestFormBySlug, RequestFormBySlugWithVersion, RequestFormDefinition, RequestFormMetadataCreate, RequestFormMetadataUpdateById, RequestListForms, MigrateDraftFormRequest, RequestFormVersionById } from '~/src/api/types.js'
  * @import { ExtendedResponseToolkit } from '~/src/plugins/query-handler/types.js'
  */

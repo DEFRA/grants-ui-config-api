@@ -20,6 +20,8 @@ import {
 } from '~/src/messaging/publish.js'
 import { client } from '~/src/mongo.js'
 
+const HTTP_NOT_FOUND = 404
+
 /**
  * Validates that a live form title cannot be updated
  * @param {FormMetadata} form - The form metadata
@@ -188,7 +190,7 @@ export async function createFormWithVersion(metadataInput, definition, version, 
   try {
     existingDoc = await formMetadata.getBySlug(metadataInput.slug)
   } catch (err) {
-    if (!Boom.isBoom(err) || err.output.statusCode !== 404) {
+    if (!Boom.isBoom(err) || err.output.statusCode !== HTTP_NOT_FOUND) {
       throw err
     }
   }

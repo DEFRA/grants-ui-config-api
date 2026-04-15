@@ -34,7 +34,7 @@ export const MongoError = {
 
 /**
  * Maps a form metadata document from MongoDB to form metadata
- * @param {WithId<Partial<FormMetadataDocument>>} document - form metadata document (with ID)
+ * @param {WithId<Partial<FormMetadataWithVersions>>} document - form metadata document (with ID)
  * @returns {FormMetadata}
  */
 export function mapForm(document) {
@@ -42,8 +42,9 @@ export function mapForm(document) {
     throw Error('Form is malformed in the database. Expected fields are missing.')
   }
 
-  const lastUpdated = getLastUpdated(document)
-  const created = getCreated(document)
+  const doc = /** @type {Partial<FormMetadataDocument>} */ (/** @type {any} */ (document))
+  const lastUpdated = getLastUpdated(doc)
+  const created = getCreated(doc)
 
   // 'draft' or 'live' should be omitted from the object if they dont have content
   const draft = document.draft ? { draft: document.draft } : {}
@@ -66,7 +67,9 @@ export function mapForm(document) {
     createdAt: created.createdAt,
     updatedBy: lastUpdated.updatedBy,
     updatedAt: lastUpdated.updatedAt,
-    versions: document.versions ?? [{ versionNumber: 1, createdAt: lastUpdated.updatedAt }]
+    versions: /** @type {FormVersionMetadata[] | undefined} */ (/** @type {any} */ (document.versions)) ?? [
+      { versionNumber: 1, createdAt: lastUpdated.updatedAt }
+    ]
   }
 }
 
@@ -121,6 +124,7 @@ export function mapToDocument(document) {
 }
 
 /**
- * @import { FormMetadataDocument, FormMetadata } from '@defra/forms-model'
+ * @import { FormMetadataDocument, FormMetadata, FormVersionMetadata } from '@defra/forms-model'
  * @import { WithId } from 'mongodb'
+ * @import { FormMetadataWithVersions } from '~/src/api/types.js'
  */
