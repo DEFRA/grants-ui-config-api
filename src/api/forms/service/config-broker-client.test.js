@@ -40,7 +40,10 @@ describe('config-broker-client', () => {
 
       const result = await getAllGrants(BASE_URL)
 
-      expect(mockFetch).toHaveBeenCalledWith(`${BASE_URL}/api/allGrants`)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${BASE_URL}/api/allGrants`,
+        expect.objectContaining({ headers: expect.any(Object) })
+      )
       expect(result).toEqual(grantsResponse)
     })
 
@@ -68,7 +71,10 @@ describe('config-broker-client', () => {
 
       const result = await getGrantVersion(BASE_URL, 'example-grant', '1.0.0')
 
-      expect(mockFetch).toHaveBeenCalledWith(`${BASE_URL}/api/version?grant=example-grant&version=1.0.0`)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${BASE_URL}/api/version?grant=example-grant&version=1.0.0`,
+        expect.objectContaining({ headers: expect.any(Object) })
+      )
       expect(result).toEqual(versionDetail)
     })
 
@@ -77,7 +83,10 @@ describe('config-broker-client', () => {
 
       await getGrantVersion(BASE_URL, 'my grant', '1.0.0')
 
-      expect(mockFetch).toHaveBeenCalledWith(`${BASE_URL}/api/version?grant=my%20grant&version=1.0.0`)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${BASE_URL}/api/version?grant=my%20grant&version=1.0.0`,
+        expect.objectContaining({ headers: expect.any(Object) })
+      )
     })
 
     it('throws when the response is not ok', async () => {

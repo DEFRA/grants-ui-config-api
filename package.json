@@ -39,7 +39,8 @@
     "generate:jwt_secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
     "generate:token": "node scripts/generate-token.js",
     "generate:token:save": "node scripts/generate-token.js --save",
-    "upload:form-config": "node scripts/upload-form-config.js"
+    "generate:broker-token": "node scripts/generate-broker-token.js",
+    "generate:broker-token:save": "node scripts/generate-broker-token.js --save"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1009.0",

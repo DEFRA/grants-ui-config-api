@@ -1,6 +1,36 @@
+import crypto from 'node:crypto'
+
+import { config } from '~/src/config/index.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
 
 const logger = createLogger()
+
+/**
+ * Creates Authorization headers for the config broker using AES-256-GCM encrypted Bearer token.
+ * Returns an empty object if auth credentials are not configured (e.g. local dev).
+ * @returns {Record<string, string>}
+ */
+function createConfigBrokerHeaders() {
+  const token = config.get('configBrokerAuthToken')
+  const encryptionKey = config.get('configBrokerEncryptionKey')
+
+  if (!token || !encryptionKey) {
+    return {}
+  }
+
+  const iv = crypto.randomBytes(12)
+  const key = crypto.scryptSync(encryptionKey, 'salt', 32)
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv)
+
+  let encrypted = cipher.update(token, 'utf8', 'base64')
+  encrypted += cipher.final('base64')
+
+  const authTag = cipher.getAuthTag()
+  const encryptedToken = `${iv.toString('base64')}:${authTag.toString('base64')}:${encrypted}`
+  const authCredentials = Buffer.from(encryptedToken).toString('base64')
+
+  return { Authorization: `Bearer ${authCredentials}` }
+}
 
 /**
  * Fetches the list of all grants and their available versions from the config broker.
@@ -12,7 +42,7 @@ export async function getAllGrants(baseUrl) {
 
   logger.info(`[configBrokerClient] Fetching all grants from ${url}`)
 
-  const response = await fetch(url)
+  const response = await fetch(url, { headers: createConfigBrokerHeaders() })
 
   if (!response.ok) {
     throw new Error(`Config broker GET ${url} failed with status ${response.status}`)
@@ -37,7 +67,7 @@ export async function getGrantVersion(baseUrl, grant, version) {
 
   logger.info(`[configBrokerClient] Fetching version detail from ${url}`)
 
-  const response = await fetch(url)
+  const response = await fetch(url, { headers: createConfigBrokerHeaders() })
 
   if (!response.ok) {
     throw new Error(`Config broker GET ${url} failed with status ${response.status}`)
