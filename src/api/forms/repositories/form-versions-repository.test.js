@@ -6,11 +6,14 @@ import { buildMockCollection } from '~/src/api/forms/__stubs__/mongo.js'
 import {
   MAX_VERSIONS,
   createVersion,
+  getActiveVersions,
   getLatestVersion,
+  getVersionBySemver,
   getVersionSummaries,
   getVersionSummariesBatch,
   getVersions,
-  removeVersionsForForm
+  removeVersionsForForm,
+  updateVersionStatus
 } from '~/src/api/forms/repositories/form-versions-repository.js'
 import { db } from '~/src/mongo.js'
 
@@ -357,6 +360,148 @@ describe('form-versions-repository', () => {
       expect(result.get('form1')).toEqual([{ versionNumber: '1', createdAt: now }])
       expect(result.get('form2')).toEqual([])
       expect(result.get('form3')).toEqual([{ versionNumber: '1', createdAt: now }])
+    })
+  })
+
+  describe('getVersionBySemver', () => {
+    it('should return the version when found', async () => {
+      mockCollection.findOne.mockResolvedValue(mockVersionDocument)
+
+      const result = await getVersionBySemver(formId, '1.0.0')
+
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ formId, versionNumber: '1.0.0' }, undefined)
+      expect(result).toEqual(mockVersionDocument)
+    })
+
+    it('should return null when the version does not exist', async () => {
+      mockCollection.findOne.mockResolvedValue(null)
+
+      const result = await getVersionBySemver(formId, '9.9.9')
+
+      expect(result).toBeNull()
+    })
+
+    it('should work with session parameter', async () => {
+      mockCollection.findOne.mockResolvedValue(mockVersionDocument)
+
+      await getVersionBySemver(formId, '1.0.0', mockSession)
+
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ formId, versionNumber: '1.0.0' }, { session: mockSession })
+    })
+
+    it('should handle database errors', async () => {
+      const error = new Error('Database error')
+      mockCollection.findOne.mockRejectedValue(error)
+
+      await expect(getVersionBySemver(formId, '1.0.0')).rejects.toThrow(Boom.internal(error))
+    })
+
+    it('should throw non-Error objects directly', async () => {
+      const error = 'String error'
+      mockCollection.findOne.mockRejectedValue(error)
+
+      await expect(getVersionBySemver(formId, '1.0.0')).rejects.toBe(error)
+    })
+  })
+
+  describe('getActiveVersions', () => {
+    const mockActiveVersions = [{ ...mockVersionDocument, status: /** @type {'active'} */ ('active') }]
+
+    beforeEach(() => {
+      mockCollection.find.mockReturnValue({
+        toArray: jest.fn().mockResolvedValue(mockActiveVersions)
+      })
+    })
+
+    it('should return active versions', async () => {
+      const result = await getActiveVersions(formId)
+
+      expect(mockCollection.find).toHaveBeenCalledWith({ formId, status: 'active' }, undefined)
+      expect(result).toEqual(mockActiveVersions)
+    })
+
+    it('should return an empty array when no active versions exist', async () => {
+      mockCollection.find.mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) })
+
+      const result = await getActiveVersions(formId)
+
+      expect(result).toEqual([])
+    })
+
+    it('should work with session parameter', async () => {
+      await getActiveVersions(formId, mockSession)
+
+      expect(mockCollection.find).toHaveBeenCalledWith({ formId, status: 'active' }, { session: mockSession })
+    })
+
+    it('should handle database errors', async () => {
+      const error = new Error('Database error')
+      mockCollection.find.mockReturnValue({ toArray: jest.fn().mockRejectedValue(error) })
+
+      await expect(getActiveVersions(formId)).rejects.toThrow(Boom.internal(error))
+    })
+
+    it('should throw non-Error objects directly', async () => {
+      const error = 'String error'
+      mockCollection.find.mockReturnValue({ toArray: jest.fn().mockRejectedValue(error) })
+
+      await expect(getActiveVersions(formId)).rejects.toBe(error)
+    })
+  })
+
+  describe('updateVersionStatus', () => {
+    beforeEach(() => {
+      mockCollection.updateOne.mockResolvedValue({ matchedCount: 1, modifiedCount: 1 })
+    })
+
+    it('should update the version status', async () => {
+      await updateVersionStatus(formId, '1.0.0', 'draft')
+
+      expect(mockCollection.updateOne).toHaveBeenCalledWith(
+        { formId, versionNumber: '1.0.0' },
+        { $set: { status: 'draft' } },
+        undefined
+      )
+    })
+
+    it('should throw Boom.notFound when the version does not exist', async () => {
+      mockCollection.updateOne.mockResolvedValue({ matchedCount: 0 })
+
+      await expect(updateVersionStatus(formId, '9.9.9', 'active')).rejects.toMatchObject({
+        isBoom: true,
+        output: { statusCode: 404 }
+      })
+    })
+
+    it('should work with session parameter', async () => {
+      await updateVersionStatus(formId, '1.0.0', 'active', mockSession)
+
+      expect(mockCollection.updateOne).toHaveBeenCalledWith(
+        { formId, versionNumber: '1.0.0' },
+        { $set: { status: 'active' } },
+        { session: mockSession }
+      )
+    })
+
+    it('should rethrow Boom errors from updateOne', async () => {
+      const boomError = Boom.badRequest('bad request')
+      mockCollection.updateOne.mockRejectedValue(boomError)
+
+      await expect(updateVersionStatus(formId, '1.0.0', 'active')).rejects.toBe(boomError)
+    })
+
+    it('should handle database errors', async () => {
+      const error = new Error('Database error')
+      mockCollection.updateOne.mockRejectedValue(error)
+
+      await expect(updateVersionStatus(formId, '1.0.0', 'active')).rejects.toThrow(Boom.internal(error))
+    })
+
+    it('should throw non-Error objects directly', async () => {
+      const error = 'String error'
+      mockCollection.updateOne.mockRejectedValue(error)
+
+      await expect(updateVersionStatus(formId, '1.0.0', 'active')).rejects.toBe(error)
     })
   })
 
