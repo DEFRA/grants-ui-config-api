@@ -90,6 +90,18 @@ export const formBySlugSchema = Joi.object()
   })
   .required()
 
+// Optional semantic version query parameter (e.g. "1.0.0")
+export const semverVersionSchema = Joi.string()
+  .pattern(/^\d+\.\d+\.\d+$/, 'semantic version (e.g. 1.0.0)')
+  .optional()
+
+// Query schema for slug-based routes that accept an optional version
+export const formBySlugWithVersionQuerySchema = Joi.object()
+  .keys({
+    version: semverVersionSchema
+  })
+  .optional()
+
 // Create form schema
 export const createFormSchema = Joi.object().keys({
   title: formMetadataInputSchema.extract('title'),

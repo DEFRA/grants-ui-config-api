@@ -52,8 +52,14 @@ x-api-key: {{x-api-key}}
 
 ###
 
-### Default versionNumber
+### Default versionNumber (editor workflow)
 @versionNumber=1
+
+### Default semver (config broker workflow)
+@semver=1.0.0
+
+### Default slug (config broker workflow)
+@slug=example-grant-with-auth
 
 ###
 
@@ -73,9 +79,25 @@ Accept-Encoding: identity
 
 ###
 
-### Get Live Form Definition by Slug
-# @name GetLiveDefinitionBySlug
+### Get Latest Active Form Definition by Slug (config broker forms)
+# @name GetLatestActiveDefinitionBySlug
 GET {{baseUrl}}/forms/slug/{{slug}}/definition
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
+
+###
+
+### Get Specific Semver Form Definition by Slug
+# @name GetDefinitionBySlugAndVersion
+GET {{baseUrl}}/forms/slug/{{slug}}/definition?version={{semver}}
+x-api-key: {{x-api-key}}
+Accept-Encoding: identity
+
+###
+
+### Get Form Metadata by Slug with Semver (optional)
+# @name GetFormBySlugWithVersion
+GET {{baseUrl}}/forms/slug/{{slug}}?version={{semver}}
 x-api-key: {{x-api-key}}
 Accept-Encoding: identity
 

@@ -57,7 +57,7 @@ pages:
       - name: startInfoOne
         title: Html
         type: Html
-        content: <p class="govuk-body">This service uses DefraID and the Save and Return
+        content: <p class="govuk-body">This service is defined in config broker as v1.0.1 and uses DefraID and the Save and Return
           feature, and demonstrates the use of the following components and page
           types:</p>
         id: 434ab3dc-fad9-44c5-8601-b19477a1d77e

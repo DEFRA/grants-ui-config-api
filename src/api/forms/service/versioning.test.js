@@ -56,7 +56,7 @@ describe('versioning service', () => {
     const mockVersionDocument = buildFormVersionDocument({
       _id: undefined,
       formId,
-      versionNumber: 1,
+      versionNumber: '1',
       formDefinition: mockFormDefinition,
       createdAt: now
     })
@@ -96,7 +96,7 @@ describe('versioning service', () => {
 
       const expectedVersionDocument = {
         ...mockVersionDocument,
-        versionNumber: 4
+        versionNumber: '4'
       }
       jest.mocked(formVersionsRepository.createVersion).mockResolvedValue(expectedVersionDocument)
 
@@ -162,7 +162,7 @@ describe('versioning service', () => {
   })
 
   describe('getFormVersion', () => {
-    const versionNumber = 1
+    const versionNumber = '1'
     const mockVersionDocument = {
       formId,
       versionNumber,
@@ -171,17 +171,25 @@ describe('versioning service', () => {
     }
 
     it('should retrieve a specific version', async () => {
-      jest.mocked(formVersionsRepository.getVersion).mockResolvedValue(mockVersionDocument)
+      jest.mocked(formVersionsRepository.getVersionBySemver).mockResolvedValue(mockVersionDocument)
 
       const result = await getFormVersion(formId, versionNumber)
 
       expect(result).toEqual(mockVersionDocument)
-      expect(formVersionsRepository.getVersion).toHaveBeenCalledWith(formId, versionNumber)
+      expect(formVersionsRepository.getVersionBySemver).toHaveBeenCalledWith(formId, versionNumber)
+    })
+
+    it('should throw Boom.notFound when version not found', async () => {
+      jest.mocked(formVersionsRepository.getVersionBySemver).mockResolvedValue(null)
+
+      await expect(getFormVersion(formId, versionNumber)).rejects.toThrow(
+        `Version ${versionNumber} for form ID '${formId}' not found`
+      )
     })
 
     it('should handle errors when retrieving a version', async () => {
       const error = new Error('Version not found')
-      jest.mocked(formVersionsRepository.getVersion).mockRejectedValue(error)
+      jest.mocked(formVersionsRepository.getVersionBySemver).mockRejectedValue(error)
 
       await expect(getFormVersion(formId, versionNumber)).rejects.toThrow(error)
     })
@@ -191,13 +199,13 @@ describe('versioning service', () => {
     const mockVersions = [
       {
         formId,
-        versionNumber: 1,
+        versionNumber: '1',
         formDefinition: mockFormDefinition,
         createdAt: now
       },
       {
         formId,
-        versionNumber: 2,
+        versionNumber: '2',
         formDefinition: mockFormDefinition,
         createdAt: now
       }
@@ -227,7 +235,7 @@ describe('versioning service', () => {
   describe('getLatestFormVersion', () => {
     const mockLatestVersion = {
       formId,
-      versionNumber: 3,
+      versionNumber: '3',
       formDefinition: mockFormDefinition,
       createdAt: now
     }

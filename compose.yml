@@ -86,7 +86,7 @@ services:
       LOCALSTACK_ENDPOINT: http://localstack:4566
       MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/}
       JWT_SECRET: ${JWT_SECRET:-config-api-jwt-secret}
-      FORMS_CONFIG_BUCKET_NAME: ${FORMS_CONFIG_BUCKET_NAME:-forms-config}
+      CONFIG_BROKER_URL: '${CONFIG_BROKER_URL:-http://grants-config-broker:3012}'
       FORMS_API_SLUGS: ${FORMS_API_SLUGS:-example-grant-with-auth}
       DEFAULT_FORM_ORGANISATION: ${DEFAULT_FORM_ORGANISATION:-Defra}
       DEFAULT_FORM_TEAM_NAME: ${DEFAULT_FORM_TEAM_NAME:-Digital Delivery}
@@ -97,6 +97,33 @@ services:
     volumes:
       - ./src:/home/node/src
       - ./package.json:/home/node/package.json
+
+  grants-config-broker:
+    image: defradigital/grants-config-broker:latest
+    pull_policy: always
+    ports:
+      - '3012:3012'
+    links:
+      - 'localstack:localstack'
+      - 'mongodb:mongodb'
+    depends_on:
+      localstack:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+    env_file:
+      - 'localstack/aws.env'
+    environment:
+      PORT: 3012
+      NODE_ENV: development
+      AWS_ENDPOINT_URL: http://localstack:4566
+      CONFIG_BUCKET_NAME: configs-bucket
+      MONGO_URI: mongodb://mongodb:27017/
+      SERVICE_VERSION: 1.0.0
+    networks:
+      - grants-ui-config-api-net
+    volumes:
+      - ./localstack/config-broker:/home/node/config
 
 volumes:
   mongodb-data:

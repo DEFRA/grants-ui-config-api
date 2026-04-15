@@ -20,6 +20,7 @@ import { mockFormVersionDocument } from '~/src/api/forms/service/__stubs__/versi
 import { getFormDefinition, updateDraftFormDefinition } from '~/src/api/forms/service/definition.js'
 import {
   createForm,
+  createFormWithVersion,
   getForm,
   getFormBySlug,
   prepareUpdatedFormMetadata,
@@ -607,6 +608,81 @@ describe('Forms service', () => {
       await handleMetadataVersioning(id, formUpdate, mockSession)
 
       expect(versioningService.createFormVersion).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('createFormWithVersion', () => {
+    const semver = '1.0.0'
+    const mockDefinition = {
+      name: 'Test form',
+      pages: [],
+      lists: [],
+      conditions: [],
+      sections: []
+    }
+
+    beforeEach(() => {
+      jest.mocked(formMetadata.create).mockResolvedValue({
+        acknowledged: true,
+        insertedId: new ObjectId(id)
+      })
+      jest.mocked(formVersions.createVersion).mockResolvedValue(mockFormVersionDocument)
+    })
+
+    it('creates form metadata and version document in one transaction for a new slug', async () => {
+      jest.mocked(formMetadata.getBySlug).mockRejectedValueOnce(Boom.notFound('not found'))
+
+      const result = await createFormWithVersion(formMetadataInput, mockDefinition, semver, 'active', author)
+
+      expect(formMetadata.create).toHaveBeenCalledWith(
+        expect.objectContaining({ slug: formMetadataInput.slug }),
+        expect.anything()
+      )
+      expect(formVersions.createVersion).toHaveBeenCalledWith(
+        expect.objectContaining({
+          versionNumber: semver,
+          status: 'active',
+          formDefinition: expect.objectContaining({
+            metadata: expect.objectContaining({ version: semver })
+          })
+        }),
+        expect.anything()
+      )
+      expect(result).toMatchObject({ slug: formMetadataInput.slug })
+    })
+
+    it('reuses existing form metadata when the slug already exists', async () => {
+      jest.mocked(formMetadata.getBySlug).mockResolvedValueOnce(formMetadataDocument)
+
+      await createFormWithVersion(formMetadataInput, mockDefinition, semver, 'draft', author)
+
+      expect(formMetadata.create).not.toHaveBeenCalled()
+      expect(formVersions.createVersion).toHaveBeenCalledWith(
+        expect.objectContaining({ versionNumber: semver, status: 'draft' }),
+        expect.anything()
+      )
+    })
+
+    it('writes metadata.version into the form definition', async () => {
+      jest.mocked(formMetadata.getBySlug).mockRejectedValueOnce(Boom.notFound('not found'))
+
+      await createFormWithVersion(formMetadataInput, mockDefinition, '2.3.1', 'active', author)
+
+      expect(formVersions.createVersion).toHaveBeenCalledWith(
+        expect.objectContaining({
+          formDefinition: expect.objectContaining({
+            metadata: expect.objectContaining({ version: '2.3.1' })
+          })
+        }),
+        expect.anything()
+      )
+    })
+
+    it('throws when the version document creation fails', async () => {
+      jest.mocked(formMetadata.getBySlug).mockRejectedValueOnce(Boom.notFound('not found'))
+      jest.mocked(formVersions.createVersion).mockRejectedValueOnce(new Error('db error'))
+
+      await expect(createFormWithVersion(formMetadataInput, mockDefinition, semver, 'active', author)).rejects.toThrow()
     })
   })
 })

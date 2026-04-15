@@ -6,6 +6,7 @@ import { removeFormErrorMessages } from '~/src/api/forms/constants.js'
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
 import * as formVersions from '~/src/api/forms/repositories/form-versions-repository.js'
+import { createVersion } from '~/src/api/forms/repositories/form-versions-repository.js'
 import { getValidationSchema, validate } from '~/src/api/forms/service/helpers/definition.js'
 import { MongoError, logger, mapForm, partialAuditFields } from '~/src/api/forms/service/shared.js'
 import { createFormVersion, removeFormVersions } from '~/src/api/forms/service/versioning.js'
@@ -162,6 +163,91 @@ export async function createForm(metadataInput, author) {
 }
 
 /**
+ * Creates a new form with a specific semantic version in a single transaction.
+ * Intended for use by the config-broker seeder. If a form with the given slug
+ * already exists, it is reused; otherwise a new form-metadata document is created.
+ * The version is stored in `definition.metadata.version` and as a `FormVersionDocument`
+ * in the form-versions collection — no draft/live state is set on the metadata document.
+ * @param {FormMetadataInputWithSlug} metadataInput - the form metadata
+ * @param {FormDefinition} definition - the complete form definition
+ * @param {string} version - semver string e.g. "1.0.0"
+ * @param {'active' | 'draft'} status - version status from config broker
+ * @param {FormMetadataAuthor} author - the author details
+ * @returns {Promise<FormMetadata>}
+ */
+export async function createFormWithVersion(metadataInput, definition, version, status, author) {
+  const definitionWithVersion = {
+    ...definition,
+    metadata: { ...(definition.metadata ?? {}), version }
+  }
+
+  const now = new Date()
+
+  // Pre-check outside the transaction: does a form with this slug already exist?
+  let existingDoc = null
+  try {
+    existingDoc = await formMetadata.getBySlug(metadataInput.slug)
+  } catch (err) {
+    if (!Boom.isBoom(err) || err.output.statusCode !== 404) {
+      throw err
+    }
+  }
+
+  const session = client.startSession()
+
+  /** @type {FormMetadata | undefined} */
+  let metadata
+
+  try {
+    await session.withTransaction(async () => {
+      let formId
+
+      if (existingDoc) {
+        formId = existingDoc._id.toString()
+        metadata = mapForm(existingDoc)
+      } else {
+        /**
+         * Create a minimal metadata document without draft/live state.
+         * Status lives on the individual version document.
+         * @satisfies {FormMetadataDocument}
+         */
+        const document = {
+          ...metadataInput,
+          createdAt: now,
+          createdBy: author,
+          updatedAt: now,
+          updatedBy: author,
+          versions: []
+        }
+
+        const { insertedId: _id } = await formMetadata.create(document, session)
+        metadata = mapForm({ ...document, _id })
+        formId = metadata.id
+      }
+
+      /** @type {FormVersionDocument} */
+      const versionDocument = {
+        formId,
+        versionNumber: version,
+        formDefinition: definitionWithVersion,
+        status,
+        createdAt: now
+      }
+
+      await createVersion(versionDocument, session)
+    })
+  } finally {
+    await session.endSession()
+  }
+
+  if (!metadata) {
+    throw Boom.badRequest('No metadata created in the transaction')
+  }
+
+  return metadata
+}
+
+/**
  * Retrieves form metadata by ID
  * @param {string} formId - ID of the form
  */
@@ -269,8 +355,7 @@ export async function removeForm(formId, author) {
 }
 
 /**
- * @import { FormMetadataAuthor, FormMetadataDocument, FormMetadataInput, FormMetadata } from '@defra/forms-model'
- * @import { PartialFormMetadataDocument } from '~/src/api/types.js'
+ * @import { FormDefinition, FormMetadataAuthor, FormMetadataDocument, FormMetadataInput, FormMetadata } from '@defra/forms-model'
+ * @import { FormVersionDocument, PartialFormMetadataDocument, FormMetadataInputWithSlug } from '~/src/api/types.js'
  * @import { ClientSession } from 'mongodb'
- * @import { FormMetadataInputWithSlug } from '~/src/api/types.js'
  */

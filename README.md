@@ -13,6 +13,7 @@ This repository is a fork of [DEFRA/forms-manager](https://github.com/DEFRA/form
     - [Npm scripts](#npm-scripts)
     - [Port Configuration](#port-configuration)
     - [Form Definition Metadata](#form-definition-metadata)
+    - [Config Broker Integration](#config-broker-integration)
     - [Type Definitions](#type-definitions)
     - [Deployment](#deployment)
   - [API endpoints](#api-endpoints)
@@ -58,6 +59,8 @@ npm run docker:up
 PORT=3011
 MONGO_URI=mongodb://mongodb:27017/
 JWT_SECRET= <JWT secret for JWT signing>
+CONFIG_BROKER_URL=http://localhost:3012
+FORMS_API_SLUGS=my-grant,another-grant
 ```
 
 If not provided, default values will be used so the application can be started.
@@ -71,6 +74,8 @@ The API will be available at `http://localhost:3011` once started.
 - `FEATURE_FLAG_PUBLISH_AUDIT_EVENTS=true`
 - `SNS_TOPIC_ARN=<your-topic-arn>`
 - `SNS_ENDPOINT=http://localstack:4566` (for local development)
+
+**Config Broker**: On startup the API seeds form definitions from the config broker service. See [Config Broker Integration](#config-broker-integration) below.
 
 **Proxy Configuration**: For proxy support, see https://www.npmjs.com/package/proxy-from-env which is used by https://github.com/TooTallNate/proxy-agents/tree/main/packages/proxy-agent.
 
@@ -92,6 +97,28 @@ The API runs on **port 3011** by default. This can be configured via the `PORT` 
 Form definitions support an optional `metadata` field for storing structured form metadata. Metadata validation is performed automatically when publishing forms to ensure data integrity.
 
 For detailed information on metadata structure, validation rules, and examples, see [docs/metadata-guide.md](docs/metadata-guide.md).
+
+### Config Broker Integration
+
+On startup the API seeds grant form definitions from an external config broker service (`CONFIG_BROKER_URL`). The seeder:
+
+1. Calls `GET /api/allGrants` on the config broker to retrieve all available grants and their versions.
+2. Filters grants to those listed in the `FORMS_API_SLUGS` environment variable (comma-separated slugs).
+3. For each grant version, calls `GET /api/version?grant=<slug>&version=<semver>` to retrieve version detail including the S3 manifest.
+4. Fetches the YAML form definition from S3 using the `path` field (bucket name) and `manifest` keys from the broker response.
+5. Creates or updates the form version in the database:
+   - **New version**: creates form metadata (or reuses existing) and inserts the version document.
+   - **Existing version, status changed**: updates the version status in the database.
+   - **Existing version, same status**: skips (no-op).
+
+Grant form versions use **semantic versioning** (e.g. `1.0.0`). Multiple versions of the same grant can be active simultaneously.
+
+#### Environment variables
+
+| Variable            | Description                                 | Default |
+| ------------------- | ------------------------------------------- | ------- |
+| `CONFIG_BROKER_URL` | Base URL of the config broker service       | `""`    |
+| `FORMS_API_SLUGS`   | Comma-separated list of grant slugs to seed | `""`    |
 
 ### Type Definitions
 
@@ -132,6 +159,17 @@ The API provides endpoints for:
 - **Components** - Component management within pages
 
 Most endpoints require JWT Bearer token authentication. See [Calling API endpoints](#calling-api-endpoints) below for authentication setup.
+
+### Slug endpoints with semver versioning
+
+Config-broker-seeded forms support an optional `?version=<semver>` query parameter on the slug endpoints:
+
+| Endpoint                            | Without `version`                                                                                 | With `version=1.0.0`                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `GET /forms/slug/{slug}`            | Returns form metadata                                                                             | Returns form metadata (version param ignored)       |
+| `GET /forms/slug/{slug}/definition` | Returns latest **active** semver version; falls back to live definition for editor-workflow forms | Returns definition for the specified semver version |
+
+Multiple semver versions can be active simultaneously. "Latest" is determined by semver comparison (not creation order).
 
 If you're adding endpoints for new features, update the [openapi.yaml](openapi.yaml) file to include the new endpoints.
 
@@ -181,7 +219,10 @@ The project includes an HTTP client configuration file ([config.http](config.htt
    - Select the environment (e.g., "local") from the dropdown
    - Click "Run" on any request to execute it
 
-The HTTP client file includes examples for all API endpoints including form management, pages, components, and versioning.
+The HTTP client files include examples for all API endpoints:
+
+- **[config.http](config.http)** - Form management, pages, components, versioning, and slug endpoints with semver support
+- **[broker.http](broker.http)** - Config broker service endpoints (`/api/allGrants`, `/api/version`)
 
 ## Test coverage
 

@@ -39,85 +39,6 @@ export async function createVersion(versionDocument, session) {
 }
 
 /**
- * Gets the latest version number for a form
- * @param {string} formId - The form ID
- * @param {ClientSession} [session] - MongoDB transaction session
- * @returns {Promise<number>}
- */
-export async function getLatestVersionNumber(formId, session) {
-  logger.info(`Getting latest version number for form ID ${formId}`)
-
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
-
-  try {
-    const sessionOptions = /** @type {FindOptions} */ session && { session }
-    const result = await coll.findOne(
-      { formId },
-      {
-        sort: { versionNumber: -1 },
-        projection: { versionNumber: 1 },
-        ...sessionOptions
-      }
-    )
-
-    const versionNumber = result?.versionNumber ?? 0
-    logger.info(`Latest version number for form ID ${formId} is ${versionNumber}`)
-
-    return versionNumber
-  } catch (err) {
-    logger.error(
-      err,
-      `[getLatestVersionNumber] Failed to get latest version number for form ID ${formId} - ${getErrorMessage(err)}`
-    )
-
-    if (err instanceof Error) {
-      throw Boom.internal(err)
-    }
-    throw err
-  }
-}
-
-/**
- * Gets a specific version of a form
- * @param {string} formId - The form ID
- * @param {number} versionNumber - The version number to retrieve
- * @param {ClientSession} [session] - MongoDB transaction session
- * @returns {Promise<FormVersionDocument>}
- */
-export async function getVersion(formId, versionNumber, session) {
-  logger.info(`Getting version ${versionNumber} for form ID ${formId}`)
-
-  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
-
-  try {
-    const sessionOptions = /** @type {FindOptions} */ session && { session }
-    const result = await coll.findOne({ formId, versionNumber }, sessionOptions)
-
-    if (!result) {
-      throw Boom.notFound(`Version ${versionNumber} for form ID '${formId}' not found`)
-    }
-
-    logger.info(`Retrieved version ${versionNumber} for form ID ${formId}`)
-
-    return result
-  } catch (err) {
-    logger.error(
-      err,
-      `[getVersion] Failed to get version ${versionNumber} for form ID ${formId} - ${getErrorMessage(err)}`
-    )
-
-    if (Boom.isBoom(err)) {
-      throw err
-    }
-
-    if (err instanceof Error) {
-      throw Boom.internal(err)
-    }
-    throw err
-  }
-}
-
-/**
  * Gets the latest version of a form
  * @param {string} formId - The form ID
  * @param {ClientSession} [session] - MongoDB transaction session
@@ -224,7 +145,7 @@ export async function removeVersionsForForm(formId, session) {
  * Gets version summaries for a form (without full definitions)
  * @param {string} formId - The form ID
  * @param {ClientSession} [session] - MongoDB transaction session
- * @returns {Promise<Array<{versionNumber: number, createdAt: Date}>>}
+ * @returns {Promise<Array<{versionNumber: string, createdAt: Date}>>}
  */
 export async function getVersionSummaries(formId, session) {
   logger.info(`Getting version summaries for form ID ${formId}`)
@@ -264,7 +185,7 @@ export async function getVersionSummaries(formId, session) {
  * Gets version summaries for multiple forms (batch operation)
  * @param {string[]} formIds - Array of form IDs
  * @param {ClientSession} [session] - MongoDB transaction session
- * @returns {Promise<Map<string, Array<{versionNumber: number, createdAt: Date}>>>}
+ * @returns {Promise<Map<string, Array<{versionNumber: string, createdAt: Date}>>>}
  */
 export async function getVersionSummariesBatch(formIds, session) {
   logger.info(`Getting version summaries for ${formIds.length} forms`)
@@ -303,6 +224,115 @@ export async function getVersionSummariesBatch(formIds, session) {
     return versionsByForm
   } catch (err) {
     logger.error(err, `[getVersionSummariesBatch] Failed to get version summaries for batch - ${getErrorMessage(err)}`)
+
+    if (err instanceof Error) {
+      throw Boom.internal(err)
+    }
+    throw err
+  }
+}
+
+/**
+ * Gets a specific version of a form by semver string
+ * @param {string} formId - The form ID
+ * @param {string} semver - The semantic version string (e.g. "1.0.0")
+ * @param {ClientSession} [session] - MongoDB transaction session
+ * @returns {Promise<FormVersionDocument | null>}
+ */
+export async function getVersionBySemver(formId, semver, session) {
+  logger.info(`Getting version ${semver} for form ID ${formId}`)
+
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
+
+  try {
+    const sessionOptions = /** @type {FindOptions} */ session && { session }
+    const result = await coll.findOne({ formId, versionNumber: semver }, sessionOptions)
+
+    if (result) {
+      logger.info(`Retrieved version ${semver} for form ID ${formId}`)
+    } else {
+      logger.info(`Version ${semver} for form ID ${formId} not found`)
+    }
+
+    return result
+  } catch (err) {
+    logger.error(
+      err,
+      `[getVersionBySemver] Failed to get version ${semver} for form ID ${formId} - ${getErrorMessage(err)}`
+    )
+
+    if (err instanceof Error) {
+      throw Boom.internal(err)
+    }
+    throw err
+  }
+}
+
+/**
+ * Gets all active (status = 'active') versions for a form
+ * @param {string} formId - The form ID
+ * @param {ClientSession} [session] - MongoDB transaction session
+ * @returns {Promise<FormVersionDocument[]>}
+ */
+export async function getActiveVersions(formId, session) {
+  logger.info(`Getting active versions for form ID ${formId}`)
+
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
+
+  try {
+    const sessionOptions = /** @type {FindOptions} */ session && { session }
+    const results = await coll.find({ formId, status: 'active' }, sessionOptions).toArray()
+
+    logger.info(`Retrieved ${results.length} active versions for form ID ${formId}`)
+
+    return results
+  } catch (err) {
+    logger.error(
+      err,
+      `[getActiveVersions] Failed to get active versions for form ID ${formId} - ${getErrorMessage(err)}`
+    )
+
+    if (err instanceof Error) {
+      throw Boom.internal(err)
+    }
+    throw err
+  }
+}
+
+/**
+ * Updates the status of a specific version
+ * @param {string} formId - The form ID
+ * @param {string} semver - The semantic version string (e.g. "1.0.0")
+ * @param {'active' | 'draft'} newStatus - The new status
+ * @param {ClientSession} [session] - MongoDB transaction session
+ */
+export async function updateVersionStatus(formId, semver, newStatus, session) {
+  logger.info(`Updating status of version ${semver} for form ID ${formId} to '${newStatus}'`)
+
+  const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
+
+  try {
+    const sessionOptions = /** @type {FindOptions} */ session && { session }
+    const result = await coll.updateOne(
+      { formId, versionNumber: semver },
+      { $set: { status: newStatus } },
+      sessionOptions
+    )
+
+    if (result.matchedCount === 0) {
+      throw Boom.notFound(`Version ${semver} for form ID '${formId}' not found`)
+    }
+
+    logger.info(`Updated status of version ${semver} for form ID ${formId} to '${newStatus}'`)
+  } catch (err) {
+    logger.error(
+      err,
+      `[updateVersionStatus] Failed to update status of version ${semver} for form ID ${formId} - ${getErrorMessage(err)}`
+    )
+
+    if (Boom.isBoom(err)) {
+      throw err
+    }
 
     if (err instanceof Error) {
       throw Boom.internal(err)

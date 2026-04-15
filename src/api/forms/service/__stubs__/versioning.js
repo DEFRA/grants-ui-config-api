@@ -10,7 +10,7 @@ export function buildFormVersionDocument(partialFormVersion = {}) {
   return {
     _id: new ObjectId(),
     formId: '661e4ca5039739ef2902b214',
-    versionNumber: 1,
+    versionNumber: '1',
     createdAt: new Date('2020-01-01'),
     formDefinition: {
       name: 'Test form',

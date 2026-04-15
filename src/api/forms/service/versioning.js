@@ -1,9 +1,15 @@
 import { FormStatus, getErrorMessage } from '@defra/forms-model'
+import Boom from '@hapi/boom'
 
 import * as formDefinitionRepository from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadataRepository from '~/src/api/forms/repositories/form-metadata-repository.js'
 import * as formVersionsRepository from '~/src/api/forms/repositories/form-versions-repository.js'
-import { MAX_VERSIONS } from '~/src/api/forms/repositories/form-versions-repository.js'
+import {
+  MAX_VERSIONS,
+  getVersionBySemver,
+  getActiveVersions,
+  updateVersionStatus as repoUpdateVersionStatus
+} from '~/src/api/forms/repositories/form-versions-repository.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
 import { client } from '~/src/mongo.js'
 
@@ -68,7 +74,7 @@ async function createVersionInTransaction(formId, session) {
 
   const versionDocument = /** @type {FormVersionDocument} */ ({
     formId,
-    versionNumber: nextVersionNumber,
+    versionNumber: String(nextVersionNumber),
     formDefinition,
     createdAt
   })
@@ -87,14 +93,18 @@ async function createVersionInTransaction(formId, session) {
 /**
  * Retrieves a specific version of a form definition
  * @param {string} formId - The form ID
- * @param {number} versionNumber - The version number
+ * @param {string} versionNumber - The version number (semver string or stringified integer)
  * @returns {Promise<FormVersionDocument>}
  */
 export async function getFormVersion(formId, versionNumber) {
   logger.info(`Getting version ${versionNumber} for form ID ${formId}`)
 
   try {
-    return await formVersionsRepository.getVersion(formId, versionNumber)
+    const result = await getVersionBySemver(formId, versionNumber)
+    if (!result) {
+      throw Boom.notFound(`Version ${versionNumber} for form ID '${formId}' not found`)
+    }
+    return result
   } catch (err) {
     logger.error(
       err,
@@ -135,6 +145,66 @@ export async function getLatestFormVersion(formId) {
     logger.error(
       err,
       `[getLatestFormVersion] Failed to get latest version for form ID ${formId} - ${getErrorMessage(err)}`
+    )
+    throw err
+  }
+}
+
+/**
+ * Gets a specific semver version document for a form
+ * @param {string} formId - The form ID
+ * @param {string} semver - The semantic version string (e.g. "1.0.0")
+ * @returns {Promise<FormVersionDocument | null>}
+ */
+export async function getFormVersionBySemver(formId, semver) {
+  logger.info(`Getting semver version ${semver} for form ID ${formId}`)
+
+  try {
+    return await getVersionBySemver(formId, semver)
+  } catch (err) {
+    logger.error(
+      err,
+      `[getFormVersionBySemver] Failed to get version ${semver} for form ID ${formId} - ${getErrorMessage(err)}`
+    )
+    throw err
+  }
+}
+
+/**
+ * Gets all active semver versions for a form, sorted by semver descending
+ * @param {string} formId - The form ID
+ * @returns {Promise<FormVersionDocument[]>}
+ */
+export async function getActiveFormVersions(formId) {
+  logger.info(`Getting active versions for form ID ${formId}`)
+
+  try {
+    return await getActiveVersions(formId)
+  } catch (err) {
+    logger.error(
+      err,
+      `[getActiveFormVersions] Failed to get active versions for form ID ${formId} - ${getErrorMessage(err)}`
+    )
+    throw err
+  }
+}
+
+/**
+ * Updates the status of a specific semver version
+ * @param {string} formId - The form ID
+ * @param {string} semver - The semantic version string (e.g. "1.0.0")
+ * @param {'active' | 'draft'} newStatus - The new status
+ */
+export async function updateFormVersionStatus(formId, semver, newStatus) {
+  logger.info(`Updating status of version ${semver} for form ID ${formId} to '${newStatus}'`)
+
+  try {
+    await repoUpdateVersionStatus(formId, semver, newStatus)
+    logger.info(`Updated status of version ${semver} for form ID ${formId} to '${newStatus}'`)
+  } catch (err) {
+    logger.error(
+      err,
+      `[updateFormVersionStatus] Failed to update status of version ${semver} for form ID ${formId} - ${getErrorMessage(err)}`
     )
     throw err
   }

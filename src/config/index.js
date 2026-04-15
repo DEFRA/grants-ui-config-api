@@ -222,6 +222,12 @@ export const config = convict({
     format: String,
     default: 'digitaldelivery@defra.gov.uk',
     env: 'DEFAULT_FORM_NOTIFICATION_EMAIL'
+  },
+  configBrokerUrl: {
+    doc: 'Base URL for the config broker service used to discover grant versions on startup',
+    format: String,
+    default: '',
+    env: 'CONFIG_BROKER_URL'
   }
 })
 

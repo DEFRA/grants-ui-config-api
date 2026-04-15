@@ -5,11 +5,13 @@ import { makeFormLiveErrorMessages } from '~/src/api/forms/constants.js'
 import * as formDefinition from '~/src/api/forms/repositories/form-definition-repository.js'
 import { deleteDraft } from '~/src/api/forms/repositories/form-definition-repository.js'
 import * as formMetadata from '~/src/api/forms/repositories/form-metadata-repository.js'
+import { getActiveVersions, getVersionBySemver } from '~/src/api/forms/repositories/form-versions-repository.js'
 import { getValidationSchema } from '~/src/api/forms/service/helpers/definition.js'
-import { getForm } from '~/src/api/forms/service/index.js'
+import { getForm, getFormBySlug } from '~/src/api/forms/service/index.js'
 import { validateMetadataForPublishing } from '~/src/api/forms/service/metadata-validation.js'
 import { logger, mapForm, partialAuditFields } from '~/src/api/forms/service/shared.js'
 import { createFormVersion } from '~/src/api/forms/service/versioning.js'
+import { compareSemver } from '~/src/helpers/semver.js'
 import {
   publishDraftCreatedFromLiveEvent,
   publishFormDraftDeletedEvent,
@@ -418,6 +420,43 @@ export async function reorderDraftFormDefinitionComponents(formId, pageId, order
   } finally {
     await session.endSession()
   }
+}
+
+/**
+ * Retrieves a form definition by slug and optional semantic version.
+ *
+ * - With `version`: returns the definition from the matching version document (any status).
+ * - Without `version`: returns the definition from the latest active (status = 'active') version,
+ *   sorted by semver descending. Falls back to the live form-definition if no active semver
+ *   version exists (backward-compatible with editor-workflow forms).
+ * @param {string} slug - The slug of the form
+ * @param {string} [version] - Optional semver string e.g. "1.0.0"
+ * @returns {Promise<FormDefinition>}
+ */
+export async function getFormDefinitionBySlugAndVersion(slug, version) {
+  const form = await getFormBySlug(slug)
+  const formId = form.id
+
+  if (version) {
+    const versionDoc = await getVersionBySemver(formId, version)
+
+    if (!versionDoc) {
+      throw Boom.notFound(`Version '${version}' for form '${slug}' not found`)
+    }
+
+    return versionDoc.formDefinition
+  }
+
+  // No version specified: return latest active semver version
+  const activeVersions = await getActiveVersions(formId)
+
+  if (activeVersions.length > 0) {
+    const sorted = [...activeVersions].sort((a, b) => compareSemver(b.versionNumber, a.versionNumber))
+    return sorted[0].formDefinition
+  }
+
+  // Fallback: no semver versions exist — use the live form-definition (editor-workflow forms)
+  return formDefinition.get(formId, FormStatus.Live)
 }
 
 /**

@@ -12,6 +12,7 @@ import {
   createLiveFromDraft,
   deleteDraftFormDefinition,
   getFormDefinition,
+  getFormDefinitionBySlugAndVersion,
   listForms,
   updateDraftFormDefinition
 } from '~/src/api/forms/service/definition.js'
@@ -24,6 +25,7 @@ import {
   createFormSchema,
   formByIdSchema,
   formBySlugSchema,
+  formBySlugWithVersionQuerySchema,
   migrateDefinitionParamSchema,
   updateFormDefinitionSchema
 } from '~/src/models/forms.js'
@@ -171,7 +173,8 @@ export default [
     options: {
       auth: false,
       validate: {
-        params: formBySlugSchema
+        params: formBySlugSchema,
+        query: formBySlugWithVersionQuerySchema
       }
     }
   },
@@ -179,20 +182,24 @@ export default [
     method: 'GET',
     path: '/forms/slug/{slug}/definition',
     /**
-     * @param {RequestFormBySlug} request
+     * Returns the form definition for a slug. Accepts an optional `?version=semver` query
+     * parameter to retrieve a specific semantic version. Without a version, returns the
+     * latest active semver version, falling back to the live form-definition for
+     * editor-workflow forms.
+     * @param {RequestFormBySlugWithVersion} request
      */
-    async handler(request) {
-      const { params } = request
+    handler(request) {
+      const { params, query } = request
       const { slug } = params
+      const { version } = query
 
-      const form = await getFormBySlug(slug)
-
-      return getFormDefinition(form.id, FormStatus.Live)
+      return getFormDefinitionBySlugAndVersion(slug, version)
     },
     options: {
       auth: false,
       validate: {
-        params: formBySlugSchema
+        params: formBySlugSchema,
+        query: formBySlugWithVersionQuerySchema
       }
     }
   },
@@ -425,7 +432,7 @@ export default [
       const { params } = request
       const { id, versionNumber } = params
 
-      const version = await getFormVersion(id, parseInt(versionNumber))
+      const version = await getFormVersion(id, versionNumber)
       return {
         versionNumber: version.versionNumber,
         createdAt: version.createdAt
@@ -448,7 +455,7 @@ export default [
       const { params } = request
       const { id, versionNumber } = params
 
-      const version = await getFormVersion(id, parseInt(versionNumber))
+      const version = await getFormVersion(id, versionNumber)
       return version.formDefinition
     },
     options: {
