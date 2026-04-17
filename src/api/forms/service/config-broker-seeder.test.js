@@ -1,4 +1,5 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import Boom from '@hapi/boom'
 import { mockClient } from 'aws-sdk-client-mock'
 import 'aws-sdk-client-mock-jest'
 import { stringify } from 'yaml'
@@ -223,6 +224,21 @@ describe('config-broker-seeder', () => {
 
     await expect(seedFormsFromConfigBroker()).resolves.not.toThrow()
     expect(configBrokerClient.getGrantVersion).toHaveBeenCalledTimes(2)
+  })
+
+  it('rethrows non-404 errors from getBySlug (e.g. DB failure) so they are not silently swallowed', async () => {
+    jest.mocked(formMetadataRepo.getBySlug).mockRejectedValue(Boom.internal('DB connection failed'))
+
+    await expect(seedFormsFromConfigBroker()).resolves.not.toThrow()
+    expect(createFormWithVersion).not.toHaveBeenCalled()
+  })
+
+  it('treats a 404 from getBySlug as "form not found" and proceeds to create it', async () => {
+    jest.mocked(formMetadataRepo.getBySlug).mockRejectedValue(Boom.notFound(`Form with slug '${slug}' not found`))
+
+    await seedFormsFromConfigBroker()
+
+    expect(createFormWithVersion).toHaveBeenCalled()
   })
 
   it('aborts gracefully when getAllGrants fails', async () => {

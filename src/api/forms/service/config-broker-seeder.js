@@ -1,4 +1,5 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import Boom from '@hapi/boom'
 import { parse } from 'yaml'
 
 import { config } from '~/src/config/index.js'
@@ -99,8 +100,12 @@ function extractMetadata(formDef, slug) {
 async function tryGetFormBySlug(slug) {
   try {
     return await formMetadataRepo.getBySlug(slug)
-  } catch {
-    return null
+  } catch (err) {
+    const HTTP_NOT_FOUND = 404
+    if (Boom.isBoom(err) && err.output.statusCode === HTTP_NOT_FOUND) {
+      return null
+    }
+    throw err
   }
 }
 
