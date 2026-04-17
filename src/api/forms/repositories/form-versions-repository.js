@@ -9,6 +9,37 @@ export const MAX_VERSIONS = 100
 const logger = createLogger()
 
 /**
+ * Shared $addFields stage that computes _semverParts for semver-aware sorting.
+ * Strings are split on '.' and each part cast to int; legacy integers become [n, 0, 0].
+ */
+const SEMVER_ADD_FIELDS_STAGE = {
+  $addFields: {
+    _semverParts: {
+      $cond: {
+        if: { $eq: [{ $type: '$versionNumber' }, 'string'] },
+        then: {
+          $map: {
+            input: { $split: ['$versionNumber', '.'] },
+            as: 'part',
+            in: { $toInt: '$$part' }
+          }
+        },
+        else: [{ $toInt: '$versionNumber' }, 0, 0]
+      }
+    }
+  }
+}
+
+/** Shared $sort stage for descending semver order */
+const SEMVER_SORT_STAGE = {
+  $sort: {
+    '_semverParts.0': -1,
+    '_semverParts.1': -1,
+    '_semverParts.2': -1
+  }
+}
+
+/**
  * Creates a new form version in the database
  * @param {FormVersionDocument} versionDocument - The form version document to create
  * @param {ClientSession} session - MongoDB transaction session
@@ -50,13 +81,10 @@ export async function getLatestVersion(formId, session) {
   const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
-    const sessionOptions = /** @type {FindOptions} */ session && { session }
-    const result = await coll.findOne(
-      { formId },
-      {
-        sort: { versionNumber: -1 },
-        ...sessionOptions
-      }
+    const sessionOptions = /** @type {AggregateOptions} */ session && { session }
+    const pipeline = [{ $match: { formId } }, SEMVER_ADD_FIELDS_STAGE, SEMVER_SORT_STAGE, { $limit: 1 }]
+    const [result = null] = /** @type {FormVersionDocument[]} */ (
+      await coll.aggregate(pipeline, sessionOptions).toArray()
     )
 
     if (!result) {
@@ -96,8 +124,16 @@ export async function getVersions(formId, session, limit = 10, offset = 0) {
     }
     const query = { formId }
 
+    const semverPipeline = [
+      { $match: query },
+      SEMVER_ADD_FIELDS_STAGE,
+      SEMVER_SORT_STAGE,
+      { $skip: offset },
+      { $limit: limit }
+    ]
+
     const [versions, totalCount] = await Promise.all([
-      coll.find(query, sessionOptions).sort({ versionNumber: -1 }).skip(offset).limit(limit).toArray(),
+      /** @type {Promise<FormVersionDocument[]>} */ (coll.aggregate(semverPipeline, sessionOptions).toArray()),
       coll.countDocuments(query, sessionOptions)
     ])
 
@@ -153,17 +189,16 @@ export async function getVersionSummaries(formId, session) {
   const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
-    const sessionOptions = /** @type {FindOptions} */ session && { session }
-    const versions = await coll
-      .find(
-        { formId },
-        {
-          projection: { versionNumber: 1, createdAt: 1, _id: 0 },
-          ...sessionOptions
-        }
-      )
-      .sort({ versionNumber: -1 })
-      .toArray()
+    const sessionOptions = /** @type {AggregateOptions} */ session && { session }
+    const pipeline = [
+      { $match: { formId } },
+      SEMVER_ADD_FIELDS_STAGE,
+      SEMVER_SORT_STAGE,
+      { $project: { versionNumber: 1, createdAt: 1, _id: 0 } }
+    ]
+    const versions = /** @type {Array<{versionNumber: string, createdAt: Date}>} */ (
+      await coll.aggregate(pipeline, sessionOptions).toArray()
+    )
 
     logger.info(`Retrieved ${versions.length} version summaries for form ID ${formId}`)
 
@@ -193,17 +228,14 @@ export async function getVersionSummariesBatch(formIds, session) {
   const coll = /** @satisfies {Collection<FormVersionDocument>} */ (db.collection(VERSIONS_COLLECTION_NAME))
 
   try {
-    const sessionOptions = /** @type {FindOptions} */ session && { session }
-    const versions = await coll
-      .find(
-        { formId: { $in: formIds } },
-        {
-          projection: { formId: 1, versionNumber: 1, createdAt: 1, _id: 0 },
-          ...sessionOptions
-        }
-      )
-      .sort({ versionNumber: -1 })
-      .toArray()
+    const sessionOptions = /** @type {AggregateOptions} */ session && { session }
+    const pipeline = [
+      { $match: { formId: { $in: formIds } } },
+      SEMVER_ADD_FIELDS_STAGE,
+      SEMVER_SORT_STAGE,
+      { $project: { formId: 1, versionNumber: 1, createdAt: 1, _id: 0 } }
+    ]
+    const versions = await coll.aggregate(pipeline, sessionOptions).toArray()
 
     const versionsByForm = new Map()
     for (const formId of formIds) {
@@ -343,5 +375,5 @@ export async function updateVersionStatus(formId, semver, newStatus, session) {
 
 /**
  * @import { FormVersionDocument } from '~/src/api/types.js'
- * @import { ClientSession, Collection, FindOptions } from 'mongodb'
+ * @import { AggregateOptions, ClientSession, Collection } from 'mongodb'
  */
