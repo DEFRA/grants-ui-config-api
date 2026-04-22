@@ -32,6 +32,7 @@ import {
   createLiveFromDraft,
   deleteDraftFormDefinition,
   getFormDefinition,
+  getFormDefinitionBySlugAndVersion,
   listForms,
   reorderDraftFormDefinitionComponents,
   reorderDraftFormDefinitionPages,
@@ -1323,6 +1324,68 @@ describe('Forms service', () => {
           'Metadata validation error'
         )
       })
+    })
+  })
+
+  describe('getFormDefinitionBySlugAndVersion', () => {
+    const slug = 'test-form'
+    const versionedDefinition = {
+      name: 'Test form',
+      pages: [],
+      lists: [],
+      conditions: [],
+      sections: [],
+      metadata: { version: '1.0.0' }
+    }
+
+    beforeEach(() => {
+      jest.mocked(formMetadata.getBySlug).mockResolvedValue(formMetadataDocument)
+      jest.mocked(formVersions.getVersionSummaries).mockResolvedValue([])
+    })
+
+    it('returns the definition from the matching version document when version is specified', async () => {
+      jest.mocked(formVersions.getVersionBySemver).mockResolvedValue({
+        ...mockFormVersionDocument,
+        formDefinition: versionedDefinition
+      })
+
+      const result = await getFormDefinitionBySlugAndVersion(slug, '1.0.0')
+
+      expect(result).toEqual(versionedDefinition)
+      expect(formVersions.getVersionBySemver).toHaveBeenCalledWith(id, '1.0.0')
+    })
+
+    it('throws 404 when the specified version does not exist', async () => {
+      jest.mocked(formVersions.getVersionBySemver).mockResolvedValue(null)
+
+      await expect(getFormDefinitionBySlugAndVersion(slug, '9.9.9')).rejects.toThrow(
+        `Version '9.9.9' for form '${slug}' not found`
+      )
+    })
+
+    it('returns the latest active semver version when no version is specified', async () => {
+      const olderDefinition = { ...versionedDefinition, metadata: { version: '1.0.0' } }
+      const newerDefinition = { ...versionedDefinition, metadata: { version: '2.0.0' } }
+
+      jest.mocked(formVersions.getActiveVersions).mockResolvedValue([
+        { ...mockFormVersionDocument, versionNumber: '1.0.0', formDefinition: olderDefinition },
+        { ...mockFormVersionDocument, versionNumber: '2.0.0', formDefinition: newerDefinition }
+      ])
+
+      const result = await getFormDefinitionBySlugAndVersion(slug)
+
+      expect(result).toEqual(newerDefinition)
+    })
+
+    it('falls back to the live form-definition when no active semver versions exist', async () => {
+      const liveDefinition = { name: 'Live form', pages: [], lists: [], conditions: [], sections: [], metadata: {} }
+      jest.mocked(formVersions.getActiveVersions).mockResolvedValue([])
+      jest.mocked(formDefinition.get).mockResolvedValue(liveDefinition)
+
+      const result = await getFormDefinitionBySlugAndVersion(slug)
+
+      expect(result).toEqual(liveDefinition)
+      expect(formDefinition.get).toHaveBeenCalledWith(id, FormStatus.Live)
     })
   })
 })

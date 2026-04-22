@@ -209,7 +209,7 @@ paths:
       tags:
         - Forms
       summary: Get form by slug
-      description: Retrieve form metadata by slug identifier
+      description: Retrieve form metadata by slug identifier. The optional `version` query parameter is accepted for compatibility with versioned requests but does not change the metadata response.
       operationId: getFormBySlug
       parameters:
         - name: slug
@@ -220,6 +220,7 @@ paths:
             type: string
             examples:
               - feedback
+        - $ref: '#/components/parameters/SemanticVersion'
       responses:
         '200':
           description: Form metadata
@@ -234,9 +235,16 @@ paths:
     get:
       tags:
         - Definitions
-      summary: Get live form definition by slug
-      description: Retrieve the live (published) form definition using the form's slug identifier. This is a convenience endpoint that combines form lookup by slug and retrieval of the live definition in a single call.
-      operationId: getLiveDefinitionBySlug
+      summary: Get form definition by slug
+      description: |
+        Retrieve a form definition using the form's slug identifier.
+
+        **Version resolution:**
+        - Without `version` query parameter: returns the latest active semver version. Falls back to the live (editor-workflow) definition if no active semver versions exist.
+        - With `version` query parameter (semver e.g. `1.0.0`): returns the definition for that specific version regardless of status.
+
+        This endpoint supports both config-broker-seeded forms (semver versioning) and editor-workflow forms (live/draft state).
+      operationId: getDefinitionBySlug
       parameters:
         - name: slug
           in: path
@@ -246,15 +254,16 @@ paths:
             type: string
             examples:
               - feedback
+        - $ref: '#/components/parameters/SemanticVersion'
       responses:
         '200':
-          description: Live form definition
+          description: Form definition
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FormDefinition'
         '404':
-          description: Form not found or has no live definition
+          description: Form not found, version not found, or no active definition exists
           content:
             application/json:
               schema:
@@ -796,12 +805,22 @@ components:
       name: versionNumber
       in: path
       required: true
-      description: Version number
+      description: Version number (stringified integer for editor-workflow forms, e.g. "1", "2")
       schema:
-        type: integer
-        minimum: 1
+        type: string
         examples:
-          - 1
+          - '1'
+
+    SemanticVersion:
+      name: version
+      in: query
+      required: false
+      description: Semantic version string (e.g. "1.0.0"). Used to request a specific version of a config-broker-seeded form.
+      schema:
+        type: string
+        pattern: '^\d+\.\d+\.\d+$'
+        examples:
+          - 1.0.0
 
   schemas:
     FormMetadata:
@@ -930,6 +949,8 @@ components:
     FormDefinition:
       type: object
       properties:
+        metadata:
+          $ref: '#/components/schemas/FormDefinitionMetadata'
         pages:
           type: array
           items:
@@ -946,6 +967,16 @@ components:
           type: array
           items:
             type: object
+
+    FormDefinitionMetadata:
+      type: object
+      description: Optional metadata embedded in a form definition. For config-broker-seeded forms the `version` field holds the semver string.
+      properties:
+        version:
+          type: string
+          description: Semantic version of this form definition (e.g. "1.0.0")
+          examples:
+            - 1.0.0
 
     Page:
       type: object
@@ -1068,8 +1099,16 @@ components:
       type: object
       properties:
         versionNumber:
-          type: integer
-          description: Version number
+          type: string
+          description: Version number. Semver string (e.g. "1.0.0") for config-broker-seeded forms; stringified integer (e.g. "1") for editor-workflow forms.
+          examples:
+            - 1.0.0
+        status:
+          type: string
+          enum:
+            - active
+            - draft
+          description: Version status. Present on config-broker-seeded versions.
         createdAt:
           type: string
           format: date-time

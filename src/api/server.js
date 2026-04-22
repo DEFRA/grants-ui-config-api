@@ -9,7 +9,7 @@ import { failAction } from '~/src/helpers/fail-action.js'
 import { requestLogger } from '~/src/helpers/logging/request-logger.js'
 import { requestTracing } from '~/src/helpers/request-tracing.js'
 import { prepareDb } from '~/src/mongo.js'
-import { seedFormsFromS3 } from '~/src/api/forms/service/s3-seeder.js'
+import { seedFormsFromConfigBroker } from '~/src/api/forms/service/config-broker-seeder.js'
 import { auth } from '~/src/plugins/auth/index.js'
 import { queryHandler } from '~/src/plugins/query-handler/index.js'
 import { router } from '~/src/plugins/router.js'
@@ -73,7 +73,7 @@ export async function createServer() {
   }
 
   await prepareDb(server.logger)
-  await seedFormsFromS3()
+  await seedFormsFromConfigBroker()
   await server.register(transformErrors)
   await server.register(router)
 

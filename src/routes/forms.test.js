@@ -8,6 +8,7 @@ import {
   createLiveFromDraft,
   deleteDraftFormDefinition,
   getFormDefinition,
+  getFormDefinitionBySlugAndVersion,
   listForms,
   updateDraftFormDefinition
 } from '~/src/api/forms/service/definition.js'
@@ -1565,13 +1566,13 @@ describe('Forms route', () => {
       const mockVersions = [
         {
           formId: id,
-          versionNumber: 1,
+          versionNumber: '1',
           createdAt: now,
           formDefinition: stubFormDefinition
         },
         {
           formId: id,
-          versionNumber: 2,
+          versionNumber: '2',
           createdAt: now,
           formDefinition: stubFormDefinition
         }
@@ -1589,8 +1590,8 @@ describe('Forms route', () => {
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toEqual({
         versions: [
-          { versionNumber: 1, createdAt: now },
-          { versionNumber: 2, createdAt: now }
+          { versionNumber: '1', createdAt: now },
+          { versionNumber: '2', createdAt: now }
         ]
       })
     })
@@ -1598,7 +1599,7 @@ describe('Forms route', () => {
     test('GET /forms/{id}/versions/{versionNumber} returns specific version', async () => {
       const mockVersion = {
         formId: id,
-        versionNumber: 1,
+        versionNumber: '1',
         createdAt: now,
         formDefinition: stubFormDefinition
       }
@@ -1614,7 +1615,7 @@ describe('Forms route', () => {
       expect(response.statusCode).toEqual(okStatusCode)
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toEqual({
-        versionNumber: 1,
+        versionNumber: '1',
         createdAt: now
       })
     })
@@ -1622,7 +1623,7 @@ describe('Forms route', () => {
     test('GET /forms/{id}/versions/{versionNumber}/definition returns version definition', async () => {
       const mockVersion = {
         formId: id,
-        versionNumber: 1,
+        versionNumber: '1',
         createdAt: now,
         formDefinition: stubFormDefinition
       }
@@ -1831,8 +1832,7 @@ describe('Forms route', () => {
     })
 
     test('GET /forms/slug/{slug}/definition returns live form definition by slug', async () => {
-      jest.mocked(getFormBySlug).mockResolvedValue(stubFormMetadataOutput)
-      jest.mocked(getFormDefinition).mockResolvedValue(stubFormDefinition)
+      jest.mocked(getFormDefinitionBySlugAndVersion).mockResolvedValue(stubFormDefinition)
 
       const response = await server.inject({
         method: 'GET',
@@ -1843,12 +1843,26 @@ describe('Forms route', () => {
       expect(response.statusCode).toEqual(okStatusCode)
       expect(response.headers['content-type']).toContain(jsonContentType)
       expect(response.result).toEqual(stubFormDefinition)
-      expect(getFormBySlug).toHaveBeenCalledWith(slug)
-      expect(getFormDefinition).toHaveBeenCalledWith(id, FormStatus.Live)
+      expect(getFormDefinitionBySlugAndVersion).toHaveBeenCalledWith(slug, undefined)
+    })
+
+    test('GET /forms/slug/{slug}/definition with version param calls service with version', async () => {
+      jest.mocked(getFormDefinitionBySlugAndVersion).mockResolvedValue(stubFormDefinition)
+
+      const response = await server.inject({
+        method: 'GET',
+        url: `/forms/slug/${slug}/definition?version=1.2.3`,
+        auth
+      })
+
+      expect(response.statusCode).toEqual(okStatusCode)
+      expect(getFormDefinitionBySlugAndVersion).toHaveBeenCalledWith(slug, '1.2.3')
     })
 
     test('GET /forms/slug/{slug}/definition handles slug not found', async () => {
-      jest.mocked(getFormBySlug).mockRejectedValue(Boom.notFound(`Form with slug '${slug}' not found`))
+      jest
+        .mocked(getFormDefinitionBySlugAndVersion)
+        .mockRejectedValue(Boom.notFound(`Form with slug '${slug}' not found`))
 
       const response = await server.inject({
         method: 'GET',
@@ -1864,8 +1878,9 @@ describe('Forms route', () => {
     })
 
     test('GET /forms/slug/{slug}/definition handles no live definition', async () => {
-      jest.mocked(getFormBySlug).mockResolvedValue(stubFormMetadataOutput)
-      jest.mocked(getFormDefinition).mockRejectedValue(Boom.notFound(`Form definition with ID '${id}' not found`))
+      jest
+        .mocked(getFormDefinitionBySlugAndVersion)
+        .mockRejectedValue(Boom.notFound(`Form definition with ID '${id}' not found`))
 
       const response = await server.inject({
         method: 'GET',

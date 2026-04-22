@@ -2,6 +2,7 @@
  * Form API request types
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput }>} RequestFormById
  * @typedef {Request<{ Server: { db: Db }, Params: FormBySlugInput }>} RequestFormBySlug
+ * @typedef {Request<{ Server: { db: Db }, Params: FormBySlugInput, Query: { version?: string } }>} RequestFormBySlugWithVersion
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput, Payload: FormDefinitionWithMetadata }>} RequestFormDefinition
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIdInput, Payload: Page }>} RequestPage
  * @typedef {Request<{ Server: { db: Db }, Params: FormByIDAndPageByIdInput, Payload: PatchPageFields }>} PatchPageRequest
@@ -39,13 +40,20 @@
  * @typedef {object} FormVersionDocument
  * @property {ObjectId} [_id] - MongoDB ObjectId
  * @property {string} formId - The form ID
- * @property {number} versionNumber - The version number
+ * @property {string} versionNumber - The version identifier (semver string e.g. "1.0.0" for config-broker versions, or stringified integer e.g. "1" for editor-workflow versions)
  * @property {FormDefinition} formDefinition - The complete form definition
  * @property {Date} createdAt - When this version was created
+ * @property {'active' | 'draft'} [status] - The status of this version (set for config-broker versions)
  */
 
 /**
- * @typedef {FormMetadataDocument & { versions?: FormVersionMetadata[] }} FormMetadataWithVersions
+ * @typedef {object} FormVersionSummary
+ * @property {string | number} versionNumber
+ * @property {Date} createdAt
+ */
+
+/**
+ * @typedef {Omit<FormMetadataDocument, 'versions'> & { versions?: FormVersionSummary[] }} FormMetadataWithVersions
  */
 
 /**

@@ -51,6 +51,7 @@ export async function prepareDb(logger) {
   await versionsCollection.createIndex({ formId: 1, versionNumber: 1 }, { unique: true })
   await versionsCollection.createIndex({ formId: 1, versionNumber: -1 })
   await versionsCollection.createIndex({ createdAt: -1 })
+  await versionsCollection.createIndex({ formId: 1, status: 1 })
 
   logger.info(`Mongodb connected to ${databaseName}`)
 

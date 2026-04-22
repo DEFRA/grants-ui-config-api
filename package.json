@@ -39,7 +39,8 @@
     "generate:jwt_secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
     "generate:token": "node scripts/generate-token.js",
     "generate:token:save": "node scripts/generate-token.js --save",
-    "upload:form-config": "node scripts/upload-form-config.js"
+    "generate:broker-token": "node scripts/generate-broker-token.js",
+    "generate:broker-token:save": "node scripts/generate-broker-token.js --save"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1009.0",
@@ -52,7 +53,7 @@
     "@hapi/hoek": "11.0.7",
     "@hapi/jwt": "3.2.3",
     "aws4": "1.13.2",
-    "convict": "6.2.4",
+    "convict": "6.2.5",
     "dotenv": "17.3.1",
     "hapi-pino": "13.0.0",
     "http-status-codes": "2.3.0",
