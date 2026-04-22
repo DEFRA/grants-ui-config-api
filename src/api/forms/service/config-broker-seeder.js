@@ -170,7 +170,9 @@ export async function seedFormsFromConfigBroker() {
   const slugsRaw = config.get('formsApiSlugs')
 
   if (!brokerUrl || !slugsRaw) {
-    logger.info('[configBrokerSeeder] CONFIG_BROKER_URL or FORMS_API_SLUGS not set, skipping config broker seeding')
+    logger.info(
+      '[configBrokerSeeder] GRANTS_CONFIG_BROKER_URL or FORMS_API_SLUGS not set, skipping config broker seeding'
+    )
     return
   }
 

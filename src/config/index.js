@@ -227,20 +227,20 @@ export const config = convict({
     doc: 'Base URL for the config broker service used to discover grant versions on startup',
     format: String,
     default: '',
-    env: 'CONFIG_BROKER_URL'
+    env: 'GRANTS_CONFIG_BROKER_URL'
   },
   configBrokerAuthToken: {
     doc: 'Auth token for authenticating with the config broker service',
     format: String,
     default: '',
-    env: 'CONFIG_BROKER_AUTH_TOKEN',
+    env: 'GRANTS_CONFIG_BROKER_AUTH_TOKEN',
     sensitive: true
   },
   configBrokerEncryptionKey: {
     doc: 'Encryption key for encrypting the auth token sent to the config broker service',
     format: String,
     default: '',
-    env: 'CONFIG_BROKER_ENCRYPTION_KEY',
+    env: 'GRANTS_CONFIG_BROKER_ENCRYPTION_KEY',
     sensitive: true
   }
 })

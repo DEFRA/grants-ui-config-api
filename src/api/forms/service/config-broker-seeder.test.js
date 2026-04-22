@@ -107,7 +107,7 @@ describe('config-broker-seeder', () => {
     s3Mock.on(GetObjectCommand).resolves(mockS3Response(mockYaml))
   })
 
-  it('skips seeding when CONFIG_BROKER_URL is not set', async () => {
+  it('skips seeding when GRANTS_CONFIG_BROKER_URL is not set', async () => {
     mockConfigGet({ configBrokerUrl: '' })
     await seedFormsFromConfigBroker()
     expect(configBrokerClient.getAllGrants).not.toHaveBeenCalled()

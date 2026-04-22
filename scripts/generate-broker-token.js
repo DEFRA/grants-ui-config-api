@@ -2,7 +2,7 @@
  * Broker Token Generator for HTTP Client Testing
  *
  * Generates an encrypted bearer token for authenticating with the config broker.
- * Reads CONFIG_BROKER_AUTH_TOKEN and CONFIG_BROKER_ENCRYPTION_KEY from your .env file
+ * Reads GRANTS_CONFIG_BROKER_AUTH_TOKEN and GRANTS_CONFIG_BROKER_ENCRYPTION_KEY from your .env file
  * (defaults to compose.yml development values if not set).
  *
  * Usage:
@@ -18,8 +18,8 @@ import { fileURLToPath } from 'url'
 import 'dotenv/config'
 import crypto from 'node:crypto'
 
-const token = process.env.CONFIG_BROKER_AUTH_TOKEN ?? 'config-broker-auth-token'
-const encryptionKey = process.env.CONFIG_BROKER_ENCRYPTION_KEY ?? 'config-broker-encryption-key'
+const token = process.env.GRANTS_CONFIG_BROKER_AUTH_TOKEN ?? 'config-broker-auth-token'
+const encryptionKey = process.env.GRANTS_CONFIG_BROKER_ENCRYPTION_KEY ?? 'config-broker-encryption-key'
 
 const iv = crypto.randomBytes(12)
 const key = crypto.scryptSync(encryptionKey, 'salt', 32)

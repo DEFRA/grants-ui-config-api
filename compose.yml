@@ -86,9 +86,9 @@ services:
       LOCALSTACK_ENDPOINT: http://localstack:4566
       MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/}
       JWT_SECRET: ${JWT_SECRET:-config-api-jwt-secret}
-      CONFIG_BROKER_URL: '${CONFIG_BROKER_URL:-http://grants-config-broker:3012}'
-      CONFIG_BROKER_AUTH_TOKEN: '${CONFIG_BROKER_AUTH_TOKEN:-config-broker-auth-token}'
-      CONFIG_BROKER_ENCRYPTION_KEY: '${CONFIG_BROKER_ENCRYPTION_KEY:-config-broker-encryption-key}'
+      GRANTS_CONFIG_BROKER_URL: '${GRANTS_CONFIG_BROKER_URL:-http://grants-config-broker:3012}'
+      GRANTS_CONFIG_BROKER_AUTH_TOKEN: '${GRANTS_CONFIG_BROKER_AUTH_TOKEN:-config-broker-auth-token}'
+      GRANTS_CONFIG_BROKER_ENCRYPTION_KEY: '${GRANTS_CONFIG_BROKER_ENCRYPTION_KEY:-config-broker-encryption-key}'
       FORMS_API_SLUGS: ${FORMS_API_SLUGS:-example-grant-with-auth}
       DEFAULT_FORM_ORGANISATION: ${DEFAULT_FORM_ORGANISATION:-Defra}
       DEFAULT_FORM_TEAM_NAME: ${DEFAULT_FORM_TEAM_NAME:-Digital Delivery}

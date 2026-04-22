@@ -59,7 +59,7 @@ npm run docker:up
 PORT=3011
 MONGO_URI=mongodb://mongodb:27017/
 JWT_SECRET= <JWT secret for JWT signing>
-CONFIG_BROKER_URL=http://localhost:3012
+GRANTS_CONFIG_BROKER_URL=http://localhost:3012
 FORMS_API_SLUGS=my-grant,another-grant
 ```
 
@@ -100,7 +100,7 @@ For detailed information on metadata structure, validation rules, and examples, 
 
 ### Config Broker Integration
 
-On startup the API seeds grant form definitions from an external config broker service (`CONFIG_BROKER_URL`). The seeder:
+On startup the API seeds grant form definitions from an external config broker service (`GRANTS_CONFIG_BROKER_URL`). The seeder:
 
 1. Calls `GET /api/allGrants` on the config broker to retrieve all available grants and their versions.
 2. Filters grants to those listed in the `FORMS_API_SLUGS` environment variable (comma-separated slugs).
@@ -115,10 +115,10 @@ Grant form versions use **semantic versioning** (e.g. `1.0.0`). Multiple version
 
 #### Environment variables
 
-| Variable            | Description                                 | Default |
-| ------------------- | ------------------------------------------- | ------- |
-| `CONFIG_BROKER_URL` | Base URL of the config broker service       | `""`    |
-| `FORMS_API_SLUGS`   | Comma-separated list of grant slugs to seed | `""`    |
+| Variable                   | Description                                 | Default |
+| -------------------------- | ------------------------------------------- | ------- |
+| `GRANTS_CONFIG_BROKER_URL` | Base URL of the config broker service       | `""`    |
+| `FORMS_API_SLUGS`          | Comma-separated list of grant slugs to seed | `""`    |
 
 ### Type Definitions
 
