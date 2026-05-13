@@ -174,7 +174,9 @@ describe('entitlements service', () => {
         'user-create',
         'user-delete',
         'user-edit',
-        'forms-feedback'
+        'forms-feedback',
+        'forms-feedback-all-forms',
+        'forms-report'
       ])
     })
 
